@@ -118,6 +118,14 @@ const ProductModel = new Schema(
       default: "active",
       index: true,
     },
+    // Step 8 & 9: Booked dates for rental calendar and reservation conflict prevention
+    bookedDates: [
+      {
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true },
+        orderId: { type: Schema.Types.ObjectId, ref: "order" },
+      },
+    ],
     reviews: [
       {
         rating: { type: Number, required: true },

@@ -52,11 +52,58 @@ const ProductDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 4);
+    return d.toISOString().split("T")[0];
+  });
+  const [availability, setAvailability] = useState({ available: true, bookedDates: [] });
+  const [dateConflict, setDateConflict] = useState(false);
+
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/products/${id}/availability`)
+      .then((res) => {
+        if (res.data?.status) {
+          setAvailability(res.data);
+        }
+      })
+      .catch(() => {});
+  }, [id]);
+
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    if (e < s) {
+      setDateConflict(true);
+      return;
+    }
+    const diff = Math.max(1, Math.round((e - s) / (1000 * 60 * 60 * 24)));
+    setQty(diff);
+
+    // Check conflict with bookedDates
+    const hasConflict = (availability.bookedDates || []).some((b) => {
+      const bStart = new Date(b.startDate);
+      const bEnd = new Date(b.endDate);
+      return s <= bEnd && bStart <= e;
+    });
+    setDateConflict(hasConflict);
+  }, [startDate, endDate, availability]);
+
   const handleRentClick = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (!user.email) return alert("Please Login to continue");
-    if (qty < 1) return alert("Select at least 1 day");
-    navigate(`/checkout/address/${product._id}`, { state: { qty, product } });
+    if (dateConflict) return alert("Selected rental dates are not available.");
+    if (qty < 1) return alert("Select at least 1 day rental");
+    navigate(`/checkout/address/${product._id}`, {
+      state: { qty, startDate, endDate, product },
+    });
   };
 
   const submitReview = async () => {
@@ -78,7 +125,12 @@ const ProductDetail = () => {
     ? (product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length).toFixed(1) 
     : 0;
 
-  const images = [product.image, ...(product.images || [])].filter(Boolean);
+  const images = Array.from(new Set([product.image, ...(product.images || [])].filter(Boolean)));
+  const pricePerDay = Number(product.rentalPricePerDay || product.price) || 0;
+  const deposit = Number(product.securityDeposit || product.advance) || 0;
+  const totalRentalFee = pricePerDay * qty;
+  const grandTotal = totalRentalFee + deposit;
+  const minDate = new Date().toISOString().split("T")[0];
 
   return (
     <>
@@ -95,7 +147,7 @@ const ProductDetail = () => {
                   key={idx} 
                   onClick={() => setActiveImage(img)}
                   sx={{ 
-                    width: 80, height: 80, cursor: 'pointer', border: activeImage === img ? '2px solid #FE6B8B' : '1px solid #eee',
+                    width: 80, height: 80, cursor: 'pointer', border: activeImage === img ? '2px solid #D1A362' : '1px solid #eee',
                     borderRadius: 1, overflow: 'hidden'
                   }}
                 >
@@ -106,46 +158,118 @@ const ProductDetail = () => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Typography variant="h4" fontWeight="bold" mb={1}>{product.name}</Typography>
+            <Typography variant="h4" fontWeight="bold" mb={1}>{product.title || product.name}</Typography>
             <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-              <Rating value={Number(avgRating)} readOnly precision={0.5} />
-              <Typography variant="body2" color="text.secondary">
-                {avgRating} ({product.reviews?.length || 0} reviews)
-              </Typography>
+              <Rating value={Number(avgRating)} readOnly precision={0.5} size="small" />
+              <Typography variant="body2" color="text.secondary">({avgRating} / 5 from {product.reviews?.length || 0} reviews)</Typography>
             </Stack>
 
-            <Typography variant="h5" color="primary" fontWeight="bold" mb={2}>
-              ₹{product.price} / day
+            <Typography variant="h5" color="primary" fontWeight="bold" mb={1}>
+              ₹{pricePerDay.toLocaleString()} <Typography component="span" variant="body1" color="text.secondary">/ day</Typography>
             </Typography>
-            <Typography variant="body1" mb={3} color="text.secondary">
-              Advance: ₹{product.advance}
+            <Typography variant="body2" mb={2} color="text.secondary">
+              Refundable Security Deposit: ₹{deposit.toLocaleString()}
             </Typography>
             
-            <Typography variant="body1" mb={4}>
+            <Typography variant="body1" mb={3} color="text.secondary">
               {product.description || "An elegant choice for your special occasion."}
             </Typography>
 
-            <Divider sx={{ mb: 4 }} />
+            <Divider sx={{ mb: 3 }} />
 
-            <Stack spacing={2} mb={4} sx={{ maxWidth: 300 }}>
-              <Typography variant="subtitle2" fontWeight="bold">Rental Duration (Days)</Typography>
-              <TextField
-                type="number"
-                size="small"
-                value={qty}
-                onChange={(e) => setQty(e.target.value)}
-                inputProps={{ min: 1, max: 30 }}
-              />
+            {/* Step 8 Rental Date & Availability Selector */}
+            <Box sx={{ bgcolor: "#faf7f2", border: "1px solid #f0e6d6", borderRadius: 2, p: 2.5, mb: 3 }}>
+              <Typography variant="subtitle2" fontWeight="bold" color="#1A1817" mb={1.5}>
+                Select Rental Dates
+              </Typography>
+              <Grid container spacing={2} mb={1.5}>
+                <Grid item xs={6}>
+                  <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>
+                    Rental Start Date
+                  </Typography>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    size="small"
+                    value={startDate}
+                    inputProps={{ min: minDate }}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>
+                    Return Date
+                  </Typography>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    size="small"
+                    value={endDate}
+                    inputProps={{ min: startDate || minDate }}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </Grid>
+              </Grid>
+
+              {dateConflict ? (
+                <Typography variant="caption" color="error" fontWeight="bold" display="block" mb={1}>
+                  ⚠️ Selected dates are reserved or invalid. Please select another date window.
+                </Typography>
+              ) : (
+                <Box sx={{ borderTop: "1px dashed #e0d5c1", pt: 1.5, mt: 1 }}>
+                  <Stack direction="row" justifyContent="space-between" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary">
+                      Rental Duration:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      {qty} {qty === 1 ? "Day" : "Days"}
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" justifyContent="space-between" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary">
+                      Rental Fee (₹{pricePerDay} × {qty} days):
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      ₹{totalRentalFee.toLocaleString()}
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" justifyContent="space-between" mb={0.5}>
+                    <Typography variant="body2" color="text.secondary">
+                      Refundable Deposit:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      ₹{deposit.toLocaleString()}
+                    </Typography>
+                  </Stack>
+                  <Divider sx={{ my: 1 }} />
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      Total to Pay:
+                    </Typography>
+                    <Typography variant="subtitle2" fontWeight="bold" color="#D1A362">
+                      ₹{grandTotal.toLocaleString()}
+                    </Typography>
+                  </Stack>
+                </Box>
+              )}
+
               <Button 
                 variant="contained" 
                 size="large" 
+                fullWidth
                 onClick={handleRentClick}
-                disabled={product.stock <= 0}
-                sx={{ background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)', color: 'white' }}
+                disabled={product.stock <= 0 || dateConflict}
+                sx={{ 
+                  mt: 2,
+                  background: 'linear-gradient(45deg, #1A1817 30%, #3D352E 90%)',
+                  color: '#D1A362',
+                  fontWeight: 600,
+                  '&:hover': { background: '#1A1817' }
+                }}
               >
-                {product.stock > 0 ? "Rent Now" : "Out of Stock"}
+                {product.stock <= 0 ? "Out of Stock" : dateConflict ? "Dates Unavailable" : `Reserve for ${qty} Days (₹${grandTotal.toLocaleString()})`}
               </Button>
-            </Stack>
+            </Box>
 
             <Stack spacing={2} sx={{ bgcolor: '#f9f9f9', p: 2, borderRadius: 2 }}>
               <Stack direction="row" spacing={2} alignItems="center">

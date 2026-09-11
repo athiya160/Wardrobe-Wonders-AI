@@ -95,17 +95,40 @@ PaymentRouter.post("/check-status", async (req, res) => {
 
       const existingOrder = await OrderModel.findOne({ transactionId: body.transactionId });
       if (!existingOrder) {
+        const days = Number(body.quantity) || 1;
+        const startDate = body.startDate || body.rentalStartDate ? new Date(body.startDate || body.rentalStartDate) : new Date();
+        const endDate = body.endDate || body.rentalEndDate ? new Date(body.endDate || body.rentalEndDate) : new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+        const deposit = Number(product.securityDeposit || product.advance) || 0;
+        const rentalFee = (Number(product.rentalPricePerDay || product.price) || 0) * days;
+
         const newOrder = new OrderModel({
           userEmail: body.email,
           product: body.dressId,
-          quantity: body.quantity,
-          totalAmount: product.price * body.quantity,
+          providerId: product.providerId,
+          quantity: days,
+          rentalDays: days,
+          rentalStartDate: startDate,
+          rentalEndDate: endDate,
+          securityDeposit: deposit,
+          rentalFee: rentalFee,
+          totalAmount: body.totalAmount != null ? Number(body.totalAmount) : (rentalFee + deposit),
           address: body.address,
           paymentMethod: "online",
           transactionId: body.transactionId,
-          status: "Processing"
+          status: "Processing",
+          requestStatus: "Pending",
         });
         await newOrder.save();
+
+        await productModel.findByIdAndUpdate(body.dressId, {
+          $push: {
+            bookedDates: {
+              startDate: startDate,
+              endDate: endDate,
+              orderId: newOrder._id,
+            },
+          },
+        });
       }
     }
     res.send(data);
@@ -123,17 +146,40 @@ PaymentRouter.post("/check-status", async (req, res) => {
 
         const existingOrder = await OrderModel.findOne({ transactionId: body.transactionId });
         if (!existingOrder) {
+          const days = Number(body.quantity) || 1;
+          const startDate = body.startDate || body.rentalStartDate ? new Date(body.startDate || body.rentalStartDate) : new Date();
+          const endDate = body.endDate || body.rentalEndDate ? new Date(body.endDate || body.rentalEndDate) : new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+          const deposit = Number(product.securityDeposit || product.advance) || 0;
+          const rentalFee = (Number(product.rentalPricePerDay || product.price) || 0) * days;
+
           const newOrder = new OrderModel({
             userEmail: body.email,
             product: body.dressId,
-            quantity: body.quantity,
-            totalAmount: product.price * body.quantity,
+            providerId: product.providerId,
+            quantity: days,
+            rentalDays: days,
+            rentalStartDate: startDate,
+            rentalEndDate: endDate,
+            securityDeposit: deposit,
+            rentalFee: rentalFee,
+            totalAmount: body.totalAmount != null ? Number(body.totalAmount) : (rentalFee + deposit),
             address: body.address,
             paymentMethod: "online",
             transactionId: body.transactionId,
-            status: "Processing"
+            status: "Processing",
+            requestStatus: "Pending",
           });
           await newOrder.save();
+
+          await productModel.findByIdAndUpdate(body.dressId, {
+            $push: {
+              bookedDates: {
+                startDate: startDate,
+                endDate: endDate,
+                orderId: newOrder._id,
+              },
+            },
+          });
         }
       }
       res.send({ success: true, code: "PAYMENT_SUCCESS", message: "Simulated Success" });
@@ -150,25 +196,44 @@ PaymentRouter.post("/cod", async (req, res) => {
     const product = await productModel.findById(body.dressId);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
     
-    let stock = product.stock - body.quantity;
-    if (stock < 0) return res.status(400).json({ success: false, message: "Insufficient stock" });
+    const stock = Number(product.stock) || 1;
+    if (stock <= 0) return res.status(400).json({ success: false, message: "Dress is currently unavailable or out of stock" });
     
-    await productModel.findByIdAndUpdate(body.dressId, {
-      $set: { stock: stock },
-    });
-    
+    const days = Number(body.quantity) || 1;
+    const startDate = body.startDate || body.rentalStartDate ? new Date(body.startDate || body.rentalStartDate) : new Date();
+    const endDate = body.endDate || body.rentalEndDate ? new Date(body.endDate || body.rentalEndDate) : new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+    const deposit = Number(product.securityDeposit || product.advance) || 0;
+    const rentalFee = (Number(product.rentalPricePerDay || product.price) || 0) * days;
+
     const newOrder = new OrderModel({
       userEmail: body.email,
       product: body.dressId,
-      quantity: body.quantity,
-      totalAmount: product.price * body.quantity,
+      providerId: product.providerId,
+      quantity: days,
+      rentalDays: days,
+      rentalStartDate: startDate,
+      rentalEndDate: endDate,
+      securityDeposit: deposit,
+      rentalFee: rentalFee,
+      totalAmount: body.totalAmount != null ? Number(body.totalAmount) : (rentalFee + deposit),
       address: body.address,
       paymentMethod: "cod",
-      status: "Processing"
+      status: "Processing",
+      requestStatus: "Pending",
     });
     await newOrder.save();
 
-    res.json({ success: true, message: "Order placed successfully via COD" });
+    await productModel.findByIdAndUpdate(body.dressId, {
+      $push: {
+        bookedDates: {
+          startDate: startDate,
+          endDate: endDate,
+          orderId: newOrder._id,
+        },
+      },
+    });
+
+    res.json({ success: true, message: "Rental request placed successfully via COD", orderId: newOrder._id });
   } catch (e) {
     console.log(e);
     res.status(500).json({ success: false, message: e.message });

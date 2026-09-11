@@ -48,6 +48,10 @@ import {
   TrendingUp as TrendingUpIcon,
   CheckCircle as ActiveIcon,
   PauseCircleOutline as InactiveIcon,
+  AutoAwesome as MagicIcon,
+  CloudUploadOutlined as UploadIcon,
+  Check as CheckIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -79,8 +83,11 @@ const ProviderStudio = () => {
     totalEarnings: 0,
   });
   const [listings, setListings] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
 
   // Delete Confirmation Dialog state
@@ -97,8 +104,14 @@ const ProviderStudio = () => {
     rentalPricePerDay: "",
     securityDeposit: "",
     image: "/assets/Cocktail Gown.jpg",
+    images: ["/assets/Cocktail Gown.jpg"],
     description: "",
+    tags: [],
+    occasion: "",
     color: "",
+    pattern: "",
+    style: "",
+    season: "",
     location: "Mumbai, Bandra West",
   });
 
@@ -106,17 +119,19 @@ const ProviderStudio = () => {
     headers: { Authorization: `Bearer ${token}` },
   };
 
-  // Fetch Stats & Listings
+  // Fetch Stats, Listings & Rental Orders
   const fetchData = async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const [statsRes, listingsRes] = await Promise.all([
+      const [statsRes, listingsRes, ordersRes] = await Promise.all([
         axios.get(`${BASE_URL}/provider/stats`, authHeaders),
         axios.get(`${BASE_URL}/provider/listings`, authHeaders),
+        axios.get(`${BASE_URL}/provider/orders`, authHeaders).catch(() => ({ data: { orders: [] } })),
       ]);
       if (statsRes.data?.status) setStats(statsRes.data.stats);
       if (listingsRes.data?.status) setListings(listingsRes.data.listings);
+      if (ordersRes.data?.orders) setOrders(ordersRes.data.orders);
     } catch (err) {
       console.error("Failed to load provider studio data:", err);
       if (err.response?.status === 401 || err.response?.status === 403) {
@@ -133,6 +148,124 @@ const ProviderStudio = () => {
 
   const showToast = (message, severity = "success") => {
     setNotification({ open: true, message, severity });
+  };
+
+  // Step 6: Multi-Photo Cloud Image Upload
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    const uploadData = new FormData();
+    const fileArray = Array.from(files).slice(0, 5); // up to 5 images
+
+    fileArray.forEach((file) => {
+      uploadData.append("images", file);
+    });
+
+    setUploading(true);
+    try {
+      const res = await axios.post(`${BASE_URL}/upload/provider`, uploadData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (res.data?.status && res.data?.urls?.length > 0) {
+        const newUrls = res.data.urls;
+        setFormData((prev) => ({
+          ...prev,
+          images: newUrls,
+          image: newUrls[0],
+        }));
+        showToast(`✨ ${newUrls.length} photo(s) uploaded successfully!`);
+      } else {
+        showToast(res.data?.message || "Failed to upload photos", "error");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      showToast(err.response?.data?.message || "Error uploading photos", "error");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Step 7: Magic AI Fashion Assistant
+  const handleGenerateAi = async () => {
+    if (!formData.title && !formData.category) {
+      showToast("Please enter at least a dress title or category first", "warning");
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const [descRes, tagsRes] = await Promise.all([
+        axios.post(
+          `${BASE_URL}/provider/ai/generate-description`,
+          {
+            productName: formData.title,
+            category: formData.category,
+            price: Number(formData.rentalPricePerDay) || 2500,
+            brand: formData.brand,
+          },
+          authHeaders
+        ),
+        axios.post(
+          `${BASE_URL}/provider/ai/generate-tags`,
+          {
+            productName: formData.title,
+            category: formData.category,
+            description: formData.description,
+          },
+          authHeaders
+        ),
+      ]);
+
+      const descData = descRes.data?.data || {};
+      const tagData = tagsRes.data?.data || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        title: descData.title || prev.title,
+        description: descData.description || prev.description,
+        tags: descData.tags || prev.tags,
+        occasion: descData.occasion || prev.occasion,
+        color: tagData.color || prev.color,
+        pattern: tagData.pattern || prev.pattern,
+        style: tagData.style || prev.style,
+        season: tagData.season || prev.season,
+      }));
+
+      showToast("✨ AI Fashion copy & tags generated!");
+    } catch (err) {
+      console.error("AI Generation error:", err);
+      showToast("Failed to generate AI details", "error");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Step 9 & 10: Provider Update Rental Request Status (Accept / Decline)
+  const handleOrderStatusUpdate = async (orderId, newStatus) => {
+    setActionLoading(true);
+    try {
+      const res = await axios.put(
+        `${BASE_URL}/provider/orders/${orderId}/status`,
+        { status: newStatus },
+        authHeaders
+      );
+      if (res.data?.status) {
+        setOrders((prev) =>
+          prev.map((ord) =>
+            ord._id === orderId ? { ...ord, requestStatus: newStatus, status: res.data.order.status } : ord
+          )
+        );
+        showToast(`Rental booking marked as ${newStatus}`);
+      }
+    } catch (err) {
+      console.error("Order status update failed:", err);
+      showToast("Failed to update rental status", "error");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // Toggle Listing Availability
@@ -192,7 +325,8 @@ const ProviderStudio = () => {
         ...formData,
         rentalPricePerDay: Number(formData.rentalPricePerDay),
         securityDeposit: String(formData.securityDeposit),
-        images: [formData.image],
+        images: formData.images?.length > 0 ? formData.images : [formData.image],
+        image: formData.image || formData.images?.[0],
       };
 
       const res = await axios.post(`${BASE_URL}/provider/listings`, payload, authHeaders);
@@ -209,15 +343,22 @@ const ProviderStudio = () => {
           rentalPricePerDay: "",
           securityDeposit: "",
           image: "/assets/Cocktail Gown.jpg",
+          images: ["/assets/Cocktail Gown.jpg"],
           description: "",
+          tags: [],
+          occasion: "",
           color: "",
+          pattern: "",
+          style: "",
+          season: "",
           location: "Mumbai, Bandra West",
         });
-        await fetchData();
+        fetchData();
         setActiveTab("listings");
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to publish listing", "error");
+      console.error("Listing creation failed:", err);
+      showToast(err.response?.data?.message || "Failed to create dress listing", "error");
     } finally {
       setActionLoading(false);
     }
@@ -770,13 +911,37 @@ const ProviderStudio = () => {
               {/* TAB 3: ADD NEW DRESS FORM */}
               {activeTab === "add-dress" && (
                 <Box maxWidth="880px" mx="auto">
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" fontWeight={800} letterSpacing="-0.02em" mb={0.5}>
-                      List a New Dress
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      Provide accurate details, sizes, and pricing to make your garment attractive to renters.
-                    </Typography>
+                  <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
+                    <Box>
+                      <Typography variant="h4" fontWeight={800} letterSpacing="-0.02em" mb={0.5}>
+                        List a New Dress
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary">
+                        Provide accurate details, sizes, and pricing to make your garment attractive to renters.
+                      </Typography>
+                    </Box>
+
+                    {/* Step 7: Magic AI Assistant Button */}
+                    <Button
+                      variant="contained"
+                      onClick={handleGenerateAi}
+                      disabled={aiLoading}
+                      startIcon={aiLoading ? <CircularProgress size={18} sx={{ color: "#D1A362" }} /> : <MagicIcon sx={{ color: "#D1A362" }} />}
+                      sx={{
+                        background: "linear-gradient(135deg, #1A1817 0%, #3D352E 100%)",
+                        color: "#FFFFFF",
+                        border: "1px solid #D1A362",
+                        px: 2.5,
+                        py: 1,
+                        borderRadius: 3,
+                        fontWeight: 700,
+                        textTransform: "none",
+                        boxShadow: "0 4px 14px rgba(209, 163, 98, 0.25)",
+                        "&:hover": { background: "#1A1817" },
+                      }}
+                    >
+                      {aiLoading ? "Consulting AI..." : "✨ Magic AI Assistant"}
+                    </Button>
                   </Box>
 
                   <Paper elevation={0} sx={{ p: { xs: 3, sm: 5 }, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
@@ -935,16 +1100,133 @@ const ProviderStudio = () => {
                           </Grid>
                         </Box>
 
-                        {/* Section 4: Imagery & Photo Selection */}
+                        {/* Section 4: Step 6 Multi-Photo Cloud Dropzone & Gallery */}
                         <Box>
                           <Typography variant="subtitle2" fontWeight={700} color="#D1A362" textTransform="uppercase" mb={1}>
-                            4. Garment Photo
+                            4. Garment Photography (Cloud Upload)
                           </Typography>
                           <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                            Select from curated high-fashion photography or provide an image link:
+                            Upload high-resolution photography from your boutique (Front, Back, Details up to 5 images):
                           </Typography>
 
-                          {/* Quick Sample Asset Selectors */}
+                          {/* Upload Dropzone */}
+                          <Box
+                            sx={{
+                              border: "2px dashed #D1A362",
+                              borderRadius: 3,
+                              p: 3,
+                              textAlign: "center",
+                              bgcolor: "#FAFAF8",
+                              cursor: "pointer",
+                              mb: 2.5,
+                              transition: "all 0.2s ease",
+                              "&:hover": { bgcolor: "#F5F2EC", borderColor: "#B58847" },
+                            }}
+                            onClick={() => document.getElementById("photo-upload-input")?.click()}
+                          >
+                            <input
+                              id="photo-upload-input"
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/jpg"
+                              multiple
+                              style={{ display: "none" }}
+                              onChange={(e) => handleFileUpload(e.target.files)}
+                            />
+                            {uploading ? (
+                              <Box sx={{ py: 2 }}>
+                                <CircularProgress size={36} sx={{ color: "#D1A362", mb: 1 }} />
+                                <Typography variant="subtitle2" fontWeight={600}>
+                                  Uploading and optimizing photography...
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Box>
+                                <UploadIcon sx={{ fontSize: 44, color: "#D1A362", mb: 1 }} />
+                                <Typography variant="subtitle1" fontWeight={700} color="#1A1817">
+                                  Click or Drag & Drop Dress Photos
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  Supports JPG, PNG, WEBP up to 10MB each (Cloud CDN hosted)
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Uploaded Photos Gallery Preview */}
+                          {formData.images?.length > 0 && (
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="caption" fontWeight={700} color="text.secondary" display="block" mb={1}>
+                                UPLOADED PHOTOS ({formData.images.length}/5) &bull; First image is the catalog cover
+                              </Typography>
+                              <Grid container spacing={1.5}>
+                                {formData.images.map((imgUrl, idx) => (
+                                  <Grid item xs={6} sm={3} key={idx}>
+                                    <Box
+                                      sx={{
+                                        position: "relative",
+                                        borderRadius: 2,
+                                        overflow: "hidden",
+                                        border: formData.image === imgUrl ? "2px solid #D1A362" : "1px solid #EBEBEB",
+                                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                                        height: 120,
+                                      }}
+                                    >
+                                      <img
+                                        src={imgUrl}
+                                        alt={`Uploaded photo ${idx + 1}`}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                      />
+                                      {idx === 0 && (
+                                        <Chip
+                                          label="Cover Photo"
+                                          size="small"
+                                          sx={{
+                                            position: "absolute",
+                                            top: 6,
+                                            left: 6,
+                                            bgcolor: "#D1A362",
+                                            color: "#FFF",
+                                            fontWeight: 700,
+                                            fontSize: "0.65rem",
+                                            height: 20,
+                                          }}
+                                        />
+                                      )}
+                                      <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const filtered = formData.images.filter((_, i) => i !== idx);
+                                          setFormData({
+                                            ...formData,
+                                            images: filtered,
+                                            image: filtered[0] || "/assets/Cocktail Gown.jpg",
+                                          });
+                                        }}
+                                        sx={{
+                                          position: "absolute",
+                                          top: 6,
+                                          right: 6,
+                                          bgcolor: "rgba(0,0,0,0.6)",
+                                          color: "#FFF",
+                                          "&:hover": { bgcolor: "#E53935" },
+                                          width: 24,
+                                          height: 24,
+                                        }}
+                                      >
+                                        <CloseIcon sx={{ fontSize: 14 }} />
+                                      </IconButton>
+                                    </Box>
+                                  </Grid>
+                                ))}
+                              </Grid>
+                            </Box>
+                          )}
+
+                          {/* Quick Sample Presets Accordion */}
+                          <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                            Or select sample photography presets for quick testing:
+                          </Typography>
                           <Grid container spacing={1.5} sx={{ mb: 2 }}>
                             {SAMPLE_ASSETS.map((sample, idx) => (
                               <Grid item xs={6} sm={3} key={idx}>
@@ -954,6 +1236,7 @@ const ProviderStudio = () => {
                                     setFormData({
                                       ...formData,
                                       image: sample.url,
+                                      images: [sample.url],
                                       category: sample.category,
                                       gender: sample.gender,
                                     })
@@ -978,20 +1261,12 @@ const ProviderStudio = () => {
                               </Grid>
                             ))}
                           </Grid>
-
-                          <TextField
-                            fullWidth
-                            label="Photo Image URL"
-                            value={formData.image}
-                            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                            required
-                          />
                         </Box>
 
-                        {/* Section 5: Description */}
+                        {/* Section 5: Step 7 AI Description & Generated Attributes */}
                         <Box>
                           <Typography variant="subtitle2" fontWeight={700} color="#D1A362" textTransform="uppercase" mb={2}>
-                            5. Description & Styling Notes
+                            5. Editorial Description & Garment Styling
                           </Typography>
                           <TextField
                             fullWidth
@@ -1001,7 +1276,31 @@ const ProviderStudio = () => {
                             placeholder="Describe the fabric, silhouette, embroidery details, and matching styling recommendations..."
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            sx={{ mb: 2 }}
                           />
+
+                          {/* AI Generated Tags & Occasion Chips */}
+                          {formData.occasion && (
+                            <Box sx={{ mb: 1.5 }}>
+                              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.5}>
+                                RECOMMENDED OCCASION:
+                              </Typography>
+                              <Chip label={formData.occasion} size="small" sx={{ bgcolor: "#F5EFE6", color: "#8C6D3B", fontWeight: 600 }} />
+                            </Box>
+                          )}
+
+                          {formData.tags?.length > 0 && (
+                            <Box>
+                              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.5}>
+                                AI SEARCH TAGS:
+                              </Typography>
+                              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                {formData.tags.map((tag, tIdx) => (
+                                  <Chip key={tIdx} label={`#${tag}`} size="small" variant="outlined" sx={{ borderColor: "#D1A362", color: "#6B5226" }} />
+                                ))}
+                              </Stack>
+                            </Box>
+                          )}
                         </Box>
 
                         <Divider />
@@ -1038,7 +1337,7 @@ const ProviderStudio = () => {
                 </Box>
               )}
 
-              {/* TAB 4: RENTAL REQUESTS */}
+              {/* TAB 4: STEP 8 & 9 RENTAL REQUESTS & ACTIVE BOOKINGS */}
               {activeTab === "requests" && (
                 <Box>
                   <Typography variant="h5" fontWeight={800} mb={1}>
@@ -1048,15 +1347,123 @@ const ProviderStudio = () => {
                     Incoming orders and reservations placed by customers for your dresses.
                   </Typography>
 
-                  <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 3, border: "1px dashed #DDD" }}>
-                    <OrdersIcon sx={{ fontSize: 56, color: "#D1A362", mb: 2 }} />
-                    <Typography variant="h6" fontWeight={700} mb={0.5}>
-                      No pending rental requests
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" maxWidth={420} mx="auto">
-                      As soon as customers book one of your dresses through the marketplace, their booking requests, rental duration, and verification details will appear here.
-                    </Typography>
-                  </Paper>
+                  {orders.length === 0 ? (
+                    <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 3, border: "1px dashed #DDD" }}>
+                      <OrdersIcon sx={{ fontSize: 56, color: "#D1A362", mb: 2 }} />
+                      <Typography variant="h6" fontWeight={700} mb={0.5}>
+                        No rental requests yet
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" maxWidth={420} mx="auto">
+                        As soon as customers select dates and book your dresses through the marketplace, their booking requests, rental duration, and verification details will appear here.
+                      </Typography>
+                    </Paper>
+                  ) : (
+                    <Grid container spacing={2.5}>
+                      {orders.map((order) => {
+                        const prod = order.product || {};
+                        const sDate = order.rentalStartDate ? new Date(order.rentalStartDate).toLocaleDateString() : "Flexible";
+                        const eDate = order.rentalEndDate ? new Date(order.rentalEndDate).toLocaleDateString() : "Flexible";
+                        const reqStatus = order.requestStatus || "Pending";
+
+                        const statusColors = {
+                          Pending: { bg: "#FFF4E5", text: "#B76E00" },
+                          Accepted: { bg: "#EDF7ED", text: "#1E4620" },
+                          Confirmed: { bg: "#EDF7ED", text: "#1E4620" },
+                          Declined: { bg: "#FDEDED", text: "#5F2120" },
+                          Cancelled: { bg: "#FDEDED", text: "#5F2120" },
+                          Active: { bg: "#E5F6FD", text: "#014361" },
+                          Completed: { bg: "#E8F5E9", text: "#2E7D32" },
+                        };
+                        const currentStatusColor = statusColors[reqStatus] || statusColors.Pending;
+
+                        return (
+                          <Grid item xs={12} key={order._id}>
+                            <Paper
+                              elevation={0}
+                              sx={{
+                                p: 3,
+                                borderRadius: 3,
+                                border: "1px solid #EBEBEB",
+                                display: "flex",
+                                flexDirection: { xs: "column", md: "row" },
+                                justifyContent: "space-between",
+                                alignItems: { xs: "flex-start", md: "center" },
+                                gap: 2.5,
+                              }}
+                            >
+                              <Stack direction="row" spacing={2.5} alignItems="center">
+                                <Avatar
+                                  src={prod.image || "/assets/Cocktail Gown.jpg"}
+                                  variant="rounded"
+                                  sx={{ width: 70, height: 90, borderRadius: 2 }}
+                                />
+                                <Box>
+                                  <Typography variant="subtitle1" fontWeight={700}>
+                                    {prod.title || prod.name || "Designer Dress"}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary" display="block">
+                                    Customer: <strong>{order.userEmail}</strong> &bull; Ordered on: {new Date(order.orderDate).toLocaleDateString()}
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 600, color: "#1A1817" }}>
+                                    Rental Window: {sDate} &rarr; {eDate} ({order.rentalDays || order.quantity} Days)
+                                  </Typography>
+                                </Box>
+                              </Stack>
+
+                              <Stack
+                                direction={{ xs: "column", sm: "row" }}
+                                spacing={3}
+                                alignItems={{ xs: "flex-start", sm: "center" }}
+                              >
+                                <Box textAlign={{ xs: "left", sm: "right" }}>
+                                  <Typography variant="caption" color="text.secondary" display="block">
+                                    TOTAL AMOUNT
+                                  </Typography>
+                                  <Typography variant="subtitle1" fontWeight={800} color="#1A1817">
+                                    ₹{order.totalAmount?.toLocaleString()}
+                                  </Typography>
+                                  <Chip
+                                    label={reqStatus}
+                                    size="small"
+                                    sx={{
+                                      bgcolor: currentStatusColor.bg,
+                                      color: currentStatusColor.text,
+                                      fontWeight: 700,
+                                      fontSize: "0.75rem",
+                                      mt: 0.5,
+                                    }}
+                                  />
+                                </Box>
+
+                                {reqStatus === "Pending" && (
+                                  <Stack direction="row" spacing={1}>
+                                    <Button
+                                      size="small"
+                                      variant="contained"
+                                      startIcon={<CheckIcon />}
+                                      onClick={() => handleOrderStatusUpdate(order._id, "Accepted")}
+                                      sx={{ bgcolor: "#2E7D32", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" } }}
+                                    >
+                                      Accept
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      startIcon={<CloseIcon />}
+                                      onClick={() => handleOrderStatusUpdate(order._id, "Declined")}
+                                      sx={{ borderColor: "#D32F2F", color: "#D32F2F", fontWeight: 700, "&:hover": { bgcolor: "#FFEBEE" } }}
+                                    >
+                                      Decline
+                                    </Button>
+                                  </Stack>
+                                )}
+                              </Stack>
+                            </Paper>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  )}
                 </Box>
               )}
 

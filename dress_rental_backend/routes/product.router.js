@@ -176,4 +176,108 @@ productRouter.post("/chat", async (req, res) => {
   }
 });
 
+/**
+ * GET /products/:id/availability
+ * Step 8: Return booked date intervals for rental calendar
+ */
+productRouter.get("/:id/availability", async (req, res) => {
+  try {
+    const product = await productModel.findById(req.params.id).select("bookedDates availability stock");
+    if (!product) {
+      return res.status(404).json({ status: false, message: "Dress not found." });
+    }
+
+    // Filter out past bookings to keep response lightweight
+    const now = new Date();
+    const activeBookings = (product.bookedDates || []).filter(
+      (b) => new Date(b.endDate) >= now
+    );
+
+    return res.status(200).json({
+      status: true,
+      available: product.availability !== false,
+      stock: product.stock,
+      bookedDates: activeBookings.map((b) => ({
+        startDate: b.startDate,
+        endDate: b.endDate,
+      })),
+    });
+  } catch (err) {
+    console.error("Error fetching availability:", err);
+    res.status(500).json({ status: false, message: "Error fetching availability." });
+  }
+});
+
+/**
+ * POST /products/:id/check-availability
+ * Step 8: Validate requested rental dates against existing reservations
+ */
+productRouter.post("/:id/check-availability", async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+    if (!startDate || !endDate) {
+      return res.status(400).json({ status: false, message: "Start date and end date are required." });
+    }
+
+    const reqStart = new Date(startDate);
+    const reqEnd = new Date(endDate);
+
+    if (isNaN(reqStart.getTime()) || isNaN(reqEnd.getTime()) || reqEnd < reqStart) {
+      return res.status(400).json({ status: false, message: "Invalid date range provided." });
+    }
+
+    const product = await productModel.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ status: false, message: "Dress not found." });
+    }
+
+    if (product.availability === false) {
+      return res.status(200).json({
+        status: true,
+        available: false,
+        reason: "Dress is currently paused by the provider.",
+      });
+    }
+
+    // Check for overlap: s1 <= e2 && s2 <= e1
+    const conflict = (product.bookedDates || []).find((booking) => {
+      const bStart = new Date(booking.startDate);
+      const bEnd = new Date(booking.endDate);
+      return reqStart <= bEnd && bStart <= reqEnd;
+    });
+
+    if (conflict) {
+      return res.status(200).json({
+        status: true,
+        available: false,
+        reason: "Requested dates conflict with an existing confirmed rental reservation.",
+        conflict: {
+          startDate: conflict.startDate,
+          endDate: conflict.endDate,
+        },
+      });
+    }
+
+    // Calculate rental duration in days
+    const diffTime = Math.abs(reqEnd - reqStart);
+    const days = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+    const pricePerDay = Number(product.rentalPricePerDay || product.price) || 0;
+    const estimatedRentalFee = pricePerDay * days;
+    const securityDeposit = product.securityDeposit || product.advance || 0;
+
+    return res.status(200).json({
+      status: true,
+      available: true,
+      days,
+      pricePerDay,
+      estimatedRentalFee,
+      securityDeposit,
+      totalEstimated: estimatedRentalFee + (Number(securityDeposit) || 0),
+    });
+  } catch (err) {
+    console.error("Error checking date availability:", err);
+    res.status(500).json({ status: false, message: "Error checking date availability." });
+  }
+});
+
 export default productRouter;

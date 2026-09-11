@@ -38,3 +38,8 @@ env/
 
 # AI Data
 data/product_vectors.index
+
+# User uploads
+dress_rental_backend/uploads/*
+!dress_rental_backend/uploads/.gitkeep
+

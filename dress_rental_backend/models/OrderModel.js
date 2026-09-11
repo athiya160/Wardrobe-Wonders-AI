@@ -39,7 +39,37 @@ const OrderSchema = Schema({
   },
   transactionId: {
     type: String,
-  }
+  },
+  // Step 8 & 9 Rental Lifecycle Fields
+  providerId: {
+    type: Schema.Types.ObjectId,
+    ref: "user",
+    index: true,
+  },
+  rentalStartDate: {
+    type: Date,
+  },
+  rentalEndDate: {
+    type: Date,
+  },
+  rentalDays: {
+    type: Number,
+  },
+  securityDeposit: {
+    type: Number,
+    default: 0,
+  },
+  rentalFee: {
+    type: Number,
+  },
+  customerNotes: {
+    type: String,
+  },
+  requestStatus: {
+    type: String,
+    enum: ["Pending", "Accepted", "Declined", "Active", "Completed", "Cancelled"],
+    default: "Pending",
+  },
 });
 
 export default model("order", OrderSchema);
