@@ -43,15 +43,25 @@ const Login = () => {
   const loginFrom = useRef();
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // Handle form submission logic here
-    const req = await axios.post(`${BASE_URL}/login`, form);
-    if (req.data?.status) {
-      localStorage.setItem("token", req.data.token);
-      localStorage.setItem("user", JSON.stringify(req.data.user));
-      if (req.data.user.type === "admin") navigate("/admin");
-      else navigate("/");
-    } else {
-      setErrors("Invalid Username or password");
+    setErrors("");
+    try {
+      const res = await axios.post(`${BASE_URL}/login`, form);
+      if (res.data?.status && res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        const role = res.data.user.role || res.data.user.type;
+        if (role === "admin") {
+          navigate("/admin");
+        } else if (role === "provider") {
+          navigate("/provider-dashboard");
+        } else {
+          navigate("/");
+        }
+      } else {
+        setErrors(res.data?.message || "Invalid email or password");
+      }
+    } catch (err) {
+      setErrors(err.response?.data?.message || "Invalid email or password");
     }
   };
 
