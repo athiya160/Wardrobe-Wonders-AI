@@ -194,12 +194,42 @@ function ResponsiveAppBar() {
               </IconButton>
               
               {localStorage.getItem("token") ? (
-                <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer', ml: 1, '&:hover': { color: '#D1A362' } }} onClick={() => navigate("/profile")}>
-                  <PersonOutlineOutlinedIcon />
-                  <Typography variant="body2" fontWeight={600}>
-                    Hello {JSON.parse(localStorage.getItem("user") || "{}")?.firstname}
-                  </Typography>
-                  <KeyboardArrowDownIcon fontSize="small" />
+                <Box display="flex" alignItems="center" gap={1.5} sx={{ ml: 1 }}>
+                  {(() => {
+                    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+                    if (currentUser?.role === 'provider' || currentUser?.type === 'provider') {
+                      return (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => navigate("/provider-dashboard")}
+                          sx={{
+                            borderColor: "#D1A362",
+                            color: "#A07028",
+                            fontWeight: 700,
+                            fontSize: "0.8rem",
+                            textTransform: "none",
+                            borderRadius: 1.5,
+                            px: 1.5,
+                            py: 0.4,
+                            display: { xs: "none", sm: "inline-flex" },
+                            "&:hover": { backgroundColor: "rgba(209, 163, 98, 0.1)", borderColor: "#D1A362" }
+                          }}
+                        >
+                          Provider Studio
+                        </Button>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer', '&:hover': { color: '#D1A362' } }} onClick={() => navigate("/profile")}>
+                    <PersonOutlineOutlinedIcon />
+                    <Typography variant="body2" fontWeight={600}>
+                      Hello {JSON.parse(localStorage.getItem("user") || "{}")?.firstname || "User"}
+                    </Typography>
+                    <KeyboardArrowDownIcon fontSize="small" />
+                  </Box>
                 </Box>
               ) : (
                 <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer', ml: 1, '&:hover': { color: '#D1A362' } }} onClick={() => navigate("/login")}>

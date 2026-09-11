@@ -18,19 +18,7 @@ import CheckoutAddress from "./pages/CheckoutAddress";
 import CheckoutPayment from "./pages/CheckoutPayment";
 import OrderSuccess from "./pages/OrderSuccess";
 import Profile from "./pages/Profile";
-import AIChatWidget from "./components/AIChatWidget";
-
-const ProviderDashboardPlaceholder = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  return (
-    <div style={{ padding: "80px 20px", textAlign: "center", minHeight: "60vh" }}>
-      <h2 style={{ fontSize: "2rem", marginBottom: "12px" }}>Provider Dashboard</h2>
-      <p style={{ color: "#666", fontSize: "1.1rem" }}>
-        Welcome, {user.name || user.firstname || "Provider"}! Your lender portal will be available here.
-      </p>
-    </div>
-  );
-};
+import ProviderStudio from "./pages/ProviderStudio";
 
 function App() {
   return (
@@ -42,7 +30,7 @@ function App() {
             <Route path="/m-dress" element={<AvailableDresses />} />
             <Route path="/w-dress" element={<Fdress />} />
             <Route path="/admin" element={<Dashboard />} />
-            <Route path="/provider-dashboard" element={<ProviderDashboardPlaceholder />} />
+            <Route path="/provider-dashboard" element={<ProviderStudio />} />
             <Route path="/verify-payment" element={<VerifyPayment />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/stylist" element={<Stylist />} />
