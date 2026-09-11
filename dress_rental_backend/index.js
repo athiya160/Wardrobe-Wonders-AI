@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import productRouter from "./routes/product.router.js";
 import UserRouter from "./routes/user.router.js";
 import { PaymentRouter } from "./routes/payment.js";
+import providerRouter from "./routes/provider.router.js";
 
 const app = express();
 dotenv.config();
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
 
 app.use("/payment", PaymentRouter);
 app.use("/products", productRouter);
+app.use("/provider", providerRouter);
 app.use(UserRouter);
 app.listen(4000, async () => {
   await mongoose
