@@ -9,15 +9,17 @@ const CheckoutAddress = () => {
   const navigate = useNavigate();
   const [address, setAddress] = useState({ houseNo: "", street: "", landmark: "", city: "", zip: "" });
 
-  // Get qty and product from location state, default to 1 if not found
+  // Get qty, dates, and product from location state
   const qty = location.state?.qty || 1;
+  const startDate = location.state?.startDate || null;
+  const endDate = location.state?.endDate || null;
   const product = location.state?.product;
 
   const handleContinue = () => {
     if (!address.houseNo || !address.street || !address.city || !address.zip) {
       return alert("Please fill out your complete address.");
     }
-    navigate(`/checkout/payment/${id}`, { state: { qty, address, product } });
+    navigate(`/checkout/payment/${id}`, { state: { qty, startDate, endDate, address, product } });
   };
 
   return (

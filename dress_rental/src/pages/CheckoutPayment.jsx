@@ -19,6 +19,8 @@ const CheckoutPayment = () => {
   const [product, setProduct] = useState(location.state?.product || null);
 
   const qty = location.state?.qty || 1;
+  const startDate = location.state?.startDate || null;
+  const endDate = location.state?.endDate || null;
   const address = location.state?.address || { houseNo: "", street: "", landmark: "", city: "", zip: "" };
 
   useEffect(() => {
@@ -29,12 +31,17 @@ const CheckoutPayment = () => {
     }
   }, [id, product]);
 
+  const dailyPrice = product ? (Number(product.rentalPricePerDay || product.price) || 0) : 0;
+  const rentalAmount = dailyPrice * qty;
+  const securityDeposit = product ? (Number(product.securityDeposit || product.advance) || 0) : 0;
+  const totalPayable = rentalAmount + securityDeposit;
+
   const handlePayment = async () => {
     if (!product) return alert("Product data missing.");
 
     if (paymentType !== "cod") {
-      // For all online payments, init via PhonePe gateway
-      await initPayment(product, qty, address);
+      // For online payments, init via gateway with dates & total amount
+      await initPayment(product, qty, address, startDate, endDate, totalPayable);
     } else {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
@@ -43,8 +50,13 @@ const CheckoutPayment = () => {
         const reqData = {
           dressId: product._id,
           quantity: qty,
+          startDate: startDate,
+          endDate: endDate,
+          rentalFee: rentalAmount,
+          securityDeposit: securityDeposit,
+          totalAmount: totalPayable,
           email: user.email,
-          address: address
+          address: address,
         };
         const res = await axios.post(`${BASE_URL}/payment/cod`, reqData);
         if (res.data.success) {
@@ -55,8 +67,6 @@ const CheckoutPayment = () => {
       }
     }
   };
-
-  const total = product ? (product.price * qty) : 0;
 
   return (
     <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', pb: 12 }}>
@@ -150,23 +160,39 @@ const CheckoutPayment = () => {
                     <img src={product.image} alt={product.name} style={{ width: 60, height: 80, objectFit: 'cover', borderRadius: 4 }} />
                     <Box>
                       <Typography variant="subtitle2" fontWeight="600">{product.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">Qty: {qty} Days</Typography>
-                      <Typography variant="body2" fontWeight="600" mt={1}>₹{product.price} / day</Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Rental Duration: <strong>{qty} Days</strong>
+                      </Typography>
+                      {startDate && endDate && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {new Date(startDate).toLocaleDateString()} &rarr; {new Date(endDate).toLocaleDateString()}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" fontWeight="600" mt={0.5}>₹{dailyPrice.toLocaleString()} / day</Typography>
                     </Box>
                   </Box>
                   <Divider />
                   <Box display="flex" justifyContent="space-between">
-                    <Typography variant="body1" color="text.secondary">Subtotal</Typography>
-                    <Typography variant="body1">₹{total}</Typography>
+                    <Typography variant="body2" color="text.secondary">Garment Rental ({qty} Days)</Typography>
+                    <Typography variant="body2" fontWeight="600">₹{rentalAmount.toLocaleString()}</Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between">
-                    <Typography variant="body1" color="text.secondary">Shipping</Typography>
-                    <Typography variant="body1" color="success.main">Free</Typography>
+                    <Typography variant="body2" color="text.secondary">Security Deposit (Refundable)</Typography>
+                    <Typography variant="body2" fontWeight="600" color="#2E7D32">₹{securityDeposit.toLocaleString()}</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="body2" color="text.secondary">Delivery & Pickup</Typography>
+                    <Typography variant="body2" color="success.main" fontWeight="600">Free</Typography>
+                  </Box>
+                  <Box sx={{ bgcolor: "#F5FBF6", p: 1.2, borderRadius: 1.5, border: "1px solid #C8E6C9" }}>
+                    <Typography variant="caption" color="#1B5E20" display="block" lineHeight={1.3}>
+                      🛡️ <strong>Deposit Security:</strong> The ₹{securityDeposit.toLocaleString()} security deposit is held in escrow and credited back to you within 24-48 hours after rental completion.
+                    </Typography>
                   </Box>
                   <Divider />
                   <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6" fontWeight="bold">Total</Typography>
-                    <Typography variant="h6" fontWeight="bold" color="primary">₹{total}</Typography>
+                    <Typography variant="h6" fontWeight="bold">Total Payable</Typography>
+                    <Typography variant="h6" fontWeight="bold" color="#1A1817">₹{totalPayable.toLocaleString()}</Typography>
                   </Box>
                   <Button 
                     variant="contained" 

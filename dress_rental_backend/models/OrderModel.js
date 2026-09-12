@@ -101,12 +101,12 @@ const OrderSchema = Schema({
   // Step 12: Payment & Security Deposit Lifecycle
   paymentStatus: {
     type: String,
-    enum: ["PENDING", "PROCESSING", "PAID", "FAILED", "CANCELLED", "REFUNDED"],
+    enum: ["PENDING", "PROCESSING", "PAID", "FAILED", "CANCELLED", "REFUND_PENDING", "REFUNDED"],
     default: "PAID",
   },
   depositStatus: {
     type: String,
-    enum: ["HELD", "RELEASE_PENDING", "REFUNDED", "DEDUCTED"],
+    enum: ["HELD", "RELEASE_PENDING", "REFUNDED", "PARTIALLY_DEDUCTED", "DEDUCTED"],
     default: "HELD",
   },
   depositRefundedAt: {

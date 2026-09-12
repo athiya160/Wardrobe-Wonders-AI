@@ -270,9 +270,19 @@ providerRouter.get("/stats", async (req, res) => {
     const orders = await OrderModel.find({ product: { $in: listingIds } });
     const totalOrders = orders.length;
 
-    const totalEarnings = orders.reduce((sum, order) => {
-      return sum + (Number(order.totalAmount) || 0);
-    }, 0);
+    // Provider earns 85% of garment rental fees (excluding refundable security deposits)
+    let payableEarnings = 0;
+    let pendingEarnings = 0;
+    orders.forEach((order) => {
+      const fee = Number(order.rentalFee) || Math.max(0, (Number(order.totalAmount) || 0) - (Number(order.securityDeposit) || 0));
+      const providerShare = Math.round(fee * 0.85);
+      if (order.requestStatus === "Completed") {
+        payableEarnings += providerShare;
+      } else if (order.requestStatus !== "Cancelled" && order.requestStatus !== "Declined") {
+        pendingEarnings += providerShare;
+      }
+    });
+    const totalEarnings = payableEarnings + pendingEarnings;
 
     const recentListings = listings.slice(0, 5);
 
@@ -283,6 +293,8 @@ providerRouter.get("/stats", async (req, res) => {
         activeListings,
         totalOrders,
         totalEarnings,
+        payableEarnings,
+        pendingEarnings,
         recentListings,
       },
     });
@@ -370,6 +382,8 @@ providerRouter.put("/orders/:id/status", async (req, res) => {
         order.acceptedAt = now;
       } else if (newStatus === "Declined") {
         order.status = "Cancelled";
+        order.paymentStatus = "REFUNDED";
+        order.depositStatus = "REFUNDED";
         order.declinedAt = now;
         order.declineReason = declineReason || "Unavailable for requested dates";
       } else if (newStatus === "Active") {
@@ -379,6 +393,15 @@ providerRouter.put("/orders/:id/status", async (req, res) => {
         order.status = "Completed";
         order.completedAt = now;
         if (inspectionNotes) order.inspectionNotes = inspectionNotes;
+        if (req.body.depositAction === "deduct") {
+          const deduction = Number(req.body.deductionAmount) || 0;
+          order.depositStatus = deduction >= (order.securityDeposit || 0) ? "DEDUCTED" : "PARTIALLY_DEDUCTED";
+          order.depositDeductionAmount = deduction;
+          order.depositDeductionReason = req.body.deductionReason || inspectionNotes || "Garment damage or late return";
+        } else {
+          order.depositStatus = "REFUNDED";
+          order.depositRefundedAt = now;
+        }
       }
     }
 

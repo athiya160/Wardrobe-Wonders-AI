@@ -1,8 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
-export const initPayment = async (dress, quantity, address) => {
+export const initPayment = async (dress, quantity, address, startDate = null, endDate = null, totalAmount = null) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  console.log("object", dress);
   if (!user || !user.email) {
     alert("Please Login to continue");
     return;
@@ -12,6 +11,10 @@ export const initPayment = async (dress, quantity, address) => {
       dress,
       quantity,
       email: user.email,
+      startDate,
+      endDate,
+      totalAmount,
+      address,
     };
     const response = await axios.post(`${BASE_URL}/payment`, reqData);
     const data = response.data;
@@ -19,6 +22,9 @@ export const initPayment = async (dress, quantity, address) => {
       localStorage.setItem("tID", data.data.merchantTransactionId);
       localStorage.setItem("dressId", dress._id);
       localStorage.setItem("quantity", quantity);
+      if (startDate) localStorage.setItem("startDate", startDate);
+      if (endDate) localStorage.setItem("endDate", endDate);
+      if (totalAmount != null) localStorage.setItem("totalAmount", totalAmount);
       localStorage.setItem("address", JSON.stringify(address));
       window.location.href = data.data.instrumentResponse.redirectInfo.url;
     }

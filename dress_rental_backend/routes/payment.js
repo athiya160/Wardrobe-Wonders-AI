@@ -118,6 +118,8 @@ PaymentRouter.post("/check-status", async (req, res) => {
           transactionId: body.transactionId,
           status: "Processing",
           requestStatus: "Pending",
+          paymentStatus: "PAID",
+          depositStatus: "HELD",
         });
         await newOrder.save();
 
@@ -169,6 +171,8 @@ PaymentRouter.post("/check-status", async (req, res) => {
             transactionId: body.transactionId,
             status: "Processing",
             requestStatus: "Pending",
+            paymentStatus: "PAID",
+            depositStatus: "HELD",
           });
           await newOrder.save();
 
@@ -221,6 +225,8 @@ PaymentRouter.post("/cod", async (req, res) => {
       paymentMethod: "cod",
       status: "Processing",
       requestStatus: "Pending",
+      paymentStatus: "PENDING",
+      depositStatus: "HELD",
     });
     await newOrder.save();
 
@@ -307,6 +313,47 @@ PaymentRouter.put("/orders/:id/cancel", authenticateToken, async (req, res) => {
     res.json({
       success: true,
       message: "Rental request successfully cancelled. Calendar dates released.",
+      order,
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+PaymentRouter.put("/orders/:id/deposit", authenticateToken, async (req, res) => {
+  try {
+    const order = await OrderModel.findById(req.params.id).populate("product");
+    if (!order) return res.status(404).json({ success: false, message: "Rental order not found" });
+
+    // Authorization: only the garment provider or an admin can manage deposit settlement
+    const isOwner =
+      order.providerId?.toString() === req.user._id.toString() ||
+      order.product?.providerId?.toString() === req.user._id.toString();
+    if (!isOwner && req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Unauthorized to update security deposit on this order" });
+    }
+
+    const { action, deductionAmount, reason } = req.body;
+    const now = new Date();
+
+    if (action === "release") {
+      order.depositStatus = "REFUNDED";
+      order.depositRefundedAt = now;
+      order.depositDeductionAmount = 0;
+      order.depositDeductionReason = "";
+    } else if (action === "deduct") {
+      const deduction = Number(deductionAmount) || 0;
+      order.depositStatus = deduction >= (order.securityDeposit || 0) ? "DEDUCTED" : "PARTIALLY_DEDUCTED";
+      order.depositDeductionAmount = deduction;
+      order.depositDeductionReason = reason || "Garment damage or late return deduction";
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid deposit action. Must be 'release' or 'deduct'." });
+    }
+
+    await order.save();
+    res.json({
+      success: true,
+      message: `Deposit updated to ${order.depositStatus}`,
       order,
     });
   } catch (e) {

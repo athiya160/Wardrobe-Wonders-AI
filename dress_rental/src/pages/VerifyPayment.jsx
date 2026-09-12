@@ -15,6 +15,9 @@ const VerifyPayment = () => {
         transactionId: localStorage.getItem("tID"),
         dressId: localStorage.getItem("dressId"),
         quantity: localStorage.getItem("quantity"),
+        startDate: localStorage.getItem("startDate") || undefined,
+        endDate: localStorage.getItem("endDate") || undefined,
+        totalAmount: localStorage.getItem("totalAmount") ? Number(localStorage.getItem("totalAmount")) : undefined,
         email: user.email,
         address: address,
       });
@@ -23,6 +26,9 @@ const VerifyPayment = () => {
         localStorage.removeItem("tID");
         localStorage.removeItem("dressId");
         localStorage.removeItem("quantity");
+        localStorage.removeItem("startDate");
+        localStorage.removeItem("endDate");
+        localStorage.removeItem("totalAmount");
         localStorage.removeItem("address");
         setTimeout(() => {
           window.location.href = "/order-success";
