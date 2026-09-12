@@ -21,6 +21,7 @@ import {
   DialogContent,
   DialogActions,
   Switch,
+  Checkbox,
   FormControlLabel,
   Radio,
   RadioGroup,
@@ -126,6 +127,8 @@ const ProviderStudio = () => {
     style: "",
     season: "",
     location: "Mumbai, Bandra West",
+    externalRefUrl: "",
+    ownershipConfirmed: false,
   });
 
   const authHeaders = {
@@ -382,6 +385,21 @@ const ProviderStudio = () => {
       return;
     }
 
+    // Step 14: Enforce ownership & truthful condition confirmation
+    if (!formData.ownershipConfirmed) {
+      showToast("Please confirm garment ownership / listing permissions before publishing.", "error");
+      return;
+    }
+
+    // Step 14: Validate external reference URL if provided
+    if (formData.externalRefUrl && formData.externalRefUrl.trim()) {
+      const url = formData.externalRefUrl.trim();
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        showToast("External reference URL must begin with http:// or https://", "error");
+        return;
+      }
+    }
+
     setActionLoading(true);
     try {
       const payload = {
@@ -390,6 +408,7 @@ const ProviderStudio = () => {
         securityDeposit: String(formData.securityDeposit),
         images: formData.images?.length > 0 ? formData.images : [formData.image],
         image: formData.image || formData.images?.[0],
+        externalUrl: formData.externalRefUrl ? formData.externalRefUrl.trim() : "",
       };
 
       const res = await axios.post(`${BASE_URL}/provider/listings`, payload, authHeaders);
@@ -415,6 +434,8 @@ const ProviderStudio = () => {
           style: "",
           season: "",
           location: "Mumbai, Bandra West",
+          externalRefUrl: "",
+          ownershipConfirmed: false,
         });
         fetchData();
         setActiveTab("listings");
@@ -1364,6 +1385,37 @@ const ProviderStudio = () => {
                               </Stack>
                             </Box>
                           )}
+                        </Box>
+                        {/* Section 6: Step 14 Trust, Provenance & Ownership Confirmation */}
+                        <Box sx={{ p: 2.5, bgcolor: "#FBF9F5", borderRadius: 2, border: "1px solid #F0E6D6" }}>
+                          <Typography variant="subtitle2" fontWeight={700} color="#8C6D3B" mb={1.5} textTransform="uppercase">
+                            6. Trust, Provenance & Legal Ownership
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="External Designer / Collection Reference URL (Optional)"
+                            placeholder="https://designerbrand.com/collection/garment-link"
+                            value={formData.externalRefUrl}
+                            onChange={(e) => setFormData({ ...formData, externalRefUrl: e.target.value })}
+                            helperText="If this garment is from an authentic designer line, provide a reference link (must begin with http:// or https://)"
+                            sx={{ mb: 2, bgcolor: "#FFF" }}
+                          />
+
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={formData.ownershipConfirmed}
+                                onChange={(e) => setFormData({ ...formData, ownershipConfirmed: e.target.checked })}
+                                sx={{ color: "#D1A362", "&.Mui-checked": { color: "#D1A362" } }}
+                              />
+                            }
+                            label={
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: "#1A1817" }}>
+                                I confirm that I own or have permission to use the photos and information submitted for this listing, and that all garment condition details are truthful.
+                              </Typography>
+                            }
+                          />
                         </Box>
 
                         <Divider />

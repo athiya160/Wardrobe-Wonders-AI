@@ -41,6 +41,15 @@ providerRouter.post("/listings", async (req, res) => {
       return res.status(400).json({ status: false, message: "Category is required." });
     }
 
+    // Step 14: Validate external URL if provided
+    const rawExternalUrl = (body.externalUrl || body.externalRefUrl || "").trim();
+    if (rawExternalUrl && !rawExternalUrl.startsWith("http://") && !rawExternalUrl.startsWith("https://")) {
+      return res.status(400).json({
+        status: false,
+        message: "External reference URL must begin with http:// or https://",
+      });
+    }
+
     const newListing = new ProductModel({
       providerId: user._id,
       title: title.trim(),
@@ -64,7 +73,8 @@ providerRouter.post("/listings", async (req, res) => {
       securityDeposit: deposit,
       advance: String(deposit),
       location: body.location || "Available Nationwide",
-      externalUrl: body.externalUrl || "",
+      externalUrl: rawExternalUrl,
+      ownershipConfirmed: body.ownershipConfirmed !== false,
       stock: body.stock ? String(body.stock) : "1",
       availability: body.availability !== false,
       status: body.status || "active",

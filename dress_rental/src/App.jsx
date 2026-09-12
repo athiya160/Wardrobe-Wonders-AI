@@ -20,6 +20,7 @@ import OrderSuccess from "./pages/OrderSuccess";
 import Profile from "./pages/Profile";
 import ProviderStudio from "./pages/ProviderStudio";
 import MyRentals from "./pages/MyRentals";
+import Legal from "./pages/Legal";
 
 function App() {
   return (
@@ -46,6 +47,14 @@ function App() {
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/terms" element={<Legal defaultTab="terms" />} />
+          <Route path="/privacy" element={<Legal defaultTab="privacy" />} />
+          <Route path="/rental-policy" element={<Legal defaultTab="rental-policy" />} />
+          <Route path="/refund-policy" element={<Legal defaultTab="refund-policy" />} />
+          <Route path="/provider-terms" element={<Legal defaultTab="provider-terms" />} />
+          <Route path="/copyright" element={<Legal defaultTab="copyright" />} />
+          <Route path="/report-listing" element={<Legal defaultTab="report-listing" />} />
+          <Route path="/legal" element={<Legal defaultTab="terms" />} />
           <Route path="*" element={<h1>Not Found</h1>} />
         </Routes>
         <AIChatWidget />

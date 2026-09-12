@@ -1,5 +1,6 @@
 import { Router } from "express";
 import productModel from "../models/productModel.js";
+import ReportModel from "../models/ReportModel.js";
 import mongoose from "mongoose";
 const productRouter = new Router();
 
@@ -277,6 +278,66 @@ productRouter.post("/:id/check-availability", async (req, res) => {
   } catch (err) {
     console.error("Error checking date availability:", err);
     res.status(500).json({ status: false, message: "Error checking date availability." });
+  }
+});
+
+/**
+ * POST /products/:id/report
+ * Step 14: Customer reporting of suspicious, copyright, or misleading listings
+ */
+productRouter.post("/:id/report", async (req, res) => {
+  try {
+    const { reason, details, reporterEmail } = req.body;
+    const validReasons = [
+      "Copyright/IP",
+      "Misleading listing",
+      "Inappropriate content",
+      "Fraud/suspicious activity",
+      "Incorrect condition",
+      "Other",
+    ];
+
+    if (!reason || !validReasons.includes(reason)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid reason. Must be one of: ${validReasons.join(", ")}`,
+      });
+    }
+
+    const email = (reporterEmail || "").trim();
+    if (!email || !email.includes("@")) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid contact email is required to submit a moderation report.",
+      });
+    }
+
+    const product = await productModel.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Garment listing not found." });
+    }
+
+    const newReport = new ReportModel({
+      listingId: product._id,
+      reporterEmail: email,
+      reason,
+      details: (details || "").trim(),
+      status: "pending",
+    });
+
+    await newReport.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Listing report submitted successfully. Our trust & safety team will review it within 24 hours.",
+      reportId: newReport._id,
+    });
+  } catch (error) {
+    console.error("Submit listing report error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to submit listing report.",
+    });
   }
 });
 

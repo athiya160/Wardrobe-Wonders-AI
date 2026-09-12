@@ -103,6 +103,10 @@ const ProductModel = new Schema(
       type: String,
       required: false,
     },
+    ownershipConfirmed: {
+      type: Boolean,
+      default: true,
+    },
     // Availability & Inventory
     stock: {
       type: String,

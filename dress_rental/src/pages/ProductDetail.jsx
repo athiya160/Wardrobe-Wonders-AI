@@ -1,9 +1,31 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, Typography, Stack, Button, CircularProgress, TextField, Rating, Grid, Divider } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Stack,
+  Button,
+  CircularProgress,
+  TextField,
+  Rating,
+  Grid,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
 import SecurityIcon from '@mui/icons-material/Security';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import ResponsiveAppBar from "../components/Navbar";
@@ -20,6 +42,16 @@ const ProductDetail = () => {
   const [activeImage, setActiveImage] = useState("");
 
   const [newReview, setNewReview] = useState({ rating: 5, comment: "", username: "" });
+
+  // Step 14: Report Listing Dialog State
+  const [reportModal, setReportModal] = useState({
+    open: false,
+    reason: "Misleading listing",
+    details: "",
+    reporterEmail: "",
+  });
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportFeedback, setReportFeedback] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
     setLoading(true);
@@ -112,9 +144,64 @@ const ProductDetail = () => {
       const res = await axios.post(`${BASE_URL}/products/${id}/review`, newReview);
       setProduct(res.data);
       setNewReview({ rating: 5, comment: "", username: "" });
-    } catch (e) {
-      console.error(e);
-      alert("Failed to add review");
+      alert("Review submitted!");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Step 14: Report Listing Handlers
+  const handleOpenReport = () => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setReportModal({
+      open: true,
+      reason: "Misleading listing",
+      details: "",
+      reporterEmail: user.email || "",
+    });
+  };
+
+  const handleSubmitReport = async () => {
+    if (!reportModal.reporterEmail || !reportModal.reporterEmail.includes("@")) {
+      setReportFeedback({
+        open: true,
+        message: "Please enter a valid email address for contact.",
+        severity: "error",
+      });
+      return;
+    }
+
+    setReportLoading(true);
+    try {
+      const res = await axios.post(`${BASE_URL}/products/${id}/report`, {
+        reason: reportModal.reason,
+        details: reportModal.details,
+        reporterEmail: reportModal.reporterEmail,
+      });
+
+      if (res.data?.success) {
+        setReportFeedback({
+          open: true,
+          message: "Report submitted successfully. Our trust & safety team will review this listing within 24 hours.",
+          severity: "success",
+        });
+        setReportModal({ open: false, reason: "Misleading listing", details: "", reporterEmail: "" });
+      } else {
+        setReportFeedback({
+          open: true,
+          message: res.data?.message || "Failed to submit report.",
+          severity: "error",
+        });
+      }
+    } catch (err) {
+      console.error("Report submit error:", err);
+      setReportFeedback({
+        open: true,
+        message: err.response?.data?.message || "Failed to submit report. Please try again.",
+        severity: "error",
+      });
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -285,6 +372,39 @@ const ProductDetail = () => {
                 <Typography variant="body2">Secure Payment & Quality Guarantee</Typography>
               </Stack>
             </Stack>
+
+            {/* Step 14: Safe Designer Provenance Reference */}
+            {product.externalUrl && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: "#FDFBF7", borderRadius: 2, border: "1px solid #F0E6D6" }}>
+                <Typography variant="caption" color="text.secondary" display="block" fontWeight={600} mb={0.5}>
+                  AUTHENTIC DESIGNER PROVENANCE
+                </Typography>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <a
+                    href={product.externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#8C6D3B", fontWeight: 600, fontSize: "0.85rem", textDecoration: "none" }}
+                  >
+                    View Official Designer / Retail Page
+                  </a>
+                  <OpenInNewIcon sx={{ fontSize: 14, color: "#8C6D3B" }} />
+                </Stack>
+              </Box>
+            )}
+
+            {/* Step 14: Report Listing Button */}
+            <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<FlagOutlinedIcon sx={{ fontSize: 16 }} />}
+                onClick={handleOpenReport}
+                sx={{ color: "#888", fontSize: "0.75rem", textTransform: "none", "&:hover": { color: "#d32f2f" } }}
+              >
+                Report this listing
+              </Button>
+            </Box>
           </Grid>
         </Grid>
 
@@ -338,6 +458,103 @@ const ProductDetail = () => {
             </Grid>
           </Grid>
         </Box>
+
+        {/* Step 14: Report Listing Dialog */}
+        <Dialog
+          open={reportModal.open}
+          onClose={() => !reportLoading && setReportModal({ ...reportModal, open: false })}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: "#1A1817", pb: 1 }}>
+            Report Listing to Trust & Moderation
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary" mb={2.5}>
+              Help us keep Wardrobe Wonders authentic, transparent, and safe. Tell us why you are reporting this garment.
+            </Typography>
+
+            <Stack spacing={2.5}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="report-reason-label">Reason for Report</InputLabel>
+                <Select
+                  labelId="report-reason-label"
+                  label="Reason for Report"
+                  value={reportModal.reason}
+                  onChange={(e) => setReportModal({ ...reportModal, reason: e.target.value })}
+                >
+                  <MenuItem value="Copyright/IP">Copyright or Intellectual Property Infringement</MenuItem>
+                  <MenuItem value="Misleading listing">Misleading Listing or Inaccurate Description</MenuItem>
+                  <MenuItem value="Inappropriate content">Inappropriate or Prohibited Content</MenuItem>
+                  <MenuItem value="Fraud/suspicious activity">Fraud or Suspicious Provider Activity</MenuItem>
+                  <MenuItem value="Incorrect condition">Incorrect Garment Condition Rating</MenuItem>
+                  <MenuItem value="Other">Other Policy Concern</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                size="small"
+                required
+                label="Your Contact Email"
+                type="email"
+                placeholder="name@example.com"
+                value={reportModal.reporterEmail}
+                onChange={(e) => setReportModal({ ...reportModal, reporterEmail: e.target.value })}
+                helperText="Required so our moderation team can verify and follow up if needed."
+              />
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Additional Context & Specific Concerns (Optional)"
+                placeholder="Describe any evidence, links, or specific discrepancies..."
+                value={reportModal.details}
+                onChange={(e) => setReportModal({ ...reportModal, details: e.target.value })}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={() => setReportModal({ ...reportModal, open: false })}
+              disabled={reportLoading}
+              sx={{ color: "#666" }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSubmitReport}
+              disabled={reportLoading}
+              sx={{
+                bgcolor: "#D32F2F",
+                color: "#FFF",
+                fontWeight: 700,
+                "&:hover": { bgcolor: "#B71C1C" },
+              }}
+            >
+              {reportLoading ? <CircularProgress size={20} sx={{ color: "#FFF" }} /> : "Submit Report"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Feedback Snackbar */}
+        <Snackbar
+          open={reportFeedback.open}
+          autoHideDuration={6000}
+          onClose={() => setReportFeedback({ ...reportFeedback, open: false })}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            severity={reportFeedback.severity}
+            onClose={() => setReportFeedback({ ...reportFeedback, open: false })}
+            sx={{ borderRadius: 2, boxShadow: 3 }}
+          >
+            {reportFeedback.message}
+          </Alert>
+        </Snackbar>
 
       </Box>
     </>
