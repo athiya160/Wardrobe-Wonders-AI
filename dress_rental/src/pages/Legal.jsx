@@ -33,7 +33,7 @@ const LEGAL_SECTIONS = [
   { id: "terms", path: "/terms", label: "Terms of Service", icon: <LegalIcon fontSize="small" /> },
   { id: "privacy", path: "/privacy", label: "Privacy Policy", icon: <SecurityIcon fontSize="small" /> },
   { id: "rental-policy", path: "/rental-policy", label: "Rental & Care Policy", icon: <GarmentIcon fontSize="small" /> },
-  { id: "refund-policy", path: "/refund-policy", label: "Refund & Deposit Escrow", icon: <RefundIcon fontSize="small" /> },
+  { id: "refund-policy", path: "/refund-policy", label: "Refund & Security Deposit", icon: <RefundIcon fontSize="small" /> },
   { id: "provider-terms", path: "/provider-terms", label: "Provider Agreement", icon: <ProviderIcon fontSize="small" /> },
   { id: "copyright", path: "/copyright", label: "IP & Copyright", icon: <CopyrightIcon fontSize="small" /> },
   { id: "report-listing", path: "/report-listing", label: "Trust & Reporting", icon: <ReportIcon fontSize="small" /> },
@@ -280,7 +280,7 @@ const Legal = ({ defaultTab = "terms" }) => {
           {activeTab === "refund-policy" && (
             <Box>
               <Typography variant="h5" fontWeight={800} color="#1A1817" mb={1}>
-                Refund & Security Deposit Escrow Policy
+                Refund & Security Deposit Policy
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block" mb={3}>
                 Transparent breakdown of rental fees, refundable deposits, and damage assessments
@@ -293,10 +293,10 @@ const Legal = ({ defaultTab = "terms" }) => {
               <Stack spacing={2} sx={{ my: 3 }}>
                 <Paper sx={{ p: 2.5, bgcolor: "#FBF9F5", border: "1px solid #F0E6D6", borderRadius: 2 }}>
                   <Typography variant="subtitle1" fontWeight={700} color="#8C6D3B">
-                    🛡️ Security Deposit Escrow Guarantee
+                    🛡️ Security Deposit Protection Guarantee
                   </Typography>
                   <Typography variant="body2" color="#555" sx={{ mt: 1, lineHeight: 1.7 }}>
-                    The security deposit is held in escrow during the active rental period. Once the garment is returned and verified by the provider within 48 hours, the deposit is automatically released back to the customer's original payment method in full.
+                    The refundable security deposit is tracked and held safely against the order during the active rental period. Once the garment is returned and verified by the provider within 48 hours, the deposit is promptly released back to the customer's original payment method in full.
                   </Typography>
                 </Paper>
 

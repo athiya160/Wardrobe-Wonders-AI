@@ -68,7 +68,9 @@ const ProductDetail = () => {
           if (recent.length > 5) recent.pop();
           localStorage.setItem("recently_viewed", JSON.stringify(recent));
           setRecentlyViewed(recent.filter(p => p._id !== data._id));
-        } catch(e) {}
+        } catch(e) {
+          void e;
+        }
 
         return axios.post(`${BASE_URL}/products/similar`, {
           product_id: data._id,
@@ -225,8 +227,16 @@ const ProductDetail = () => {
       <Box p={4} maxWidth="1200px" margin="auto">
         <Grid container spacing={6}>
           <Grid item xs={12} md={6}>
-            <Box sx={{ border: '1px solid #eee', borderRadius: 2, overflow: 'hidden', mb: 2, height: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={activeImage} alt={product.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            <Box sx={{ border: '1px solid #eee', borderRadius: 2, overflow: 'hidden', mb: 2, height: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: "#F9F9F9" }}>
+              <img
+                src={activeImage || "/assets/Cocktail Gown.jpg"}
+                alt={product.name}
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/assets/Cocktail Gown.jpg";
+                }}
+              />
             </Box>
             <Stack direction="row" spacing={2} sx={{ overflowX: 'auto' }}>
               {images.map((img, idx) => (
@@ -238,7 +248,15 @@ const ProductDetail = () => {
                     borderRadius: 1, overflow: 'hidden'
                   }}
                 >
-                  <img src={img} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img
+                    src={img || "/assets/Cocktail Gown.jpg"}
+                    alt={`Thumb ${idx}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/assets/Cocktail Gown.jpg";
+                    }}
+                  />
                 </Box>
               ))}
             </Stack>

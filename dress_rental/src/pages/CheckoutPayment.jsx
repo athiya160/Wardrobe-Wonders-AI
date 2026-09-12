@@ -186,7 +186,7 @@ const CheckoutPayment = () => {
                   </Box>
                   <Box sx={{ bgcolor: "#F5FBF6", p: 1.2, borderRadius: 1.5, border: "1px solid #C8E6C9" }}>
                     <Typography variant="caption" color="#1B5E20" display="block" lineHeight={1.3}>
-                      🛡️ <strong>Deposit Security:</strong> The ₹{securityDeposit.toLocaleString()} security deposit is held in escrow and credited back to you within 24-48 hours after rental completion.
+                      🛡️ <strong>Deposit Protection:</strong> The ₹{securityDeposit.toLocaleString()} refundable security deposit is tracked on your rental order and credited back to you within 24-48 hours after return inspection.
                     </Typography>
                   </Box>
                   <Divider />

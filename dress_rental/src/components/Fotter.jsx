@@ -28,7 +28,7 @@ const Fotter = () => {
               WARDROBE WONDERS
             </Typography>
             <Typography variant="caption" sx={{ color: "#888", display: "block", mt: 0.5 }}>
-              Peer-to-Peer Luxury Fashion Rental & Boutique Escrow Marketplace
+              Peer-to-Peer Luxury Fashion Rental & Boutique Rental Marketplace
             </Typography>
           </Box>
 
@@ -52,7 +52,7 @@ const Fotter = () => {
             <Link to="/terms">Terms of Service</Link>
             <Link to="/privacy">Privacy</Link>
             <Link to="/rental-policy">Rental Policy</Link>
-            <Link to="/refund-policy">Deposit Escrow</Link>
+            <Link to="/refund-policy">Deposit Policy</Link>
             <Link to="/provider-terms">Provider Terms</Link>
             <Link to="/copyright">IP & Copyright</Link>
             <Link to="/report-listing">Trust & Reporting</Link>

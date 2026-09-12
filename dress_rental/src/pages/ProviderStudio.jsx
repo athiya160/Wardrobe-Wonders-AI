@@ -45,7 +45,6 @@ import {
   MonetizationOnOutlined as EarningsIcon,
   StorefrontOutlined as BoutiqueIcon,
   DeleteOutline as DeleteIcon,
-  VisibilityOutlined as ViewIcon,
   OpenInNew as ExternalIcon,
   Logout as LogoutIcon,
   ShoppingBagOutlined as ShopIcon,
@@ -56,6 +55,8 @@ import {
   CloudUploadOutlined as UploadIcon,
   Check as CheckIcon,
   Close as CloseIcon,
+  LockOutlined as LockIcon,
+  HomeOutlined as HomeIcon,
 } from "@mui/icons-material";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -78,6 +79,7 @@ const ProviderStudio = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isProvider = Boolean(user && (user.role === "provider" || user.role === "admin" || user.type === "provider" || user.type === "admin"));
 
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
@@ -137,7 +139,7 @@ const ProviderStudio = () => {
 
   // Fetch Stats, Listings & Rental Orders
   const fetchData = async () => {
-    if (!token) return;
+    if (!token || !isProvider) return;
     setLoading(true);
     try {
       const [statsRes, listingsRes, ordersRes] = await Promise.all([
@@ -453,6 +455,32 @@ const ProviderStudio = () => {
     localStorage.removeItem("user");
     navigate("/login");
   };
+
+  if (!token || !isProvider) {
+    return (
+      <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F5", display: "flex", alignItems: "center", justifyContent: "center", p: 3 }}>
+        <Paper elevation={0} sx={{ p: { xs: 4, sm: 6 }, maxWidth: 500, width: "100%", textAlign: "center", borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
+          <LockIcon sx={{ fontSize: 64, color: "#D32F2F", mb: 2 }} />
+          <Typography variant="h4" fontWeight={800} color="#1A1817" mb={1}>
+            403 — Access Denied
+          </Typography>
+          <Typography variant="body1" color="text.secondary" mb={3}>
+            You do not have provider clearance to access the Wardrobe Wonders Provider Studio. Only verified boutiques and providers may enter this section.
+          </Typography>
+          <Stack direction="row" spacing={2} justifyContent="center">
+            <Button
+              variant="contained"
+              startIcon={<HomeIcon />}
+              onClick={() => navigate("/")}
+              sx={{ bgcolor: "#1A1817", "&:hover": { bgcolor: "#333" } }}
+            >
+              Return to Marketplace
+            </Button>
+          </Stack>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#F8F9FA" }}>

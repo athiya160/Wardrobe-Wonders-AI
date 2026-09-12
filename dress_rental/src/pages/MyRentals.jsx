@@ -284,7 +284,7 @@ const MyRentals = () => {
           <Grid item xs={6} sm={3}>
             <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">
-                Deposits in Escrow
+                Refundable Deposits Held
               </Typography>
               <Typography variant="h4" fontWeight={800} color="#2E7D32" sx={{ mt: 0.5 }}>
                 ₹{depositsHeld.toLocaleString()}
@@ -586,7 +586,7 @@ const MyRentals = () => {
                                   ? "Deposit Refunded"
                                   : status === "Cancelled" || status === "Declined"
                                   ? "Deposit Released"
-                                  : "Deposit Protected in Escrow"
+                                  : "Refundable Deposit Held"
                               }
                               sx={{
                                 fontSize: "0.7rem",

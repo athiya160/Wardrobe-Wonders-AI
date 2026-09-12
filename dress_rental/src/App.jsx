@@ -21,6 +21,7 @@ import Profile from "./pages/Profile";
 import ProviderStudio from "./pages/ProviderStudio";
 import MyRentals from "./pages/MyRentals";
 import Legal from "./pages/Legal";
+import AIChatWidget from "./components/AIChatWidget";
 
 function App() {
   return (

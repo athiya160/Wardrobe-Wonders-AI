@@ -32,7 +32,9 @@ const SearchResults = () => {
         let history = JSON.parse(localStorage.getItem("recent_searches") || "[]");
         history.push(query);
         localStorage.setItem("recent_searches", JSON.stringify(history));
-      } catch(e) {}
+      } catch(e) {
+        void e;
+      }
       
       axios
         .post(`${BASE_URL}/products/search`, { query })

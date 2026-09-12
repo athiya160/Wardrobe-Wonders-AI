@@ -106,7 +106,15 @@ const ProductCard = ({ dress }) => {
   return (
     <StyledCard onClick={() => navigate(`/product/${dress._id}`)}>
       <ImageContainer>
-        <StyledCardMedia src={dress.image} alt={dress.name} loading="lazy" />
+        <StyledCardMedia
+          src={dress.image || "/assets/Cocktail Gown.jpg"}
+          alt={dress.name}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/assets/Cocktail Gown.jpg";
+          }}
+        />
         <WishlistButton size="small" onClick={handleWishlist}>
           {isLiked ? <FavoriteIcon fontSize="small" sx={{ color: '#FE6B8B' }} /> : <FavoriteBorderIcon fontSize="small" />}
         </WishlistButton>

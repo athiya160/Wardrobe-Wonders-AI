@@ -72,7 +72,9 @@ const Home = () => {
     let recentSearches = [];
     try {
       recentSearches = JSON.parse(localStorage.getItem("recent_searches") || "[]");
-    } catch(e) {}
+    } catch(e) {
+      void e;
+    }
 
     axios
       .post(`${BASE_URL}/products/personalized-home`, { recent_searches: recentSearches })
