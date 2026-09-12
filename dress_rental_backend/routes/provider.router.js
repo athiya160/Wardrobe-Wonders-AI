@@ -297,17 +297,25 @@ providerRouter.get("/stats", async (req, res) => {
 
 /**
  * GET /provider/orders
- * Step 8 & 9: List all customer rental requests for provider's dresses
+ * Step 8, 9 & 10: List all customer rental requests with status filtering
  */
 providerRouter.get("/orders", async (req, res) => {
   try {
     const providerId = req.user._id;
+    const { status } = req.query;
+
     const providerListings = await ProductModel.find({ providerId }).select("_id");
     const listingIds = providerListings.map((l) => l._id);
 
-    const orders = await OrderModel.find({
+    const query = {
       $or: [{ providerId: providerId }, { product: { $in: listingIds } }],
-    })
+    };
+
+    if (status && status !== "all") {
+      query.requestStatus = new RegExp(`^${status}$`, "i");
+    }
+
+    const orders = await OrderModel.find(query)
       .populate("product")
       .sort({ orderDate: -1 });
 
@@ -327,12 +335,12 @@ providerRouter.get("/orders", async (req, res) => {
 
 /**
  * PUT /provider/orders/:id/status
- * Step 9 & 10: Provider accepts, declines, or updates customer rental request
+ * Step 9 & 10: Provider decision workflow (Accept/Decline with reason & calendar release)
  */
 providerRouter.put("/orders/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, requestStatus } = req.body;
+    const { status, requestStatus, declineReason, inspectionNotes } = req.body;
     const providerId = req.user._id;
 
     const order = await OrderModel.findById(id).populate("product");
@@ -353,17 +361,30 @@ providerRouter.put("/orders/:id/status", async (req, res) => {
     }
 
     const newStatus = requestStatus || status;
+    const now = new Date();
+
     if (newStatus) {
       order.requestStatus = newStatus;
-      if (newStatus === "Accepted") order.status = "Confirmed";
-      if (newStatus === "Declined") order.status = "Cancelled";
-      if (newStatus === "Active") order.status = "Delivered";
-      if (newStatus === "Completed") order.status = "Completed";
+      if (newStatus === "Accepted") {
+        order.status = "Confirmed";
+        order.acceptedAt = now;
+      } else if (newStatus === "Declined") {
+        order.status = "Cancelled";
+        order.declinedAt = now;
+        order.declineReason = declineReason || "Unavailable for requested dates";
+      } else if (newStatus === "Active") {
+        order.status = "Delivered";
+        order.dispatchedAt = now;
+      } else if (newStatus === "Completed") {
+        order.status = "Completed";
+        order.completedAt = now;
+        if (inspectionNotes) order.inspectionNotes = inspectionNotes;
+      }
     }
 
     await order.save();
 
-    // If order was declined or cancelled, release booked date range from product
+    // If order was declined or cancelled, release booked date range from product immediately
     if (newStatus === "Declined" || newStatus === "Cancelled") {
       await ProductModel.findByIdAndUpdate(order.product._id, {
         $pull: { bookedDates: { orderId: order._id } },

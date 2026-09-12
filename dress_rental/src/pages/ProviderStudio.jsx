@@ -22,6 +22,9 @@ import {
   DialogActions,
   Switch,
   FormControlLabel,
+  Radio,
+  RadioGroup,
+  FormLabel,
   Select,
   MenuItem,
   InputLabel,
@@ -92,6 +95,16 @@ const ProviderStudio = () => {
 
   // Delete Confirmation Dialog state
   const [deleteDialog, setDeleteDialog] = useState({ open: false, listingId: null, title: "" });
+
+  // Step 10: Decision Modals & Order Filtering
+  const [orderFilter, setOrderFilter] = useState("all");
+  const [acceptModal, setAcceptModal] = useState({ open: false, order: null });
+  const [declineModal, setDeclineModal] = useState({
+    open: false,
+    order: null,
+    reason: "Garment undergoing maintenance or dry cleaning",
+    customNote: "",
+  });
 
   // Add New Dress Form State
   const [formData, setFormData] = useState({
@@ -265,6 +278,56 @@ const ProviderStudio = () => {
       showToast("Failed to update rental status", "error");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  // Step 10: Confirm Accept from Modal
+  const confirmAcceptOrder = async () => {
+    if (!acceptModal.order) return;
+    await handleOrderStatusUpdate(acceptModal.order._id, "Accepted");
+    setAcceptModal({ open: false, order: null });
+  };
+
+  // Step 10: Confirm Decline with Reason & Calendar Release from Modal
+  const confirmDeclineOrder = async () => {
+    if (!declineModal.order) return;
+    const finalReason = declineModal.customNote
+      ? `${declineModal.reason}: ${declineModal.customNote}`
+      : declineModal.reason;
+
+    setActionLoading(true);
+    try {
+      const res = await axios.put(
+        `${BASE_URL}/provider/orders/${declineModal.order._id}/status`,
+        { status: "Declined", declineReason: finalReason },
+        authHeaders
+      );
+      if (res.data?.status) {
+        setOrders((prev) =>
+          prev.map((ord) =>
+            ord._id === declineModal.order._id
+              ? {
+                  ...ord,
+                  requestStatus: "Declined",
+                  status: "Cancelled",
+                  declineReason: finalReason,
+                }
+              : ord
+          )
+        );
+        showToast("Rental request declined. Calendar dates have been released.");
+      }
+    } catch (err) {
+      console.error("Decline order error:", err);
+      showToast("Failed to decline rental request", "error");
+    } finally {
+      setActionLoading(false);
+      setDeclineModal({
+        open: false,
+        order: null,
+        reason: "Garment undergoing maintenance or dry cleaning",
+        customNote: "",
+      });
     }
   };
 
@@ -1337,133 +1400,244 @@ const ProviderStudio = () => {
                 </Box>
               )}
 
-              {/* TAB 4: STEP 8 & 9 RENTAL REQUESTS & ACTIVE BOOKINGS */}
+              {/* TAB 4: STEP 8, 9 & 10 RENTAL REQUESTS & DECISION WORKFLOW */}
               {activeTab === "requests" && (
                 <Box>
-                  <Typography variant="h5" fontWeight={800} mb={1}>
-                    Rental Requests & Active Bookings
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={4}>
-                    Incoming orders and reservations placed by customers for your dresses.
-                  </Typography>
-
-                  {orders.length === 0 ? (
-                    <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 3, border: "1px dashed #DDD" }}>
-                      <OrdersIcon sx={{ fontSize: 56, color: "#D1A362", mb: 2 }} />
-                      <Typography variant="h6" fontWeight={700} mb={0.5}>
-                        No rental requests yet
+                  <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, flexDirection: { xs: "column", sm: "row" }, gap: 1.5 }}>
+                    <Box>
+                      <Typography variant="h5" fontWeight={800} mb={0.5}>
+                        Rental Requests & Active Bookings
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" maxWidth={420} mx="auto">
-                        As soon as customers select dates and book your dresses through the marketplace, their booking requests, rental duration, and verification details will appear here.
+                      <Typography variant="body2" color="text.secondary">
+                        Review customer reservations, approve payouts, and manage rental lifecycle.
                       </Typography>
-                    </Paper>
-                  ) : (
-                    <Grid container spacing={2.5}>
-                      {orders.map((order) => {
-                        const prod = order.product || {};
-                        const sDate = order.rentalStartDate ? new Date(order.rentalStartDate).toLocaleDateString() : "Flexible";
-                        const eDate = order.rentalEndDate ? new Date(order.rentalEndDate).toLocaleDateString() : "Flexible";
-                        const reqStatus = order.requestStatus || "Pending";
+                    </Box>
+                  </Box>
 
-                        const statusColors = {
-                          Pending: { bg: "#FFF4E5", text: "#B76E00" },
-                          Accepted: { bg: "#EDF7ED", text: "#1E4620" },
-                          Confirmed: { bg: "#EDF7ED", text: "#1E4620" },
-                          Declined: { bg: "#FDEDED", text: "#5F2120" },
-                          Cancelled: { bg: "#FDEDED", text: "#5F2120" },
-                          Active: { bg: "#E5F6FD", text: "#014361" },
-                          Completed: { bg: "#E8F5E9", text: "#2E7D32" },
-                        };
-                        const currentStatusColor = statusColors[reqStatus] || statusColors.Pending;
+                  {/* Step 10: Status Filter Chips Bar */}
+                  <Stack direction="row" spacing={1} sx={{ mb: 3, overflowX: "auto", pb: 1 }}>
+                    <Chip
+                      label={`All (${orders.length})`}
+                      onClick={() => setOrderFilter("all")}
+                      variant={orderFilter === "all" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 600, bgcolor: orderFilter === "all" ? "#1A1817" : "transparent", color: orderFilter === "all" ? "#FFF" : "inherit" }}
+                    />
+                    <Chip
+                      label={`Pending Action (${orders.filter((o) => o.requestStatus === "Pending").length})`}
+                      onClick={() => setOrderFilter("Pending")}
+                      color="warning"
+                      variant={orderFilter === "Pending" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Chip
+                      label={`Confirmed (${orders.filter((o) => o.requestStatus === "Accepted" || o.status === "Confirmed").length})`}
+                      onClick={() => setOrderFilter("Accepted")}
+                      color="primary"
+                      variant={orderFilter === "Accepted" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Chip
+                      label={`Active on Rent (${orders.filter((o) => o.requestStatus === "Active" || o.status === "Delivered").length})`}
+                      onClick={() => setOrderFilter("Active")}
+                      color="info"
+                      variant={orderFilter === "Active" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Chip
+                      label={`Completed (${orders.filter((o) => o.requestStatus === "Completed").length})`}
+                      onClick={() => setOrderFilter("Completed")}
+                      color="success"
+                      variant={orderFilter === "Completed" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Chip
+                      label={`Declined (${orders.filter((o) => o.requestStatus === "Declined" || o.status === "Cancelled").length})`}
+                      onClick={() => setOrderFilter("Declined")}
+                      variant={orderFilter === "Declined" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Stack>
 
-                        return (
-                          <Grid item xs={12} key={order._id}>
-                            <Paper
-                              elevation={0}
-                              sx={{
-                                p: 3,
-                                borderRadius: 3,
-                                border: "1px solid #EBEBEB",
-                                display: "flex",
-                                flexDirection: { xs: "column", md: "row" },
-                                justifyContent: "space-between",
-                                alignItems: { xs: "flex-start", md: "center" },
-                                gap: 2.5,
-                              }}
-                            >
-                              <Stack direction="row" spacing={2.5} alignItems="center">
-                                <Avatar
-                                  src={prod.image || "/assets/Cocktail Gown.jpg"}
-                                  variant="rounded"
-                                  sx={{ width: 70, height: 90, borderRadius: 2 }}
-                                />
-                                <Box>
-                                  <Typography variant="subtitle1" fontWeight={700}>
-                                    {prod.title || prod.name || "Designer Dress"}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary" display="block">
-                                    Customer: <strong>{order.userEmail}</strong> &bull; Ordered on: {new Date(order.orderDate).toLocaleDateString()}
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 600, color: "#1A1817" }}>
-                                    Rental Window: {sDate} &rarr; {eDate} ({order.rentalDays || order.quantity} Days)
-                                  </Typography>
-                                </Box>
-                              </Stack>
+                  {(() => {
+                    const filteredOrders = orders.filter((o) => {
+                      if (orderFilter === "all") return true;
+                      if (orderFilter === "Accepted") return o.requestStatus === "Accepted" || o.status === "Confirmed";
+                      if (orderFilter === "Active") return o.requestStatus === "Active" || o.status === "Delivered";
+                      if (orderFilter === "Declined") return o.requestStatus === "Declined" || o.status === "Cancelled";
+                      return o.requestStatus === orderFilter;
+                    });
 
-                              <Stack
-                                direction={{ xs: "column", sm: "row" }}
-                                spacing={3}
-                                alignItems={{ xs: "flex-start", sm: "center" }}
+                    if (filteredOrders.length === 0) {
+                      return (
+                        <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 3, border: "1px dashed #DDD" }}>
+                          <OrdersIcon sx={{ fontSize: 56, color: "#D1A362", mb: 2 }} />
+                          <Typography variant="h6" fontWeight={700} mb={0.5}>
+                            {orderFilter === "all" ? "No rental requests yet" : `No orders matching filter: ${orderFilter}`}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" maxWidth={420} mx="auto">
+                            Customer bookings, rental windows, and decision controls will be organized here as orders arrive.
+                          </Typography>
+                        </Paper>
+                      );
+                    }
+
+                    return (
+                      <Grid container spacing={2.5}>
+                        {filteredOrders.map((order) => {
+                          const prod = order.product || {};
+                          const sDate = order.rentalStartDate ? new Date(order.rentalStartDate).toLocaleDateString() : "Flexible";
+                          const eDate = order.rentalEndDate ? new Date(order.rentalEndDate).toLocaleDateString() : "Flexible";
+                          const reqStatus = order.requestStatus || "Pending";
+
+                          const statusColors = {
+                            Pending: { bg: "#FFF4E5", text: "#B76E00" },
+                            Accepted: { bg: "#EDF7ED", text: "#1E4620" },
+                            Confirmed: { bg: "#EDF7ED", text: "#1E4620" },
+                            Declined: { bg: "#FDEDED", text: "#5F2120" },
+                            Cancelled: { bg: "#FDEDED", text: "#5F2120" },
+                            Active: { bg: "#E5F6FD", text: "#014361" },
+                            Completed: { bg: "#E8F5E9", text: "#2E7D32" },
+                          };
+                          const currentStatusColor = statusColors[reqStatus] || statusColors.Pending;
+                          const rentalFeeOnly = order.rentalFee || Math.max(0, (order.totalAmount || 0) - (order.securityDeposit || 0));
+                          const netEarningsEstimate = Math.round(rentalFeeOnly * 0.85);
+
+                          return (
+                            <Grid item xs={12} key={order._id}>
+                              <Paper
+                                elevation={0}
+                                sx={{
+                                  p: 3,
+                                  borderRadius: 3,
+                                  border: "1px solid #EBEBEB",
+                                  display: "flex",
+                                  flexDirection: { xs: "column", md: "row" },
+                                  justifyContent: "space-between",
+                                  alignItems: { xs: "flex-start", md: "center" },
+                                  gap: 2.5,
+                                }}
                               >
-                                <Box textAlign={{ xs: "left", sm: "right" }}>
-                                  <Typography variant="caption" color="text.secondary" display="block">
-                                    TOTAL AMOUNT
-                                  </Typography>
-                                  <Typography variant="subtitle1" fontWeight={800} color="#1A1817">
-                                    ₹{order.totalAmount?.toLocaleString()}
-                                  </Typography>
-                                  <Chip
-                                    label={reqStatus}
-                                    size="small"
-                                    sx={{
-                                      bgcolor: currentStatusColor.bg,
-                                      color: currentStatusColor.text,
-                                      fontWeight: 700,
-                                      fontSize: "0.75rem",
-                                      mt: 0.5,
-                                    }}
+                                <Stack direction="row" spacing={2.5} alignItems="center">
+                                  <Avatar
+                                    src={prod.image || "/assets/Cocktail Gown.jpg"}
+                                    variant="rounded"
+                                    sx={{ width: 75, height: 95, borderRadius: 2 }}
                                   />
-                                </Box>
+                                  <Box>
+                                    <Typography variant="subtitle1" fontWeight={700}>
+                                      {prod.title || prod.name || "Designer Dress"}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                      Customer: <strong>{order.userEmail}</strong> &bull; Placed: {new Date(order.orderDate).toLocaleDateString()}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 600, color: "#1A1817" }}>
+                                      Rental Window: {sDate} &rarr; {eDate} ({order.rentalDays || order.quantity} Days)
+                                    </Typography>
 
-                                {reqStatus === "Pending" && (
-                                  <Stack direction="row" spacing={1}>
+                                    {/* Decline reason note */}
+                                    {order.declineReason && (
+                                      <Typography variant="caption" sx={{ color: "#D32F2F", bgcolor: "#FDEDED", px: 1, py: 0.3, borderRadius: 1, display: "inline-block", mt: 0.8, fontWeight: 600 }}>
+                                        Decline Reason: {order.declineReason}
+                                      </Typography>
+                                    )}
+
+                                    {/* Inspection completed note */}
+                                    {order.inspectionNotes && (
+                                      <Typography variant="caption" sx={{ color: "#2E7D32", bgcolor: "#E8F5E9", px: 1, py: 0.3, borderRadius: 1, display: "inline-block", mt: 0.8, fontWeight: 600 }}>
+                                        Inspection: {order.inspectionNotes}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </Stack>
+
+                                <Stack
+                                  direction={{ xs: "column", sm: "row" }}
+                                  spacing={3}
+                                  alignItems={{ xs: "flex-start", sm: "center" }}
+                                >
+                                  <Box textAlign={{ xs: "left", sm: "right" }}>
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                      TOTAL PAID BY CUSTOMER
+                                    </Typography>
+                                    <Typography variant="subtitle1" fontWeight={800} color="#1A1817">
+                                      ₹{order.totalAmount?.toLocaleString()}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                      Est. Payout (85%): <strong>₹{netEarningsEstimate.toLocaleString()}</strong>
+                                    </Typography>
+                                    <Chip
+                                      label={reqStatus}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: currentStatusColor.bg,
+                                        color: currentStatusColor.text,
+                                        fontWeight: 700,
+                                        fontSize: "0.75rem",
+                                        mt: 0.5,
+                                      }}
+                                    />
+                                  </Box>
+
+                                  {/* Step 10: Provider Decision & Lifecycle Action Buttons */}
+                                  {reqStatus === "Pending" && (
+                                    <Stack direction="row" spacing={1}>
+                                      <Button
+                                        size="small"
+                                        variant="contained"
+                                        startIcon={<CheckIcon />}
+                                        onClick={() => setAcceptModal({ open: true, order })}
+                                        sx={{ bgcolor: "#2E7D32", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" } }}
+                                      >
+                                        Review & Accept
+                                      </Button>
+                                      <Button
+                                        size="small"
+                                        variant="outlined"
+                                        startIcon={<CloseIcon />}
+                                        onClick={() =>
+                                          setDeclineModal({
+                                            open: true,
+                                            order,
+                                            reason: "Garment undergoing maintenance or dry cleaning",
+                                            customNote: "",
+                                          })
+                                        }
+                                        sx={{ borderColor: "#D32F2F", color: "#D32F2F", fontWeight: 700, "&:hover": { bgcolor: "#FFEBEE" } }}
+                                      >
+                                        Decline
+                                      </Button>
+                                    </Stack>
+                                  )}
+
+                                  {(reqStatus === "Accepted" || reqStatus === "Confirmed") && (
                                     <Button
                                       size="small"
                                       variant="contained"
-                                      startIcon={<CheckIcon />}
-                                      onClick={() => handleOrderStatusUpdate(order._id, "Accepted")}
-                                      sx={{ bgcolor: "#2E7D32", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" } }}
+                                      onClick={() => handleOrderStatusUpdate(order._id, "Active")}
+                                      sx={{ bgcolor: "#1976D2", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#115293" } }}
                                     >
-                                      Accept
+                                      Mark as Dispatched
                                     </Button>
+                                  )}
+
+                                  {reqStatus === "Active" && (
                                     <Button
                                       size="small"
-                                      variant="outlined"
-                                      startIcon={<CloseIcon />}
-                                      onClick={() => handleOrderStatusUpdate(order._id, "Declined")}
-                                      sx={{ borderColor: "#D32F2F", color: "#D32F2F", fontWeight: 700, "&:hover": { bgcolor: "#FFEBEE" } }}
+                                      variant="contained"
+                                      onClick={() => handleOrderStatusUpdate(order._id, "Completed")}
+                                      sx={{ bgcolor: "#2E7D32", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" } }}
                                     >
-                                      Decline
+                                      Mark Returned & Inspected
                                     </Button>
-                                  </Stack>
-                                )}
-                              </Stack>
-                            </Paper>
-                          </Grid>
-                        );
-                      })}
-                    </Grid>
-                  )}
+                                  )}
+                                </Stack>
+                              </Paper>
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    );
+                  })()}
                 </Box>
               )}
 
@@ -1589,6 +1763,208 @@ const ProviderStudio = () => {
             sx={{ fontWeight: 700 }}
           >
             {actionLoading ? <CircularProgress size={20} sx={{ color: "#FFF" }} /> : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ACCEPT CONFIRMATION DIALOG */}
+      <Dialog
+        open={acceptModal.open}
+        onClose={() => setAcceptModal({ open: false, order: null })}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#1A1817" }}>
+          Confirm Rental Acceptance
+        </DialogTitle>
+        <DialogContent dividers>
+          {acceptModal.order && (
+            <Stack spacing={2.5}>
+              <Box display="flex" gap={2} alignItems="center">
+                <Avatar
+                  variant="rounded"
+                  src={acceptModal.order.product?.image || "/assets/Cocktail Gown.jpg"}
+                  sx={{ width: 64, height: 80, borderRadius: 2 }}
+                />
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    {acceptModal.order.product?.name || "Garment"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Renter: <strong>{acceptModal.order.userEmail}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="#1A1817" sx={{ mt: 0.5 }}>
+                    Window: {new Date(acceptModal.order.startDate).toLocaleDateString()} &rarr;{" "}
+                    {new Date(acceptModal.order.endDate).toLocaleDateString()} (
+                    {acceptModal.order.rentalDays || acceptModal.order.quantity} days)
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: "#FAFAFA" }}>
+                <Typography variant="subtitle2" fontWeight={700} mb={1}>
+                  Earnings & Deposit Summary
+                </Typography>
+                <Box display="flex" justifyContent="space-between" mb={0.5}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Paid by Customer
+                  </Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    ₹{acceptModal.order.totalAmount?.toLocaleString()}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" mb={0.5}>
+                  <Typography variant="body2" color="text.secondary">
+                    Platform Fee (15%)
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    - ₹{Math.round((acceptModal.order.totalAmount || 0) * 0.15).toLocaleString()}
+                  </Typography>
+                </Box>
+                <Divider sx={{ my: 1 }} />
+                <Box display="flex" justifyContent="space-between">
+                  <Typography variant="subtitle2" fontWeight={800} color="#2E7D32">
+                    Estimated Net Payout (85%)
+                  </Typography>
+                  <Typography variant="subtitle2" fontWeight={800} color="#2E7D32">
+                    ₹{Math.round((acceptModal.order.totalAmount || 0) * 0.85).toLocaleString()}
+                  </Typography>
+                </Box>
+                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                  Note: Payout becomes payable upon customer receiving the garment and completion of rental.
+                </Typography>
+              </Paper>
+
+              <Box sx={{ bgcolor: "#E8F5E9", p: 2, borderRadius: 2 }}>
+                <Typography variant="subtitle2" fontWeight={700} color="#2E7D32" mb={0.5}>
+                  Handover Checklist
+                </Typography>
+                <Typography variant="caption" color="#1B5E20" component="div">
+                  &bull; Ensure the dress is dry-cleaned and neatly packaged.<br />
+                  &bull; Prepare any accessories (dupatta, belt, hanger, cover) included.<br />
+                  &bull; Handover to renter or courier on or before start date.
+                </Typography>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setAcceptModal({ open: false, order: null })}
+            sx={{ color: "#777" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmAcceptOrder}
+            variant="contained"
+            disabled={actionLoading}
+            sx={{ bgcolor: "#2E7D32", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" } }}
+          >
+            {actionLoading ? <CircularProgress size={20} sx={{ color: "#FFF" }} /> : "Confirm & Accept Request"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DECLINE CONFIRMATION DIALOG */}
+      <Dialog
+        open={declineModal.open}
+        onClose={() =>
+          setDeclineModal({
+            open: false,
+            order: null,
+            reason: "Garment undergoing maintenance or dry cleaning",
+            customNote: "",
+          })
+        }
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#D32F2F" }}>
+          Decline Rental Request
+        </DialogTitle>
+        <DialogContent dividers>
+          {declineModal.order && (
+            <Stack spacing={2.5}>
+              <Typography variant="body2" color="text.secondary">
+                Are you sure you want to decline the rental request for{" "}
+                <strong>{declineModal.order.product?.name || "this garment"}</strong> from{" "}
+                <strong>{declineModal.order.userEmail}</strong>?
+              </Typography>
+
+              <FormControl component="fieldset">
+                <FormLabel component="legend" sx={{ fontWeight: 700, fontSize: "0.85rem", mb: 1 }}>
+                  Reason for Declining
+                </FormLabel>
+                <RadioGroup
+                  value={declineModal.reason}
+                  onChange={(e) => setDeclineModal({ ...declineModal, reason: e.target.value })}
+                >
+                  <FormControlLabel
+                    value="Garment undergoing maintenance or dry cleaning"
+                    control={<Radio size="small" />}
+                    label={<Typography variant="body2">Garment undergoing maintenance or dry cleaning</Typography>}
+                  />
+                  <FormControlLabel
+                    value="Private event or unavailable for listed window"
+                    control={<Radio size="small" />}
+                    label={<Typography variant="body2">Private event or unavailable for listed window</Typography>}
+                  />
+                  <FormControlLabel
+                    value="Garment undergoing quality inspection or repair"
+                    control={<Radio size="small" />}
+                    label={<Typography variant="body2">Garment undergoing quality inspection or repair</Typography>}
+                  />
+                  <FormControlLabel
+                    value="Date conflict with another booking"
+                    control={<Radio size="small" />}
+                    label={<Typography variant="body2">Date conflict with another booking</Typography>}
+                  />
+                  <FormControlLabel
+                    value="Other"
+                    control={<Radio size="small" />}
+                    label={<Typography variant="body2">Other</Typography>}
+                  />
+                </RadioGroup>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                size="small"
+                label="Optional Details / Custom Note for Customer"
+                placeholder="e.g. Garment sent for professional dry cleaning until Friday."
+                value={declineModal.customNote}
+                onChange={(e) => setDeclineModal({ ...declineModal, customNote: e.target.value })}
+              />
+
+              <Alert severity="info" sx={{ borderRadius: 2 }}>
+                <strong>Automatic Calendar Release:</strong> Declining this order will instantly release the reserved dates from your garment's calendar so other renters can book.
+              </Alert>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() =>
+              setDeclineModal({
+                open: false,
+                order: null,
+                reason: "Garment undergoing maintenance or dry cleaning",
+                customNote: "",
+              })
+            }
+            sx={{ color: "#777" }}
+          >
+            Keep Order
+          </Button>
+          <Button
+            onClick={confirmDeclineOrder}
+            variant="contained"
+            color="error"
+            disabled={actionLoading}
+            sx={{ fontWeight: 700 }}
+          >
+            {actionLoading ? <CircularProgress size={20} sx={{ color: "#FFF" }} /> : "Decline Request"}
           </Button>
         </DialogActions>
       </Dialog>

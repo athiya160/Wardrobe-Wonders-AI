@@ -70,6 +70,27 @@ const OrderSchema = Schema({
     enum: ["Pending", "Accepted", "Declined", "Active", "Completed", "Cancelled"],
     default: "Pending",
   },
+  // Step 10: Decision tracking, reasons & audit timestamps
+  declineReason: {
+    type: String,
+    default: "",
+  },
+  acceptedAt: {
+    type: Date,
+  },
+  declinedAt: {
+    type: Date,
+  },
+  dispatchedAt: {
+    type: Date,
+  },
+  completedAt: {
+    type: Date,
+  },
+  inspectionNotes: {
+    type: String,
+    default: "",
+  },
 });
 
 export default model("order", OrderSchema);
