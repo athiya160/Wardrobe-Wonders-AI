@@ -12,6 +12,7 @@ import UserRouter from "./routes/user.router.js";
 import { PaymentRouter } from "./routes/payment.js";
 import providerRouter from "./routes/provider.router.js";
 import uploadRouter from "./routes/upload.router.js";
+import adminRouter from "./routes/admin.router.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,7 @@ app.use("/provider/upload", (req, res, next) => {
 app.use("/payment", PaymentRouter);
 app.use("/products", productRouter);
 app.use("/provider", providerRouter);
+app.use("/admin", adminRouter);
 app.use(UserRouter);
 app.listen(4000, async () => {
   await mongoose
