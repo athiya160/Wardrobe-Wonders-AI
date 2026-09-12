@@ -91,6 +91,35 @@ const OrderSchema = Schema({
     type: String,
     default: "",
   },
+  cancelledAt: {
+    type: Date,
+  },
+  cancelledBy: {
+    type: String,
+    enum: ["customer", "provider", "admin"],
+  },
+  // Step 12: Payment & Security Deposit Lifecycle
+  paymentStatus: {
+    type: String,
+    enum: ["PENDING", "PROCESSING", "PAID", "FAILED", "CANCELLED", "REFUNDED"],
+    default: "PAID",
+  },
+  depositStatus: {
+    type: String,
+    enum: ["HELD", "RELEASE_PENDING", "REFUNDED", "DEDUCTED"],
+    default: "HELD",
+  },
+  depositRefundedAt: {
+    type: Date,
+  },
+  depositDeductionReason: {
+    type: String,
+    default: "",
+  },
+  depositDeductionAmount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 export default model("order", OrderSchema);

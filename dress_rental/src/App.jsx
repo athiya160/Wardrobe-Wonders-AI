@@ -19,6 +19,7 @@ import CheckoutPayment from "./pages/CheckoutPayment";
 import OrderSuccess from "./pages/OrderSuccess";
 import Profile from "./pages/Profile";
 import ProviderStudio from "./pages/ProviderStudio";
+import MyRentals from "./pages/MyRentals";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="/w-dress" element={<Fdress />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/provider-dashboard" element={<ProviderStudio />} />
+            <Route path="/my-rentals" element={<MyRentals />} />
             <Route path="/verify-payment" element={<VerifyPayment />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/stylist" element={<Stylist />} />

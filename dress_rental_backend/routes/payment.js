@@ -5,6 +5,7 @@ import UserModel from "../models/UserModel.js";
 import axios from "axios";
 import productModel from "../models/productModel.js";
 import OrderModel from "../models/OrderModel.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 export const PaymentRouter = new Router();
 
@@ -240,10 +241,74 @@ PaymentRouter.post("/cod", async (req, res) => {
   }
 });
 
+PaymentRouter.get("/my-rentals", authenticateToken, async (req, res) => {
+  try {
+    const orders = await OrderModel.find({ userEmail: req.user.email })
+      .populate("product")
+      .populate("providerId", "name email phone")
+      .sort({ orderDate: -1 });
+    res.json({ success: true, orders });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 PaymentRouter.get("/orders/:email", async (req, res) => {
   try {
-    const orders = await OrderModel.find({ userEmail: req.params.email }).populate("product").sort({ orderDate: -1 });
+    const orders = await OrderModel.find({ userEmail: req.params.email })
+      .populate("product")
+      .populate("providerId", "name email phone")
+      .sort({ orderDate: -1 });
     res.json(orders);
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+PaymentRouter.put("/orders/:id/cancel", authenticateToken, async (req, res) => {
+  try {
+    const order = await OrderModel.findById(req.params.id).populate("product");
+    if (!order) return res.status(404).json({ success: false, message: "Rental order not found" });
+
+    if (order.userEmail !== req.user.email && req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Unauthorized to cancel this rental request" });
+    }
+
+    if (order.requestStatus === "Active" || order.requestStatus === "Completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel a rental that is already active or completed",
+      });
+    }
+
+    if (order.requestStatus === "Cancelled" || order.requestStatus === "Declined") {
+      return res.status(400).json({
+        success: false,
+        message: "Rental request is already cancelled or declined",
+      });
+    }
+
+    order.requestStatus = "Cancelled";
+    order.status = "Cancelled";
+    order.paymentStatus = "REFUNDED";
+    order.depositStatus = "REFUNDED";
+    order.cancelledAt = new Date();
+    order.cancelledBy = "customer";
+    await order.save();
+
+    // Restore calendar availability immediately
+    if (order.product) {
+      const prodId = order.product._id || order.product;
+      await productModel.findByIdAndUpdate(prodId, {
+        $pull: { bookedDates: { orderId: order._id } },
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Rental request successfully cancelled. Calendar dates released.",
+      order,
+    });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
   }

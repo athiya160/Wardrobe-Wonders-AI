@@ -159,6 +159,19 @@ function ResponsiveAppBar() {
                     <Typography textAlign="center">{page.name}</Typography>
                   </MenuItem>
                 ))}
+                {localStorage.getItem("token") && (
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseNavMenu();
+                      const u = JSON.parse(localStorage.getItem("user") || "{}");
+                      navigate(u.role === "provider" ? "/provider-dashboard" : "/my-rentals");
+                    }}
+                  >
+                    <Typography textAlign="center" fontWeight={700} color="#D1A362">
+                      {JSON.parse(localStorage.getItem("user") || "{}").role === "provider" ? "Provider Studio" : "My Rentals"}
+                    </Typography>
+                  </MenuItem>
+                )}
               </Menu>
             </Box>
 
@@ -220,7 +233,27 @@ function ResponsiveAppBar() {
                         </Button>
                       );
                     }
-                    return null;
+                    return (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => navigate("/my-rentals")}
+                        sx={{
+                          borderColor: "#1A1817",
+                          color: "#1A1817",
+                          fontWeight: 700,
+                          fontSize: "0.8rem",
+                          textTransform: "none",
+                          borderRadius: 1.5,
+                          px: 1.5,
+                          py: 0.4,
+                          display: { xs: "none", sm: "inline-flex" },
+                          "&:hover": { backgroundColor: "#F5F5F5", borderColor: "#1A1817" }
+                        }}
+                      >
+                        My Rentals
+                      </Button>
+                    );
                   })()}
 
                   <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer', '&:hover': { color: '#D1A362' } }} onClick={() => navigate("/profile")}>
