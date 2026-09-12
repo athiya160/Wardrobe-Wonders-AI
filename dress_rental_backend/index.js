@@ -28,6 +28,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 dotenv.config();
 
+// Trust reverse proxy headers (Render, Railway, Cloud Run, Heroku, Nginx)
+app.set("trust proxy", 1);
+
 // Step 15 & 16: Security Hardening & CORS
 app.use(securityHeaders);
 app.use(cors(getCorsOptions()));
@@ -63,7 +66,7 @@ app.use(centralizedErrorHandler);
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, async () => {
   await mongoose
-    .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/dress_rental")
+    .connect(process.env.MONGO_URI || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/dress_rental")
     .then(() => {
       console.log(`DB connected. Server running on port ${PORT}`);
     })

@@ -114,8 +114,9 @@ export const aiLimiter = new MemoryRateLimiter({
  * Dynamic CORS Origin Validator
  */
 export const getCorsOptions = () => {
-  const allowedOrigins = process.env.CLIENT_ORIGIN
-    ? process.env.CLIENT_ORIGIN.split(",").map((origin) => origin.trim())
+  const envOrigins = process.env.FRONTEND_URL || process.env.CLIENT_ORIGIN;
+  const allowedOrigins = envOrigins
+    ? envOrigins.split(",").map((origin) => origin.trim())
     : [
         "http://localhost:5173",
         "http://localhost:3000",

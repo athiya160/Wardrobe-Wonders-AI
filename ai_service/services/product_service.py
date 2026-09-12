@@ -1,6 +1,8 @@
+import os
 import httpx
 
-NODE_API = "http://localhost:4000/products"
+BACKEND_BASE = os.getenv("BACKEND_URL", os.getenv("NODE_API_URL", "http://localhost:4000")).rstrip("/")
+NODE_API = f"{BACKEND_BASE}/products"
 
 
 async def get_products():

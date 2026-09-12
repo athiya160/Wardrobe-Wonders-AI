@@ -18,12 +18,13 @@ PaymentRouter.post("/", async (req, res) => {
   const endpoint = config.PAYMENT_ENDPOINT;
   const user = await UserModel.findOne({ email: body.email });
   const transactionId = createHash("md5").update(body.dress._id).digest("hex");
+  const frontendBase = (process.env.FRONTEND_URL || process.env.CLIENT_ORIGIN || "http://localhost:5173").split(",")[0].trim();
   const payload = {
     merchantId: config.MID,
     merchantTransactionId: transactionId,
     amount: +(body.dress.price * +body.quantity * 100).toFixed(2),
     merchantUserId: user?.id?.toString(),
-    redirectUrl: "http://localhost:5173/verify-payment",
+    redirectUrl: `${frontendBase}/verify-payment`,
     redirectMode: "REDIRECT",
     callbackUrl: "",
     mobileNumber: user.phone,
@@ -60,7 +61,7 @@ PaymentRouter.post("/", async (req, res) => {
         merchantTransactionId: transactionId,
         instrumentResponse: {
           redirectInfo: {
-            url: "http://localhost:5173/verify-payment?success=true"
+            url: `${frontendBase}/verify-payment?success=true`
           }
         }
       }
