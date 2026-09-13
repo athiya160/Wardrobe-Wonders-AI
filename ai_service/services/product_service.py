@@ -6,10 +6,14 @@ NODE_API = f"{BACKEND_BASE}/products"
 
 
 async def get_products():
-    async with httpx.AsyncClient() as client:
-        response = await client.get(NODE_API)
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(NODE_API)
 
-        if response.status_code == 200:
-            return response.json()
+            if response.status_code == 200:
+                return response.json()
 
+            return []
+    except Exception as e:
+        print(f"Notice: Could not fetch initial products from backend ({NODE_API}): {e}")
         return []
