@@ -20,7 +20,7 @@ import axios from "axios";
 import { useState } from "react";
 import { BASE_URL } from "../config/axiosConfig";
 import logo from "../assets/logo.png";
-import heroImage from "../assets/Bride.jpg";
+const heroImage = "/assets/Women/bridal_03.png";
 
 const Login = () => {
   const navigate = useNavigate();

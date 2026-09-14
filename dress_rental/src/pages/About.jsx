@@ -1,5 +1,5 @@
 import { Box, Container, Typography, Button, styled } from "@mui/material";
-import BackgroundImage from "../assets/f.jpg";
+const BackgroundImage = "/assets/Women/festive_01.png";
 import ResponsiveAppBar from "../components/Navbar";
 
 const StyledContainer = styled(Container)({

@@ -26,7 +26,7 @@ import axios from "axios";
 import { useState } from "react";
 import { BASE_URL } from "../config/axiosConfig";
 import logo from "../assets/logo.png";
-import heroImage from "../assets/Cocktail Gown.jpg";
+const heroImage = "/assets/Women/look_01.png";
 
 // Password strength calculator
 const getPasswordStrength = (pass) => {
