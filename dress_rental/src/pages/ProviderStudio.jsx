@@ -65,14 +65,14 @@ import logo from "../assets/logo.png";
 
 // Sample preset luxury wardrobe assets for quick selection
 const SAMPLE_ASSETS = [
-  { label: "Cocktail Gown", url: "/assets/Cocktail Gown.jpg", category: "Party", gender: "women" },
-  { label: "Bridal Lehenga", url: "/assets/Bridal.jpg", category: "Wedding", gender: "women" },
-  { label: "Anarkali Suit", url: "/assets/Anarkali.jpg", category: "Traditional", gender: "women" },
-  { label: "Silk Saree", url: "/assets/black_saree.jpg", category: "Traditional", gender: "women" },
-  { label: "Women's Blazer", url: "/assets/Blazer.jpg", category: "Formal", gender: "women" },
-  { label: "Classic Tuxedo", url: "/assets/Men/men1.jpg", category: "Formal", gender: "men" },
-  { label: "Men's Sherwani", url: "/assets/Men/men2.jpg", category: "Wedding", gender: "men" },
-  { label: "Men's Party Suit", url: "/assets/Men/men3.jpg", category: "Party", gender: "men" },
+  { label: "Bridal Lehenga", url: "/assets/Women/bridal_01.png", category: "Wedding", gender: "women" },
+  { label: "Festive Anarkali", url: "/assets/Women/festive_01.png", category: "Traditional", gender: "women" },
+  { label: "Cocktail Evening Gown", url: "/assets/Women/look_01.png", category: "Party", gender: "women" },
+  { label: "Chic Summer Outfit", url: "/assets/Women/outfit_01.png", category: "Casual", gender: "women" },
+  { label: "Classic Tuxedo", url: "/assets/Men/suit_01.png", category: "Formal", gender: "men" },
+  { label: "Royal Groom Sherwani", url: "/assets/Men/sherwani_01.png", category: "Wedding", gender: "men" },
+  { label: "Festive Kurta Set", url: "/assets/Men/sherwani_05.png", category: "Traditional", gender: "men" },
+  { label: "Urban Minimalist Look", url: "/assets/Men/casual_01.png", category: "Casual", gender: "men" },
 ];
 
 const ProviderStudio = () => {

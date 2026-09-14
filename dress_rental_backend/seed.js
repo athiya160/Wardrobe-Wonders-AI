@@ -9,53 +9,57 @@ dotenv.config();
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/dress_rental";
 
 const mockProducts = [
-  // Women
-  { name: "Elegant Anarkali Suit", price: 1500, advance: "500", image: "/assets/Anarkali.jpg", stock: "10", category: "Traditional", gender: "women" },
-  { name: "Designer Bridal Lehenga", price: 15000, advance: "3000", image: "/assets/Bridal.jpg", stock: "2", category: "Wedding", gender: "women" },
-  { name: "Modern Cocktail Gown", price: 2500, advance: "800", image: "/assets/Cocktail Gown.jpg", stock: "5", category: "Party", gender: "women" },
-  { name: "Floral Summer Crop Set", price: 1200, advance: "300", image: "/assets/Crop.jpg", stock: "15", category: "Casual", gender: "women" },
-  { name: "Premium Silk Saree", price: 4000, advance: "1000", image: "/assets/black_saree.jpg", stock: "8", category: "Traditional", gender: "women" },
-  { name: "Women's Formal Blazer", price: 1800, advance: "400", image: "/assets/Blazer.jpg", stock: "12", category: "Formal", gender: "women" },
-  { name: "Pink Flamingo Dress", price: 2200, advance: "500", image: "/assets/Flamingo.jpg", stock: "7", category: "Party", gender: "women" },
-  { name: "Punjabi Salwar Suit", price: 1000, advance: "200", image: "/assets/Punjabi.jpg", stock: "20", category: "Casual", gender: "women" },
-  { name: "Classic Wedding Gown", price: 8000, advance: "2000", image: "/assets/Wedding.jpg", stock: "3", category: "Wedding", gender: "women" },
-  { name: "Luxury Cape Dress", price: 3500, advance: "700", image: "/assets/Cape.jpg", stock: "6", category: "Evening Wear", gender: "women" },
-  { name: "Sapphire Evening Gown", price: 3000, advance: "600", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800", stock: "4", category: "Evening Wear", gender: "women" },
-  { name: "Golden Sequin Lehenga", price: 12000, advance: "2500", image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=800", stock: "3", category: "Wedding", gender: "women" },
-  { name: "Chic Floral Maxi", price: 1800, advance: "400", image: "https://images.unsplash.com/photo-1550614000-4b95d4662d55?auto=format&fit=crop&q=80&w=800", stock: "9", category: "Casual", gender: "women" },
-  { name: "Red Velvet Evening Dress", price: 3200, advance: "700", image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?auto=format&fit=crop&q=80&w=800", stock: "5", category: "Party", gender: "women" },
-  { name: "White Summer Dress", price: 1500, advance: "300", image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=800", stock: "12", category: "Casual", gender: "women" },
-  { name: "Elegant Black Gown", price: 4000, advance: "800", image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=800", stock: "6", category: "Formal", gender: "women" },
-  { name: "Pastel Wedding Gown", price: 9000, advance: "2000", image: "https://images.unsplash.com/photo-1546804784-816d92634e2f?auto=format&fit=crop&q=80&w=800", stock: "3", category: "Wedding", gender: "women" },
-  { name: "Boho Chic Dress", price: 1300, advance: "300", image: "https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?auto=format&fit=crop&q=80&w=800", stock: "10", category: "Casual", gender: "women" },
-  { name: "Emerald Green Saree", price: 3500, advance: "700", image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=800", stock: "8", category: "Traditional", gender: "women" },
-  { name: "Glitter Party Dress", price: 2800, advance: "500", image: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&q=80&w=800", stock: "7", category: "Party", gender: "women" },
-  { name: "Vintage Lace Gown", price: 4500, advance: "1000", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800", stock: "4", category: "Evening Wear", gender: "women" },
+  // Women — Bridal & Wedding
+  { name: "Regal Crimson Bridal Lehenga", price: 14000, advance: "3000", image: "/assets/Women/bridal_01.png", stock: "3", category: "Wedding", gender: "women" },
+  { name: "Royal Gold Embroidered Lehenga", price: 15500, advance: "3500", image: "/assets/Women/bridal_02.png", stock: "2", category: "Wedding", gender: "women" },
+  { name: "Ivory Rose Reception Gown", price: 9800, advance: "2500", image: "/assets/Women/bridal_03.png", stock: "4", category: "Wedding", gender: "women" },
+  { name: "Pastel Peach Floral Bridal Set", price: 11500, advance: "2800", image: "/assets/Women/bridal_04.png", stock: "3", category: "Wedding", gender: "women" },
+  { name: "Scarlet Velvet Wedding Lehenga", price: 13800, advance: "3200", image: "/assets/Women/bridal_05.png", stock: "2", category: "Wedding", gender: "women" },
+  { name: "Champagne Shimmer Bridal Dress", price: 10500, advance: "2600", image: "/assets/Women/bridal_06.png", stock: "4", category: "Wedding", gender: "women" },
+  { name: "Blush Heritage Silk Lehenga", price: 12500, advance: "3000", image: "/assets/Women/bridal_07.png", stock: "3", category: "Wedding", gender: "women" },
+  { name: "Maharani Zardozi Bridal Ensemble", price: 16000, advance: "4000", image: "/assets/Women/bridal_08.png", stock: "2", category: "Wedding", gender: "women" },
 
+  // Women — Traditional & Festive
+  { name: "Emerald Hand-Embroidered Anarkali", price: 3200, advance: "800", image: "/assets/Women/festive_01.png", stock: "8", category: "Traditional", gender: "women" },
+  { name: "Sapphire Silk Festive Saree", price: 3800, advance: "900", image: "/assets/Women/festive_02.png", stock: "6", category: "Traditional", gender: "women" },
+  { name: "Golden Zari Banarasi Saree", price: 4200, advance: "1000", image: "/assets/Women/festive_03.png", stock: "5", category: "Traditional", gender: "women" },
+  { name: "Plum Georgette Anarkali Suit", price: 2900, advance: "700", image: "/assets/Women/festive_04.png", stock: "7", category: "Traditional", gender: "women" },
+  { name: "Mustard Haldi Festive Sharara", price: 2600, advance: "600", image: "/assets/Women/festive_05.png", stock: "10", category: "Traditional", gender: "women" },
+  { name: "Ruby Designer Party Saree", price: 3400, advance: "800", image: "/assets/Women/festive_06.png", stock: "6", category: "Party", gender: "women" },
+  { name: "Teal Mirror-Work Festive Lehenga", price: 4500, advance: "1100", image: "/assets/Women/festive_07.png", stock: "5", category: "Traditional", gender: "women" },
+  { name: "Dusty Rose Embroidered Kurta Set", price: 2100, advance: "500", image: "/assets/Women/festive_08.png", stock: "9", category: "Traditional", gender: "women" },
 
-  // Men
-  { name: "Men's Classic Tuxedo", price: 3000, advance: "1000", image: "/assets/Men/men1.jpg", stock: "5", category: "Formal", gender: "men" },
-  { name: "Traditional Men's Sherwani", price: 5000, advance: "1500", image: "/assets/Men/men2.jpg", stock: "3", category: "Wedding", gender: "men" },
-  { name: "Men's Party Wear Suit", price: 2500, advance: "800", image: "/assets/Men/men3.jpg", stock: "8", category: "Party", gender: "men" },
-  { name: "Casual Denim Outfit", price: 1000, advance: "300", image: "/assets/Men/men4.jpg", stock: "15", category: "Casual", gender: "men" },
-  { name: "Men's Traditional Kurta", price: 1200, advance: "400", image: "/assets/Men/men5.jpg", stock: "10", category: "Traditional", gender: "men" },
-  { name: "Premium Blue Blazer", price: 2000, advance: "500", image: "/assets/Men/men6.jpg", stock: "7", category: "Formal", gender: "men" },
-  { name: "Men's Evening Wear", price: 2800, advance: "600", image: "/assets/Men/men7.jpg", stock: "4", category: "Evening Wear", gender: "men" },
-  { name: "Groom's Special Outfit", price: 8000, advance: "2000", image: "/assets/Men/men8.jpg", stock: "2", category: "Wedding", gender: "men" },
-  { name: "Men's Casual Set", price: 1500, advance: "300", image: "/assets/Men/men9.jpg", stock: "12", category: "Casual", gender: "men" },
-  { name: "Designer Men's Jacket", price: 3500, advance: "800", image: "/assets/Men/men10.jpg", stock: "5", category: "Party", gender: "men" },
-  { name: "Navy Blue Three-Piece Suit", price: 4000, advance: "1000", image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800", stock: "4", category: "Formal", gender: "men" },
-  { name: "Burgundy Velvet Blazer", price: 2500, advance: "600", image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800", stock: "6", category: "Party", gender: "men" },
-  { name: "Classic Black Tuxedo", price: 3800, advance: "900", image: "https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&q=80&w=800", stock: "3", category: "Formal", gender: "men" },
-  { name: "Grey Wool Suit", price: 3200, advance: "800", image: "https://images.unsplash.com/photo-1592878904946-b3ce8ce2435e?auto=format&fit=crop&q=80&w=800", stock: "5", category: "Formal", gender: "men" },
-  { name: "Casual Linen Shirt", price: 800, advance: "200", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ce3?auto=format&fit=crop&q=80&w=800", stock: "15", category: "Casual", gender: "men" },
-  { name: "Summer Beach Shirt", price: 900, advance: "200", image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800", stock: "20", category: "Casual", gender: "men" },
-  { name: "Groom's Sherwani", price: 8500, advance: "2000", image: "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&q=80&w=800", stock: "2", category: "Wedding", gender: "men" },
-  { name: "Stylish Leather Jacket", price: 3500, advance: "800", image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800", stock: "6", category: "Party", gender: "men" },
-  { name: "Pinstripe Suit", price: 4200, advance: "1000", image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800", stock: "4", category: "Formal", gender: "men" },
-  { name: "Embroidered Kurta", price: 1800, advance: "400", image: "https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&q=80&w=800", stock: "8", category: "Traditional", gender: "men" },
-  { name: "Casual Chino Pants", price: 1100, advance: "300", image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&q=80&w=800", stock: "12", category: "Casual", gender: "men" },
+  // Women — Party & Evening Wear
+  { name: "Midnight Black Sequin Gown", price: 3500, advance: "800", image: "/assets/Women/look_01.png", stock: "5", category: "Party", gender: "women" },
+  { name: "Modern Rose Gold Cocktail Dress", price: 2800, advance: "700", image: "/assets/Women/look_02.png", stock: "6", category: "Party", gender: "women" },
+  { name: "Cobalt Blue Slit Evening Gown", price: 3600, advance: "900", image: "/assets/Women/look_03.png", stock: "4", category: "Evening Wear", gender: "women" },
+  { name: "Silver Starlight Gala Gown", price: 4200, advance: "1000", image: "/assets/Women/look_04.png", stock: "3", category: "Evening Wear", gender: "women" },
+  { name: "Blush Pink Tiered Tulle Dress", price: 2900, advance: "700", image: "/assets/Women/look_05.png", stock: "7", category: "Party", gender: "women" },
+  { name: "Burgundy Velvet Floor-Length Gown", price: 3800, advance: "900", image: "/assets/Women/look_06.png", stock: "4", category: "Evening Wear", gender: "women" },
+  { name: "Chic Floral Silk Wrap Dress", price: 1400, advance: "350", image: "/assets/Women/outfit_01.png", stock: "12", category: "Casual", gender: "women" },
+  { name: "Bohemian Summer Linen Co-ord", price: 1200, advance: "300", image: "/assets/Women/outfit_02.png", stock: "15", category: "Casual", gender: "women" },
 
+  // Men — Formal Suits & Tuxedos
+  { name: "Classic Midnight Black Tuxedo", price: 3800, advance: "1000", image: "/assets/Men/suit_01.png", stock: "5", category: "Formal", gender: "men" },
+  { name: "Charcoal Grey Slim-Fit Three-Piece", price: 3400, advance: "850", image: "/assets/Men/suit_02.png", stock: "6", category: "Formal", gender: "men" },
+  { name: "Navy Royal Italian Wool Suit", price: 3600, advance: "900", image: "/assets/Men/suit_03.png", stock: "5", category: "Formal", gender: "men" },
+  { name: "Double-Breasted Ivory Tuxedo", price: 4200, advance: "1000", image: "/assets/Men/suit_04.png", stock: "3", category: "Formal", gender: "men" },
+  { name: "Burgundy Velvet Evening Blazer", price: 2800, advance: "700", image: "/assets/Men/suit_05.png", stock: "6", category: "Party", gender: "men" },
+  { name: "Emerald Satin Lapel Dinner Jacket", price: 3100, advance: "750", image: "/assets/Men/suit_07.png", stock: "4", category: "Party", gender: "men" },
+
+  // Men — Groom & Traditional Sherwanis
+  { name: "Imperial Raw Silk Groom Sherwani", price: 8500, advance: "2000", image: "/assets/Men/sherwani_01.png", stock: "3", category: "Wedding", gender: "men" },
+  { name: "Gold Resham Hand-Woven Sherwani", price: 9200, advance: "2200", image: "/assets/Men/sherwani_02.png", stock: "2", category: "Wedding", gender: "men" },
+  { name: "Maroon Velvet Royal Sherwani", price: 8800, advance: "2000", image: "/assets/Men/sherwani_03.png", stock: "3", category: "Wedding", gender: "men" },
+  { name: "Ivory Pearl Heritage Sherwani", price: 9500, advance: "2400", image: "/assets/Men/sherwani_04.png", stock: "2", category: "Wedding", gender: "men" },
+  { name: "Pastel Mint Embroidered Kurta Set", price: 2400, advance: "600", image: "/assets/Men/sherwani_05.png", stock: "8", category: "Traditional", gender: "men" },
+  { name: "Royal Blue Silk Festive Kurta", price: 2200, advance: "500", image: "/assets/Men/sherwani_06.png", stock: "7", category: "Traditional", gender: "men" },
+
+  // Men — Smart Casual & Designer Looks
+  { name: "Structured Camel Trench & Blazer", price: 1600, advance: "400", image: "/assets/Men/mens_01.png", stock: "10", category: "Casual", gender: "men" },
+  { name: "Casual Indigo Denim Jacket Set", price: 1100, advance: "300", image: "/assets/Men/casual_01.png", stock: "12", category: "Casual", gender: "men" },
+  { name: "Olive Linen Summer Shirt & Chinos", price: 950, advance: "250", image: "/assets/Men/casual_02.png", stock: "15", category: "Casual", gender: "men" },
+  { name: "Monochrome Urban Minimalist Look", price: 1250, advance: "300", image: "/assets/Men/casual_03.png", stock: "10", category: "Casual", gender: "men" },
 ];
 
 async function seedDB() {
