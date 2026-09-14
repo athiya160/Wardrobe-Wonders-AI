@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
 import Product from "./models/productModel.js";
+import UserModel from "./models/UserModel.js";
 
-const MONGO_URI = "mongodb://127.0.0.1:27017/dress_rental";
+dotenv.config();
+
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/dress_rental";
 
 const mockProducts = [
   // Women
@@ -57,10 +62,59 @@ async function seedDB() {
   try {
     await mongoose.connect(MONGO_URI);
     console.log("Connected to MongoDB");
+
+    // 1. Seed Products
     await Product.deleteMany({});
     console.log("Cleared existing products");
     await Product.insertMany(mockProducts);
     console.log("Successfully inserted " + mockProducts.length + " products");
+
+    // 2. Seed Recruiter Demo Accounts
+    const passwordHash = await bcrypt.hash("Password123!", 10);
+    const demoUsers = [
+      {
+        name: "Demo Customer",
+        firstname: "Demo",
+        lastname: "Customer",
+        email: "customer@wardrobewonders.com",
+        password: passwordHash,
+        passwordHash: passwordHash,
+        role: "customer",
+        type: "customer",
+        phone: "9876543210",
+        isActive: true,
+      },
+      {
+        name: "Demo Luxury Boutique",
+        firstname: "Demo",
+        lastname: "Provider",
+        email: "provider@wardrobewonders.com",
+        password: passwordHash,
+        passwordHash: passwordHash,
+        role: "provider",
+        type: "provider",
+        phone: "9876543211",
+        isActive: true,
+      },
+      {
+        name: "Demo Platform Admin",
+        firstname: "Demo",
+        lastname: "Admin",
+        email: "admin@wardrobewonders.com",
+        password: passwordHash,
+        passwordHash: passwordHash,
+        role: "admin",
+        type: "admin",
+        phone: "9876543212",
+        isActive: true,
+      },
+    ];
+
+    for (const u of demoUsers) {
+      await UserModel.findOneAndUpdate({ email: u.email }, u, { upsert: true, new: true });
+    }
+    console.log("Successfully seeded 3 demo accounts (Customer, Provider, Admin)");
+
     process.exit(0);
   } catch (error) {
     console.error("Error seeding DB:", error);

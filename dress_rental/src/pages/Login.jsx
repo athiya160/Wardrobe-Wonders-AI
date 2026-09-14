@@ -30,6 +30,20 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const fillDemo = (role) => {
+    setError("");
+    if (role === "customer") {
+      setEmail("customer@wardrobewonders.com");
+      setPassword("Password123!");
+    } else if (role === "provider") {
+      setEmail("provider@wardrobewonders.com");
+      setPassword("Password123!");
+    } else if (role === "admin") {
+      setEmail("admin@wardrobewonders.com");
+      setPassword("Password123!");
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
@@ -130,6 +144,78 @@ const Login = () => {
           >
             Your next look is waiting.
           </Typography>
+        </Box>
+
+        {/* Recruiter / Quick Demo Access */}
+        <Box
+          sx={{
+            p: 2,
+            mb: 3,
+            backgroundColor: "#FBF8F2",
+            borderRadius: 2,
+            border: "1px dashed #D1A362",
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 700,
+              color: "#8A6D3B",
+              display: "block",
+              mb: 1,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            ⚡ Recruiter / Demo 1-Click Access
+          </Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => fillDemo("customer")}
+              sx={{
+                textTransform: "none",
+                fontSize: "0.78rem",
+                py: 0.5,
+                borderColor: "#D1A362",
+                color: "#1A1A1A",
+                "&:hover": { borderColor: "#8A6D3B", backgroundColor: "rgba(209,163,98,0.1)" },
+              }}
+            >
+              👤 Customer Demo
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => fillDemo("provider")}
+              sx={{
+                textTransform: "none",
+                fontSize: "0.78rem",
+                py: 0.5,
+                borderColor: "#D1A362",
+                color: "#1A1A1A",
+                "&:hover": { borderColor: "#8A6D3B", backgroundColor: "rgba(209,163,98,0.1)" },
+              }}
+            >
+              👗 Provider Studio Demo
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => fillDemo("admin")}
+              sx={{
+                textTransform: "none",
+                fontSize: "0.78rem",
+                py: 0.5,
+                borderColor: "#D1A362",
+                color: "#1A1A1A",
+                "&:hover": { borderColor: "#8A6D3B", backgroundColor: "rgba(209,163,98,0.1)" },
+              }}
+            >
+              🛡️ Admin Console Demo
+            </Button>
+          </Stack>
         </Box>
 
         {/* Error Alert */}
