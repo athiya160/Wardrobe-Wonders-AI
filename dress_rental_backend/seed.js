@@ -99,7 +99,7 @@ async function seedDB() {
     console.log("Successfully inserted " + mockProducts.length + " products");
 
     // 2. Seed Recruiter Demo Accounts
-    const passwordHash = await bcrypt.hash("WondersDemo#2026!", 10);
+    const passwordHash = await bcrypt.hash("Password123!", 10);
     const demoUsers = [
       {
         name: "Demo Customer",
