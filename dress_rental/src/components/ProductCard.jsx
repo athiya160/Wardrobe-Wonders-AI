@@ -11,10 +11,9 @@ import { useNavigate } from "react-router-dom";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 const StyledCard = styled(Card)({
-  minWidth: "280px",
-  maxWidth: "280px",
+  minWidth: "260px",
+  maxWidth: "100%",
   flex: "0 0 auto",
-  marginRight: "20px",
   padding: 0,
   border: "none",
   borderRadius: 0,
@@ -23,6 +22,10 @@ const StyledCard = styled(Card)({
   boxShadow: "none",
   cursor: "pointer",
   position: "relative",
+  transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+  "&:hover": {
+    transform: "translateY(-4px)",
+  },
 });
 
 const StyledCardContent = styled(CardContent)({
@@ -47,6 +50,7 @@ const StyledCardMedia = styled('img')({
   width: "100%",
   height: "100%",
   objectFit: "cover",
+  objectPosition: "top center",
 });
 
 const WishlistButton = styled(IconButton)({
@@ -81,7 +85,7 @@ const StyledPrice = styled(Typography)({
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useState, useEffect } from "react";
 
-const ProductCard = ({ dress }) => {
+const ProductCard = ({ dress, sx }) => {
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
 
@@ -104,7 +108,7 @@ const ProductCard = ({ dress }) => {
   };
   
   return (
-    <StyledCard onClick={() => navigate(`/product/${dress._id}`)}>
+    <StyledCard sx={sx} onClick={() => navigate(`/product/${dress._id}`)}>
       <ImageContainer>
         <StyledCardMedia
           src={dress.image || "/assets/Cocktail Gown.jpg"}

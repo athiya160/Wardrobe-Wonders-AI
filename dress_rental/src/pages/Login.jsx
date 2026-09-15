@@ -34,13 +34,13 @@ const Login = () => {
     setError("");
     if (role === "customer") {
       setEmail("customer@wardrobewonders.com");
-      setPassword("Password123!");
+      setPassword("WondersDemo#2026!");
     } else if (role === "provider") {
       setEmail("provider@wardrobewonders.com");
-      setPassword("Password123!");
+      setPassword("WondersDemo#2026!");
     } else if (role === "admin") {
       setEmail("admin@wardrobewonders.com");
-      setPassword("Password123!");
+      setPassword("WondersDemo#2026!");
     }
   };
 
