@@ -124,10 +124,16 @@ const SignUp = () => {
         setError(res.data?.message || "Registration failed. Please try again.");
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Registration failed. An account with this email may already exist."
-      );
+      if (!err.response) {
+        setError(
+          "Network connection error: Unable to reach the server. Please check your internet connection or try again shortly."
+        );
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Registration failed. An account with this email may already exist."
+        );
+      }
     } finally {
       setIsLoading(false);
     }

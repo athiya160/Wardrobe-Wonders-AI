@@ -122,13 +122,20 @@ export const getCorsOptions = () => {
         "http://localhost:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
+        "https://wardrobe-wonders-ai.vercel.app",
       ];
 
   return {
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") ||
+        origin.includes("wardrobe-wonders") ||
+        origin.includes("localhost") ||
+        process.env.NODE_ENV !== "production"
+      ) {
         return callback(null, true);
       }
       return callback(new Error("CORS policy violation: Access from this origin is not allowed."));
@@ -136,6 +143,7 @@ export const getCorsOptions = () => {
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "x-test-bypass-rate-limit"],
     credentials: true,
+    optionsSuccessStatus: 200,
   };
 };
 

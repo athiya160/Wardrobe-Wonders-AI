@@ -76,10 +76,16 @@ const Login = () => {
         setError(res.data?.message || "Invalid email or password.");
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to sign in. Please verify your email and password."
-      );
+      if (!err.response) {
+        setError(
+          "Network connection error: Unable to reach the server. Please check your internet connection or try again shortly."
+        );
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Unable to sign in. Please verify your email and password."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
