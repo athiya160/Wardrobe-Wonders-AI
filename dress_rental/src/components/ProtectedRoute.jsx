@@ -1,12 +1,12 @@
-import { Navigate, Outlet } from "react-router-dom";
-import Fotter from "./Fotter";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ allowedRoles }) => {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "null");
+  const location = useLocation();
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   if (allowedRoles && user) {
@@ -18,12 +18,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
     }
   }
 
-  return (
-    <>
-      <Outlet />
-      <Fotter />
-    </>
-  );
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

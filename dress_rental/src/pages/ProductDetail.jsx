@@ -29,6 +29,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 import ProductCard from "../components/ProductCard";
 
 const ProductDetail = () => {
@@ -132,7 +133,10 @@ const ProductDetail = () => {
 
   const handleRentClick = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.email) return alert("Please Login to continue");
+    if (!user.email) {
+      navigate("/login", { state: { from: `/checkout/address/${product._id}` } });
+      return;
+    }
     if (dateConflict) return alert("Selected rental dates are not available.");
     if (qty < 1) return alert("Select at least 1 day rental");
     navigate(`/checkout/address/${product._id}`, {
@@ -222,9 +226,9 @@ const ProductDetail = () => {
   const minDate = new Date().toISOString().split("T")[0];
 
   return (
-    <>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#FAFAFA" }}>
       <ResponsiveAppBar />
-      <Box p={4} maxWidth="1200px" margin="auto">
+      <Box p={4} maxWidth="1200px" margin="auto" sx={{ flexGrow: 1, width: "100%" }}>
         <Grid container spacing={6}>
           <Grid item xs={12} md={6}>
             <Box sx={{ border: '1px solid #eee', borderRadius: 2, overflow: 'hidden', mb: 2, height: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: "#F9F9F9" }}>
@@ -575,7 +579,8 @@ const ProductDetail = () => {
         </Snackbar>
 
       </Box>
-    </>
+      <Fotter />
+    </Box>
   );
 };
 

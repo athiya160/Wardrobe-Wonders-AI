@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 import ProductCard from "../components/ProductCard";
 
 const StyledContainer = styled(Box)({
@@ -52,44 +53,47 @@ const SearchResults = () => {
   }, [query]);
 
   return (
-    <>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#FAFAFA" }}>
       <ResponsiveAppBar />
-      <Stack p={3}>
-        <Typography variant="h4" mb={2}>
-          Search Results for "{query}"
-        </Typography>
-        
-        {filters && Object.values(filters).some(v => v !== null) && (
-          <Box mb={2} p={2} sx={{ background: '#f5f5f5', borderRadius: 2 }}>
-            <Typography variant="subtitle2" color="textSecondary">
-              AI Detected Filters:
-            </Typography>
-            <Typography variant="body2">
-              {Object.entries(filters)
-                .filter(([k, v]) => v !== null)
-                .map(([k, v]) => `${k.replace('_', ' ')}: ${v}`)
-                .join(" | ")}
-            </Typography>
-          </Box>
-        )}
-
-        {loading ? (
-          <Box display="flex" justifyContent="center" p={5}>
-            <CircularProgress />
-          </Box>
-        ) : results.length > 0 ? (
-          <StyledContainer>
-            {results.map((dress, index) => (
-              <ProductCard key={index} dress={dress} />
-            ))}
-          </StyledContainer>
-        ) : (
-          <Typography variant="h6" color="textSecondary">
-            No products found matching your AI criteria. Try a different search!
+      <Box sx={{ flexGrow: 1 }}>
+        <Stack p={3}>
+          <Typography variant="h4" mb={2}>
+            Search Results for "{query}"
           </Typography>
-        )}
-      </Stack>
-    </>
+          
+          {filters && Object.values(filters).some(v => v !== null) && (
+            <Box mb={2} p={2} sx={{ background: '#f5f5f5', borderRadius: 2 }}>
+              <Typography variant="subtitle2" color="textSecondary">
+                AI Detected Filters:
+              </Typography>
+              <Typography variant="body2">
+                {Object.entries(filters)
+                  .filter(([k, v]) => v !== null)
+                  .map(([k, v]) => `${k.replace('_', ' ')}: ${v}`)
+                  .join(" | ")}
+              </Typography>
+            </Box>
+          )}
+
+          {loading ? (
+            <Box display="flex" justifyContent="center" p={5}>
+              <CircularProgress />
+            </Box>
+          ) : results.length > 0 ? (
+            <StyledContainer>
+              {results.map((dress, index) => (
+                <ProductCard key={index} dress={dress} />
+              ))}
+            </StyledContainer>
+          ) : (
+            <Typography variant="h6" color="textSecondary">
+              No products found matching your AI criteria. Try a different search!
+            </Typography>
+          )}
+        </Stack>
+      </Box>
+      <Fotter />
+    </Box>
   );
 };
 

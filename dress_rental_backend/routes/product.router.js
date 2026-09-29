@@ -49,12 +49,53 @@ productRouter.post("/search", async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(3500),
     });
+    if (!response.ok) {
+      throw new Error(`AI service status ${response.status}`);
+    }
     const data = await response.json();
-    res.send(data);
+    return res.send(data);
   } catch (err) {
-    console.error("Error communicating with AI service:", err);
-    res.status(500).send("AI Search Failed");
+    console.warn("AI service unreachable for search, executing resilient MongoDB catalog fallback:", err.message);
+
+    try {
+      const tokens = String(query).trim().split(/\s+/).filter(Boolean);
+      const orConditions = [];
+
+      for (const token of tokens) {
+        const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(escaped, "i");
+        orConditions.push(
+          { name: regex },
+          { category: regex },
+          { gender: regex },
+          { color: regex },
+          { tags: regex },
+          { description: regex }
+        );
+      }
+
+      let fallbackProducts = [];
+      if (orConditions.length > 0) {
+        fallbackProducts = await productModel.find({ $or: orConditions }).limit(10);
+      }
+
+      if (!fallbackProducts || fallbackProducts.length === 0) {
+        fallbackProducts = await productModel.find().sort({ createdAt: -1 }).limit(6);
+      }
+
+      return res.json({
+        filters: { query, source: "mongodb_resilient_fallback" },
+        results: fallbackProducts,
+      });
+    } catch (fallbackErr) {
+      console.error("Critical fallback search error:", fallbackErr);
+      return res.json({
+        filters: { query, source: "emergency_empty_fallback" },
+        results: [],
+      });
+    }
   }
 });
 
@@ -150,6 +191,34 @@ productRouter.post("/similar", async (req, res) => {
 productRouter.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
+    if (!message || !message.trim()) {
+      return res.json({
+        text: "Hello! I am your AI Fashion Stylist. What kind of outfit or occasion are you shopping for today?",
+        products: []
+      });
+    }
+
+    // Attempt high-accuracy Groq / FastAPI AI response first
+    const fastApiUrl = process.env.FASTAPI_URL || "http://127.0.0.1:8001";
+    try {
+      const response = await fetch(`${fastApiUrl}/ai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.text) {
+          return res.json(data);
+        }
+      }
+    } catch (aiErr) {
+      console.warn("FastAPI chat unavailable, falling back to resilient semantic catalog match:", aiErr.message);
+    }
+
+    // Resilient Fallback Matching on MongoDB
     const msgLower = message.toLowerCase();
     let query = {};
     
@@ -165,15 +234,21 @@ productRouter.post("/chat", async (req, res) => {
       query = { gender: "women" };
     }
 
-    const products = await productModel.find(query).limit(3);
+    let products = await productModel.find(query).limit(3);
+    if (!products || products.length === 0) {
+      products = await productModel.find().limit(3);
+    }
     
-    res.json({
-      text: `I found some great options for you based on "${message}". Take a look at these!`,
+    return res.json({
+      text: `I found some stylish designer options for you based on "${message}". Take a look at these pieces from our collection!`,
       products: products
     });
   } catch (err) {
-    console.error("Error communicating with AI chat service:", err);
-    res.status(500).send("AI Chat Failed");
+    console.error("AI chat processing error:", err);
+    return res.json({
+      text: "I am ready to help you find the perfect outfit! Try searching for wedding wear, cocktail dresses, or sherwanis.",
+      products: []
+    });
   }
 });
 

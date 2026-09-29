@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Box, Typography, TextField, Button, Grid, Paper, Stack } from "@mui/material";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 
 const CheckoutAddress = () => {
   const { id } = useParams();
@@ -23,9 +24,9 @@ const CheckoutAddress = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', pb: 12 }}>
+    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <ResponsiveAppBar />
-      <Box p={4} maxWidth="800px" margin="auto" mt={4}>
+      <Box p={4} maxWidth="800px" margin="auto" mt={4} sx={{ flexGrow: 1, width: "100%", pb: 8 }}>
         <Paper elevation={0} sx={{ p: 4, border: '1px solid #E0E0E0', borderRadius: 2 }}>
           <Typography variant="h4" mb={4} sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>
             Delivery Address
@@ -96,6 +97,7 @@ const CheckoutAddress = () => {
           </Stack>
         </Paper>
       </Box>
+      <Fotter />
     </Box>
   );
 };

@@ -7,6 +7,7 @@ import {
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 
 // Icons
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
@@ -343,9 +344,9 @@ const Profile = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', pb: 12 }}>
+    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <ResponsiveAppBar />
-      <Box p={{ xs: 2, md: 4 }} maxWidth="1200px" margin="auto" mt={2}>
+      <Box p={{ xs: 2, md: 4 }} maxWidth="1200px" margin="auto" mt={2} sx={{ flexGrow: 1, width: "100%", pb: 8 }}>
         <Grid container spacing={4}>
           
           {/* LEFT SIDEBAR */}
@@ -464,6 +465,7 @@ const Profile = () => {
 
         </Grid>
       </Box>
+      <Fotter />
     </Box>
   );
 };

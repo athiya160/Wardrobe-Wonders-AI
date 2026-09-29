@@ -27,6 +27,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { RecruiterTourModal } from "./RecruiterTourModal";
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -87,6 +88,7 @@ function ResponsiveAppBar() {
   const [wishlistOpen, setWishlistOpen] = React.useState(false);
 
   const [wishlistItems, setWishlistItems] = React.useState([]);
+  const [tourOpen, setTourOpen] = React.useState(false);
 
   React.useEffect(() => {
     const updateCart = () => {
@@ -172,15 +174,39 @@ function ResponsiveAppBar() {
                     </Typography>
                   </MenuItem>
                 )}
+                <MenuItem onClick={() => { handleCloseNavMenu(); setTourOpen(true); }}>
+                  <Typography textAlign="center" fontWeight={700} color="#A07028">
+                    Recruiter Tour 🚀
+                  </Typography>
+                </MenuItem>
               </Menu>
             </Box>
 
-            <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, gap: 2 }}>
+            <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, gap: 2, alignItems: 'center' }}>
               {pages.map((page) => (
                 <Button key={page.name} onClick={() => navigate(page.path)} sx={{ color: "#1A1A1A", display: "block", textTransform: 'none', fontWeight: 600, fontSize: '0.95rem', '&:hover': { color: '#D1A362', backgroundColor: 'transparent' } }}>
                   {page.name}
                 </Button>
               ))}
+              <Button
+                size="small"
+                onClick={() => setTourOpen(true)}
+                sx={{
+                  color: "#A07028",
+                  borderColor: "#D1A362",
+                  border: "1px solid #D1A362",
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  borderRadius: 1.5,
+                  px: 1.2,
+                  py: 0.3,
+                  ml: 1,
+                  "&:hover": { bgcolor: "rgba(209, 163, 98, 0.1)" },
+                }}
+              >
+                Recruiter Tour 🚀
+              </Button>
             </Box>
 
             <Search>
@@ -398,6 +424,8 @@ function ResponsiveAppBar() {
           </Box>
         </Box>
       </Drawer>
+
+      <RecruiterTourModal open={tourOpen} onClose={() => setTourOpen(false)} />
     </>
   );
 }

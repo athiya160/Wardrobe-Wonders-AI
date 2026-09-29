@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Box, Typography, Button, Grid, Paper, Stack, FormControl, RadioGroup, FormControlLabel, Radio, Divider } from "@mui/material";
+import { Box, Typography, Button, Grid, Paper, Stack, FormControl, RadioGroup, FormControlLabel, Radio, Divider, Alert } from "@mui/material";
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 import { initPayment } from "../utils/initPayment";
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -69,9 +70,9 @@ const CheckoutPayment = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', pb: 12 }}>
+    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <ResponsiveAppBar />
-      <Box p={4} maxWidth="1000px" margin="auto" mt={4}>
+      <Box p={4} maxWidth="1000px" margin="auto" mt={4} sx={{ flexGrow: 1, width: "100%", pb: 8 }}>
         <Typography variant="h4" mb={4} sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>
           Checkout
         </Typography>
@@ -79,6 +80,9 @@ const CheckoutPayment = () => {
         <Grid container spacing={4}>
           <Grid item xs={12} md={8}>
             <Paper elevation={0} sx={{ p: 4, border: '1px solid #E0E0E0', borderRadius: 2 }}>
+              <Alert severity="info" sx={{ mb: 3, borderRadius: 2, bgcolor: "#EBF3FB", color: "#0D3C61", border: "1px solid #B8DAFC" }}>
+                <strong>Simulated Escrow Demo:</strong> Card, UPI (PhonePe), and Security Deposit transactions operate in full sandbox demonstration mode. No live charges are incurred.
+              </Alert>
               <Typography variant="h6" mb={3} fontWeight="600">
                 Payment Method
               </Typography>
@@ -211,6 +215,7 @@ const CheckoutPayment = () => {
           </Grid>
         </Grid>
       </Box>
+      <Fotter />
     </Box>
   );
 };

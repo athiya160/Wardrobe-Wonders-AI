@@ -1,4 +1,5 @@
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 import { Box, Typography, Stack, CircularProgress, Container, Tabs, Tab } from "@mui/material";
 import axios from "axios";
 import { styled } from "@mui/system";
@@ -168,6 +169,7 @@ const Home = () => {
           </Stack>
         )}
       </Container>
+      <Fotter />
     </Box>
   );
 };

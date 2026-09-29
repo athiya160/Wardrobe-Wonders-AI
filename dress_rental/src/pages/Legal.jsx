@@ -28,6 +28,7 @@ import {
   ArrowBack as BackIcon,
 } from "@mui/icons-material";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 
 const LEGAL_SECTIONS = [
   { id: "terms", path: "/terms", label: "Terms of Service", icon: <LegalIcon fontSize="small" /> },
@@ -60,10 +61,10 @@ const Legal = ({ defaultTab = "terms" }) => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#FAFAFA", pb: 8 }}>
+    <Box sx={{ minHeight: "100vh", backgroundColor: "#FAFAFA", display: "flex", flexDirection: "column" }}>
       <ResponsiveAppBar />
 
-      <Container maxWidth="lg" sx={{ pt: 4 }}>
+      <Container maxWidth="lg" sx={{ pt: 4, pb: 8, flexGrow: 1 }}>
         {/* Navigation Breadcrumbs */}
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
           <Button
@@ -443,6 +444,7 @@ const Legal = ({ defaultTab = "terms" }) => {
           )}
         </Paper>
       </Container>
+      <Fotter />
     </Box>
   );
 };

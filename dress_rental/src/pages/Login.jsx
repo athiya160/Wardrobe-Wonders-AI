@@ -15,7 +15,7 @@ import {
   EmailOutlined as EmailIcon,
   LockOutlined as LockIcon,
 } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useState } from "react";
 import { BASE_URL } from "../config/axiosConfig";
@@ -24,6 +24,7 @@ const heroImage = "/assets/Women/bridal_03.png";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -65,7 +66,10 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(res.data.user));
 
         const role = res.data.user.role || res.data.user.type;
-        if (role === "admin") {
+        const stateFrom = location?.state?.from;
+        if (stateFrom && role !== "admin" && role !== "provider") {
+          navigate(stateFrom);
+        } else if (role === "admin") {
           navigate("/admin");
         } else if (role === "provider") {
           navigate("/provider-dashboard");

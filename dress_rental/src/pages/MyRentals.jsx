@@ -35,6 +35,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 
 const MyRentals = () => {
   const navigate = useNavigate();
@@ -224,10 +225,10 @@ const MyRentals = () => {
   const completedCount = rentals.filter((r) => getNormalizedStatus(r) === "Completed").length;
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F5", color: "#1A1817" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F5", color: "#1A1817", display: "flex", flexDirection: "column" }}>
       <ResponsiveAppBar />
 
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 }, flexGrow: 1 }}>
         {/* Header Title & Refresh */}
         <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={3}>
           <Box>
@@ -804,6 +805,7 @@ const MyRentals = () => {
           {notification.message}
         </Alert>
       </Snackbar>
+      <Fotter />
     </Box>
   );
 };

@@ -1,15 +1,16 @@
 import { Box, Typography, Button, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const OrderSuccess = () => {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', pb: 12 }}>
+    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <ResponsiveAppBar />
-      <Box p={4} maxWidth="600px" margin="auto" mt={10} textAlign="center">
+      <Box p={4} maxWidth="600px" margin="auto" mt={10} textAlign="center" sx={{ flexGrow: 1, width: "100%", pb: 8 }}>
         <Paper elevation={0} sx={{ p: 6, border: '1px solid #E0E0E0', borderRadius: 2 }}>
           <CheckCircleOutlineIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
           <Typography variant="h4" mb={2} sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>
@@ -39,6 +40,7 @@ const OrderSuccess = () => {
           </Box>
         </Paper>
       </Box>
+      <Fotter />
     </Box>
   );
 };

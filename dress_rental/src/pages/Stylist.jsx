@@ -4,6 +4,7 @@ import { Box, Typography, Stack, Button, CircularProgress, Grid, Slider, IconBut
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 import DiamondIcon from '@mui/icons-material/Diamond';
@@ -116,9 +117,9 @@ const Stylist = () => {
   });
 
   return (
-    <Box sx={{ bgcolor: '#fafafa', minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: '#fafafa', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <ResponsiveAppBar />
-      <Box p={{ xs: 2, md: 4 }} maxWidth="1600px" margin="auto">
+      <Box p={{ xs: 2, md: 4 }} maxWidth="1600px" margin="auto" sx={{ flexGrow: 1, width: "100%" }}>
         <Grid container spacing={4}>
           
           {/* LEFT COLUMN: Create Your Look */}
@@ -573,6 +574,7 @@ const Stylist = () => {
           </Grid>
         </Grid>
       </Box>
+      <Fotter />
     </Box>
   );
 };

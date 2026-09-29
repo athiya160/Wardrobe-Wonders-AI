@@ -1,4 +1,5 @@
 import ResponsiveAppBar from "../components/Navbar";
+import Fotter from "../components/Fotter";
 import { useEffect, useState } from "react";
 import { Box, Typography, Button, Paper, CircularProgress, Stack } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -54,10 +55,11 @@ const VerifyPayment = () => {
   }, [navigate]);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F5" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F5", display: "flex", flexDirection: "column" }}>
       <ResponsiveAppBar />
       <Box
         sx={{
+          flexGrow: 1,
           minHeight: "75vh",
           display: "flex",
           flexDirection: "column",
@@ -116,6 +118,7 @@ const VerifyPayment = () => {
           )}
         </Paper>
       </Box>
+      <Fotter />
     </Box>
   );
 };
