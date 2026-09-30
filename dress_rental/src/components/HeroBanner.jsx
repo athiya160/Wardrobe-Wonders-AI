@@ -1,20 +1,26 @@
-import { Box, Typography, Button, Container, Stack } from "@mui/material";
+import React from "react";
+import { Box, Typography, Button, Container, Stack, Chip } from "@mui/material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import LocalLaundryServiceOutlinedIcon from "@mui/icons-material/LocalLaundryServiceOutlined";
+import BoltOutlinedIcon from "@mui/icons-material/BoltOutlined";
 
-const HeroContainer = styled(Box)(({ theme }) => ({
+const HeroContainer = styled(Box)({
   position: "relative",
   width: "100%",
-  height: "70vh", // Adjusted height
-  minHeight: "500px",
+  minHeight: "680px",
   display: "flex",
+  flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
   overflow: "hidden",
-}));
-
-// We can use a single background image that has both men and women, or two absolute positioned divs.
-// For the closest match to the mockup, let's use two split background divs with a dark gradient overlay in the center.
+  paddingTop: "60px",
+  paddingBottom: "80px",
+});
 
 const SplitBackground = styled(Box)(({ side }) => ({
   position: "absolute",
@@ -33,7 +39,8 @@ const Overlay = styled(Box)({
   left: 0,
   width: "100%",
   height: "100%",
-  background: "linear-gradient(90deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0.3) 100%)", // Dark center
+  background:
+    "linear-gradient(180deg, rgba(18,16,15,0.72) 0%, rgba(18,16,15,0.85) 60%, rgba(18,16,15,0.95) 100%)",
   zIndex: 2,
 });
 
@@ -42,92 +49,205 @@ const ContentWrapper = styled(Box)({
   zIndex: 3,
   textAlign: "center",
   color: "#FFFFFF",
-  padding: "0 20px",
+  maxWidth: "960px",
+  padding: "0 24px",
 });
 
-const WomenButton = styled(Button)(({ theme }) => ({
-  backgroundColor: "#D1A362", // Gold/Tan color
-  color: "#FFFFFF",
-  padding: "12px 36px",
-  fontSize: "1rem",
-  borderRadius: "4px", // slight rounding
-  textTransform: "none",
-  fontWeight: 600,
-  "&:hover": {
-    backgroundColor: "#B88E54",
-  },
-}));
-
-const MenButton = styled(Button)(({ theme }) => ({
-  backgroundColor: "#1C2A39", // Dark Blue color
-  color: "#FFFFFF",
-  padding: "12px 42px",
-  fontSize: "1rem",
-  borderRadius: "4px",
-  border: "1px solid #4A5A69",
-  textTransform: "none",
-  fontWeight: 600,
-  "&:hover": {
-    backgroundColor: "#15202B",
-  },
-}));
-
-const CarouselDots = styled(Box)({
-  position: "absolute",
-  bottom: "30px",
-  left: "50%",
-  transform: "translateX(-50%)",
+const TrustBadge = styled(Box)({
   display: "flex",
-  gap: "10px",
-  zIndex: 3,
+  alignItems: "center",
+  gap: "8px",
+  color: "rgba(255, 255, 255, 0.9)",
+  fontSize: "0.82rem",
+  fontWeight: 600,
+  letterSpacing: "0.02em",
 });
 
-const HeroBanner = () => {
+export const HeroBanner = () => {
   const navigate = useNavigate();
 
   return (
     <HeroContainer>
-      {/* Background Images */}
-      <SplitBackground side="left" sx={{ backgroundImage: 'url("https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=1200")' }} />
-      <SplitBackground side="right" sx={{ backgroundImage: 'url("https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&q=80&w=1200")' }} />
-      
-      {/* Dark Overlay for Text Readability */}
+      {/* Editorial Split Backgrounds */}
+      <SplitBackground
+        side="left"
+        sx={{
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=1200")',
+        }}
+      />
+      <SplitBackground
+        side="right"
+        sx={{
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&q=80&w=1200")',
+        }}
+      />
+
+      {/* Dark Luxury Vignette Overlay */}
       <Overlay />
 
+      {/* Main Content */}
       <ContentWrapper>
-        <Typography variant="h2" component="h1" gutterBottom sx={{ fontFamily: '"Playfair Display", "Georgia", serif', fontWeight: 500, mb: 3 }}>
-          Elevate Your Style.<br />
-          Rent. Wear. Repeat.
-        </Typography>
-        <Typography variant="body1" sx={{ fontWeight: 400, color: "#E0E0E0", mb: 5, fontSize: "1.1rem" }}>
-          Designer outfits for every occasion.<br />
-          For Women. For Men. For You.
-        </Typography>
-        
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center">
-          <WomenButton onClick={() => navigate("/w-dress")}>
-            Explore Women
-          </WomenButton>
-          <MenButton onClick={() => navigate("/m-dress")}>
-            Explore Men
-          </MenButton>
-        </Stack>
-      </ContentWrapper>
+        <Chip
+          label="✨ THE NEW ERA OF PEER-TO-PEER CIRCULAR LUXURY"
+          sx={{
+            backgroundColor: "rgba(209, 163, 98, 0.18)",
+            color: "#D1A362",
+            border: "1px solid rgba(209, 163, 98, 0.4)",
+            fontWeight: 800,
+            fontSize: "0.76rem",
+            letterSpacing: "0.08em",
+            mb: 3,
+            py: 0.5,
+            px: 1.5,
+          }}
+        />
 
-      <CarouselDots>
-        {[1, 2, 3].map((dot, index) => (
-          <Box 
-            key={index} 
-            sx={{ 
-              width: 8, 
-              height: 8, 
-              borderRadius: '50%', 
-              backgroundColor: index === 0 ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
-              cursor: 'pointer'
-            }} 
-          />
-        ))}
-      </CarouselDots>
+        <Typography
+          variant="h1"
+          sx={{
+            fontFamily: '"Playfair Display", "Georgia", serif',
+            fontWeight: 700,
+            fontSize: { xs: "2.3rem", sm: "3.2rem", md: "4.1rem" },
+            lineHeight: 1.15,
+            letterSpacing: "-0.02em",
+            mb: 2.5,
+            textShadow: "0 2px 16px rgba(0,0,0,0.5)",
+          }}
+        >
+          Haute Couture on Demand. <br />
+          <Typography
+            component="span"
+            variant="inherit"
+            sx={{
+              background: "linear-gradient(90deg, #FFFFFF 0%, #E8DFCF 40%, #D1A362 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Rent Iconic Designer Wear for 10% of Retail.
+          </Typography>
+        </Typography>
+
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#E2DACB",
+            fontSize: { xs: "1rem", sm: "1.15rem" },
+            lineHeight: 1.6,
+            maxWidth: "720px",
+            mx: "auto",
+            mb: 4.5,
+            textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+          }}
+        >
+          Borrow authenticated bridal lehengas, bespoke tuxedos, and red-carpet gowns. Guaranteed doorstep delivery, verified escrow protection, and AI-powered personalized styling.
+        </Typography>
+
+        {/* Primary CTA Buttons */}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate("/w-dress")}
+            endIcon={<ArrowForwardIcon />}
+            sx={{
+              backgroundColor: "#D1A362",
+              color: "#1A1817",
+              fontWeight: 800,
+              fontSize: "0.95rem",
+              px: 3.5,
+              py: 1.4,
+              borderRadius: 1.5,
+              textTransform: "none",
+              boxShadow: "0 6px 20px rgba(209,163,98,0.35)",
+              "&:hover": {
+                backgroundColor: "#B8863A",
+                boxShadow: "0 8px 26px rgba(209,163,98,0.5)",
+              },
+            }}
+          >
+            Explore Women's Couture
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => navigate("/m-dress")}
+            sx={{
+              borderColor: "rgba(255,255,255,0.4)",
+              color: "#FFFFFF",
+              fontWeight: 700,
+              fontSize: "0.95rem",
+              px: 3.5,
+              py: 1.4,
+              borderRadius: 1.5,
+              textTransform: "none",
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(0,0,0,0.25)",
+              "&:hover": {
+                borderColor: "#D1A362",
+                backgroundColor: "rgba(209,163,98,0.12)",
+                color: "#D1A362",
+              },
+            }}
+          >
+            Explore Men's Collection
+          </Button>
+
+          <Button
+            variant="text"
+            size="large"
+            onClick={() => navigate("/stylist")}
+            startIcon={<AutoAwesomeIcon sx={{ color: "#D1A362" }} />}
+            sx={{
+              color: "#E2DACB",
+              fontWeight: 700,
+              fontSize: "0.92rem",
+              textTransform: "none",
+              "&:hover": { color: "#D1A362", backgroundColor: "transparent" },
+            }}
+          >
+            Consult AI Stylist ✨
+          </Button>
+        </Stack>
+
+        {/* Live Trust Badges Strip */}
+        <Box
+          sx={{
+            mt: 7,
+            pt: 3,
+            borderTop: "1px solid rgba(255,255,255,0.12)",
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: { xs: 2.5, md: 5 },
+          }}
+        >
+          <TrustBadge>
+            <VerifiedOutlinedIcon sx={{ fontSize: 18, color: "#D1A362" }} />
+            100% Verified Authenticity
+          </TrustBadge>
+          <TrustBadge>
+            <SecurityOutlinedIcon sx={{ fontSize: 18, color: "#D1A362" }} />
+            Insured Security Deposit Escrow
+          </TrustBadge>
+          <TrustBadge>
+            <LocalLaundryServiceOutlinedIcon sx={{ fontSize: 18, color: "#D1A362" }} />
+            Eco-Friendly Dry Cleaning Included
+          </TrustBadge>
+          <TrustBadge>
+            <BoltOutlinedIcon sx={{ fontSize: 18, color: "#D1A362" }} />
+            Groq LLM AI Fit Concierge
+          </TrustBadge>
+        </Box>
+      </ContentWrapper>
     </HeroContainer>
   );
 };
