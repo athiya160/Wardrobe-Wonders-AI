@@ -111,7 +111,7 @@ export const RecruiterTourModal = ({ open, onClose }) => {
         <Box>
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip
-              label="Engineering Tour"
+              label="System Architecture & Specs"
               size="small"
               sx={{ bgcolor: "#1A1817", color: "#D1A362", fontWeight: 700, fontSize: "0.75rem" }}
             />
@@ -120,10 +120,10 @@ export const RecruiterTourModal = ({ open, onClose }) => {
             </Typography>
           </Stack>
           <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, color: "#1A1817" }}>
-            Wardrobe Wonders — Architecture & Engineering
+            Wardrobe Wonders — Engineering & Architecture Specifications
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Peer-to-Peer Luxury Fashion Rental Platform with AI Stylist & Simulated Escrow
+            Decoupled Multi-Tier Luxury Fashion Marketplace with RAG AI & Deposit Escrow
           </Typography>
         </Box>
         <IconButton onClick={onClose} size="small" sx={{ color: "#666" }}>
@@ -142,7 +142,7 @@ export const RecruiterTourModal = ({ open, onClose }) => {
           }}
         >
           <Tab label="1. System Architecture" />
-          <Tab label="2. 1-Click Role Switcher" />
+          <Tab label="2. Sandbox Persona Testing" />
           <Tab label="3. Verified Test Suite & Specs" />
         </Tabs>
       </Box>
@@ -428,59 +428,12 @@ export const RecruiterTourModal = ({ open, onClose }) => {
 
       <DialogActions sx={{ px: 3, pb: 2, pt: 1, justifyContent: "space-between" }}>
         <Typography variant="caption" color="text.secondary">
-          Candidate: Athiya Tabassum | Portfolio Demo
+          Lead Engineer: Athiya Tabassum | Production Cloud Architecture
         </Typography>
         <Button onClick={onClose} sx={{ color: "#1A1817", fontWeight: 700 }}>
           Close
         </Button>
       </DialogActions>
     </Dialog>
-  );
-};
-
-export const RecruiterFloatingPill = () => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <Box
-        onClick={() => setOpen(true)}
-        sx={{
-          position: "fixed",
-          bottom: 24,
-          left: 24,
-          zIndex: 9998,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: 1.2,
-          bgcolor: "#1A1817",
-          color: "#FFF",
-          py: 1,
-          px: 2,
-          borderRadius: 8,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-          border: "1px solid #D1A362",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          "&:hover": {
-            transform: "translateY(-2px)",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-            bgcolor: "#2B2826",
-          },
-        }}
-      >
-        <AutoAwesomeIcon sx={{ color: "#D1A362", fontSize: 20 }} />
-        <Box>
-          <Typography variant="caption" sx={{ color: "#D1A362", fontWeight: 800, letterSpacing: "0.05em", display: "block", lineHeight: 1 }}>
-            RECRUITER MODE
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.82rem", lineHeight: 1.2 }}>
-            Architecture & 1-Click Logins
-          </Typography>
-        </Box>
-      </Box>
-
-      <RecruiterTourModal open={open} onClose={() => setOpen(false)} />
-    </>
   );
 };

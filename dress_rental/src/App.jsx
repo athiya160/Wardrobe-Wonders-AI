@@ -22,7 +22,6 @@ import ProviderStudio from "./pages/ProviderStudio";
 import MyRentals from "./pages/MyRentals";
 import Legal from "./pages/Legal";
 import AIChatWidget from "./components/AIChatWidget";
-import { RecruiterFloatingPill } from "./components/RecruiterTourModal";
 
 function App() {
   return (
@@ -75,7 +74,6 @@ function App() {
           <Route path="*" element={<h1>Not Found</h1>} />
         </Routes>
         <AIChatWidget />
-        <RecruiterFloatingPill />
       </BrowserRouter>
     </ThemeProvider>
   );

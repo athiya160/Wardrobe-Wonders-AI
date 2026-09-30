@@ -156,78 +156,6 @@ const Login = () => {
           </Typography>
         </Box>
 
-        {/* Recruiter / Quick Demo Access */}
-        <Box
-          sx={{
-            p: 2,
-            mb: 3,
-            backgroundColor: "#FBF8F2",
-            borderRadius: 2,
-            border: "1px dashed #D1A362",
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 700,
-              color: "#8A6D3B",
-              display: "block",
-              mb: 1,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            ⚡ Recruiter / Demo 1-Click Access
-          </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => fillDemo("customer")}
-              sx={{
-                textTransform: "none",
-                fontSize: "0.78rem",
-                py: 0.5,
-                borderColor: "#D1A362",
-                color: "#1A1A1A",
-                "&:hover": { borderColor: "#8A6D3B", backgroundColor: "rgba(209,163,98,0.1)" },
-              }}
-            >
-              👤 Customer Demo
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => fillDemo("provider")}
-              sx={{
-                textTransform: "none",
-                fontSize: "0.78rem",
-                py: 0.5,
-                borderColor: "#D1A362",
-                color: "#1A1A1A",
-                "&:hover": { borderColor: "#8A6D3B", backgroundColor: "rgba(209,163,98,0.1)" },
-              }}
-            >
-              👗 Provider Studio Demo
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => fillDemo("admin")}
-              sx={{
-                textTransform: "none",
-                fontSize: "0.78rem",
-                py: 0.5,
-                borderColor: "#D1A362",
-                color: "#1A1A1A",
-                "&:hover": { borderColor: "#8A6D3B", backgroundColor: "rgba(209,163,98,0.1)" },
-              }}
-            >
-              🛡️ Admin Console Demo
-            </Button>
-          </Stack>
-        </Box>
-
         {/* Error Alert */}
         {error && (
           <Alert
@@ -353,6 +281,39 @@ const Login = () => {
             >
               Create an account
             </Link>
+          </Typography>
+        </Box>
+
+        {/* Discreet Platform Sandbox Credentials Helper */}
+        <Box sx={{ textAlign: "center", mt: 4, pt: 2.5, borderTop: "1px solid #EEEEEE" }}>
+          <Typography variant="caption" sx={{ color: "#9E9E9E", fontSize: "0.75rem" }}>
+            Platform Demo Profiles:{" "}
+            <Typography
+              component="span"
+              variant="caption"
+              onClick={() => fillDemo("customer")}
+              sx={{ color: "#8A6D3B", fontWeight: 600, cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+            >
+              Customer
+            </Typography>
+            {" • "}
+            <Typography
+              component="span"
+              variant="caption"
+              onClick={() => fillDemo("provider")}
+              sx={{ color: "#8A6D3B", fontWeight: 600, cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+            >
+              Boutique Partner
+            </Typography>
+            {" • "}
+            <Typography
+              component="span"
+              variant="caption"
+              onClick={() => fillDemo("admin")}
+              sx={{ color: "#8A6D3B", fontWeight: 600, cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+            >
+              Platform Admin
+            </Typography>
           </Typography>
         </Box>
       </Box>
