@@ -27,6 +27,8 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import Chip from '@mui/material/Chip';
+import AuthModal from './AuthModal';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -85,8 +87,19 @@ function ResponsiveAppBar() {
   const [cartItems, setCartItems] = React.useState([]);
   const [cartOpen, setCartOpen] = React.useState(false);
   const [wishlistOpen, setWishlistOpen] = React.useState(false);
-
   const [wishlistItems, setWishlistItems] = React.useState([]);
+
+  const [authModalOpen, setAuthModalOpen] = React.useState(false);
+  const [authModalTab, setAuthModalTab] = React.useState("login");
+  const [userMenuAnchor, setUserMenuAnchor] = React.useState(null);
+  const [token, setToken] = React.useState(() => localStorage.getItem("token"));
+  const [currentUser, setCurrentUser] = React.useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  });
 
   React.useEffect(() => {
     const updateCart = () => {
@@ -97,17 +110,38 @@ function ResponsiveAppBar() {
       const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
       setWishlistItems(wishlist);
     };
+    const updateAuth = () => {
+      setToken(localStorage.getItem("token"));
+      try {
+        setCurrentUser(JSON.parse(localStorage.getItem("user") || "null"));
+      } catch {
+        setCurrentUser(null);
+      }
+    };
     
     updateCart();
     updateWishlist();
+    updateAuth();
     
     window.addEventListener('cart_updated', updateCart);
     window.addEventListener('wishlist_updated', updateWishlist);
+    window.addEventListener('auth_updated', updateAuth);
+    window.addEventListener('storage', updateAuth);
     return () => {
       window.removeEventListener('cart_updated', updateCart);
       window.removeEventListener('wishlist_updated', updateWishlist);
+      window.removeEventListener('auth_updated', updateAuth);
+      window.removeEventListener('storage', updateAuth);
     };
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth_updated"));
+    setUserMenuAnchor(null);
+    navigate("/");
+  };
 
   const handleRemoveFromCart = (index) => {
     const newCart = [...cartItems];
@@ -159,18 +193,40 @@ function ResponsiveAppBar() {
                     <Typography textAlign="center">{page.name}</Typography>
                   </MenuItem>
                 ))}
-                {localStorage.getItem("token") && (
-                  <MenuItem
-                    onClick={() => {
-                      handleCloseNavMenu();
-                      const u = JSON.parse(localStorage.getItem("user") || "{}");
-                      navigate(u.role === "provider" ? "/provider-dashboard" : "/my-rentals");
-                    }}
-                  >
-                    <Typography textAlign="center" fontWeight={700} color="#D1A362">
-                      {JSON.parse(localStorage.getItem("user") || "{}").role === "provider" ? "Provider Studio" : "My Rentals"}
-                    </Typography>
-                  </MenuItem>
+                <Divider sx={{ my: 1 }} />
+                {token && currentUser ? (
+                  <>
+                    <MenuItem onClick={() => { handleCloseNavMenu(); navigate("/profile"); }}>
+                      <Typography textAlign="center" fontWeight={600}>My Profile ({currentUser?.firstname || "User"})</Typography>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleCloseNavMenu();
+                        navigate(currentUser?.role === "provider" ? "/provider-dashboard" : "/my-rentals");
+                      }}
+                    >
+                      <Typography textAlign="center" fontWeight={700} color="#D1A362">
+                        {currentUser?.role === "provider" ? "Provider Studio" : "My Rentals"}
+                      </Typography>
+                    </MenuItem>
+                    {currentUser?.role === "admin" && (
+                      <MenuItem onClick={() => { handleCloseNavMenu(); navigate("/admin"); }}>
+                        <Typography textAlign="center" fontWeight={700} color="#7A1C1C">Admin Console</Typography>
+                      </MenuItem>
+                    )}
+                    <MenuItem onClick={() => { handleCloseNavMenu(); handleLogout(); }}>
+                      <Typography textAlign="center" color="error.main" fontWeight={600}>Sign Out</Typography>
+                    </MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <MenuItem onClick={() => { handleCloseNavMenu(); setAuthModalTab("login"); setAuthModalOpen(true); }}>
+                      <Typography textAlign="center" fontWeight={600}>Log In</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseNavMenu(); setAuthModalTab("signup"); setAuthModalOpen(true); }}>
+                      <Typography textAlign="center" fontWeight={700} color="#D1A362">Sign Up / Join</Typography>
+                    </MenuItem>
+                  </>
                 )}
               </Menu>
             </Box>
@@ -206,68 +262,196 @@ function ResponsiveAppBar() {
                 </Badge>
               </IconButton>
               
-              {localStorage.getItem("token") ? (
+              {token && currentUser ? (
                 <Box display="flex" alignItems="center" gap={1.5} sx={{ ml: 1 }}>
-                  {(() => {
-                    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-                    if (currentUser?.role === 'provider' || currentUser?.type === 'provider') {
-                      return (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => navigate("/provider-dashboard")}
-                          sx={{
-                            borderColor: "#D1A362",
-                            color: "#A07028",
-                            fontWeight: 700,
-                            fontSize: "0.8rem",
-                            textTransform: "none",
-                            borderRadius: 1.5,
-                            px: 1.5,
-                            py: 0.4,
-                            display: { xs: "none", sm: "inline-flex" },
-                            "&:hover": { backgroundColor: "rgba(209, 163, 98, 0.1)", borderColor: "#D1A362" }
-                          }}
-                        >
-                          Provider Studio
-                        </Button>
-                      );
-                    }
-                    return (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => navigate("/my-rentals")}
-                        sx={{
-                          borderColor: "#1A1817",
-                          color: "#1A1817",
-                          fontWeight: 700,
-                          fontSize: "0.8rem",
-                          textTransform: "none",
-                          borderRadius: 1.5,
-                          px: 1.5,
-                          py: 0.4,
-                          display: { xs: "none", sm: "inline-flex" },
-                          "&:hover": { backgroundColor: "#F5F5F5", borderColor: "#1A1817" }
-                        }}
-                      >
-                        My Rentals
-                      </Button>
-                    );
-                  })()}
+                  {currentUser?.role === 'provider' ? (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => navigate("/provider-dashboard")}
+                      sx={{
+                        borderColor: "#D1A362",
+                        color: "#A07028",
+                        fontWeight: 700,
+                        fontSize: "0.8rem",
+                        textTransform: "none",
+                        borderRadius: 1.5,
+                        px: 1.5,
+                        py: 0.4,
+                        display: { xs: "none", sm: "inline-flex" },
+                        "&:hover": { backgroundColor: "rgba(209, 163, 98, 0.1)", borderColor: "#D1A362" }
+                      }}
+                    >
+                      Provider Studio
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => navigate("/my-rentals")}
+                      sx={{
+                        borderColor: "#1A1817",
+                        color: "#1A1817",
+                        fontWeight: 700,
+                        fontSize: "0.8rem",
+                        textTransform: "none",
+                        borderRadius: 1.5,
+                        px: 1.5,
+                        py: 0.4,
+                        display: { xs: "none", sm: "inline-flex" },
+                        "&:hover": { backgroundColor: "#F5F5F5", borderColor: "#1A1817" }
+                      }}
+                    >
+                      My Rentals
+                    </Button>
+                  )}
 
-                  <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer', '&:hover': { color: '#D1A362' } }} onClick={() => navigate("/profile")}>
-                    <PersonOutlineOutlinedIcon />
-                    <Typography variant="body2" fontWeight={600}>
-                      Hello {JSON.parse(localStorage.getItem("user") || "{}")?.firstname || "User"}
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={0.8}
+                    sx={{
+                      cursor: 'pointer',
+                      px: 1.5,
+                      py: 0.6,
+                      borderRadius: 2,
+                      backgroundColor: "#F9F8F6",
+                      border: "1px solid #E8E3D9",
+                      transition: "all 0.2s ease",
+                      '&:hover': {
+                        borderColor: '#D1A362',
+                        backgroundColor: '#F5EFE6',
+                      }
+                    }}
+                    onClick={(e) => setUserMenuAnchor(e.currentTarget)}
+                  >
+                    <Avatar
+                      sx={{
+                        width: 26,
+                        height: 26,
+                        bgcolor: '#1A1817',
+                        color: '#D1A362',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {currentUser?.firstname ? currentUser.firstname[0].toUpperCase() : "U"}
+                    </Avatar>
+                    <Typography variant="body2" fontWeight={600} sx={{ color: '#1A1817', fontSize: '0.85rem' }}>
+                      {currentUser?.firstname || "Account"}
                     </Typography>
-                    <KeyboardArrowDownIcon fontSize="small" />
+                    <KeyboardArrowDownIcon fontSize="small" sx={{ color: '#666' }} />
                   </Box>
+
+                  {/* Luxury User Dropdown Menu */}
+                  <Menu
+                    anchorEl={userMenuAnchor}
+                    open={Boolean(userMenuAnchor)}
+                    onClose={() => setUserMenuAnchor(null)}
+                    PaperProps={{
+                      sx: {
+                        mt: 1.5,
+                        minWidth: 230,
+                        borderRadius: 2,
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+                        border: "1px solid #E8E3D9",
+                        py: 1,
+                      }
+                    }}
+                  >
+                    <Box sx={{ px: 2, py: 1.5 }}>
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#1A1817' }}>
+                        {currentUser?.name || `${currentUser?.firstname || ''} ${currentUser?.lastname || ''}`.trim() || "User"}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#888', display: 'block', mb: 0.8 }}>
+                        {currentUser?.email}
+                      </Typography>
+                      <Chip
+                        size="small"
+                        label={currentUser?.role === 'admin' ? 'Platform Admin' : currentUser?.role === 'provider' ? 'Boutique Partner' : 'Customer Member'}
+                        sx={{
+                          fontSize: '0.7rem',
+                          height: 20,
+                          fontWeight: 700,
+                          bgcolor: currentUser?.role === 'admin' ? '#7A1C1C' : currentUser?.role === 'provider' ? '#A07028' : '#1A1817',
+                          color: '#FFF'
+                        }}
+                      />
+                    </Box>
+                    <Divider sx={{ my: 0.5 }} />
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/profile"); }}>
+                      <Typography variant="body2">My Profile</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/my-rentals"); }}>
+                      <Typography variant="body2">My Rentals & Bookings</Typography>
+                    </MenuItem>
+                    {(currentUser?.role === 'provider' || currentUser?.role === 'admin') && (
+                      <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/provider-dashboard"); }}>
+                        <Typography variant="body2" color="#A07028" fontWeight={600}>Provider Studio</Typography>
+                      </MenuItem>
+                    )}
+                    {currentUser?.role === 'admin' && (
+                      <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/admin"); }}>
+                        <Typography variant="body2" color="#7A1C1C" fontWeight={600}>Admin Console</Typography>
+                      </MenuItem>
+                    )}
+                    <Divider sx={{ my: 0.5 }} />
+                    <MenuItem onClick={handleLogout} sx={{ color: '#D32F2F' }}>
+                      <Typography variant="body2" fontWeight={600}>Sign Out</Typography>
+                    </MenuItem>
+                  </Menu>
                 </Box>
               ) : (
-                <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer', ml: 1, '&:hover': { color: '#D1A362' } }} onClick={() => navigate("/login")}>
-                  <PersonOutlineOutlinedIcon />
-                  <Typography variant="body2" fontWeight={600}>Login</Typography>
+                <Box display="flex" alignItems="center" gap={1.2} sx={{ ml: 1 }}>
+                  <Button
+                    onClick={() => {
+                      setAuthModalTab("login");
+                      setAuthModalOpen(true);
+                    }}
+                    startIcon={<PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} />}
+                    sx={{
+                      color: "#1A1817",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: "0.88rem",
+                      px: 1.5,
+                      py: 0.6,
+                      borderRadius: 1.5,
+                      "&:hover": {
+                        color: "#D1A362",
+                        backgroundColor: "rgba(209, 163, 98, 0.08)",
+                      },
+                    }}
+                  >
+                    Log In
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setAuthModalTab("signup");
+                      setAuthModalOpen(true);
+                    }}
+                    sx={{
+                      bgcolor: "#1A1817",
+                      color: "#FFFFFF",
+                      border: "1px solid #D1A362",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: "0.85rem",
+                      px: 2,
+                      py: 0.6,
+                      borderRadius: 1.5,
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        bgcolor: "#2C2825",
+                        borderColor: "#E5C287",
+                        boxShadow: "0 4px 14px rgba(209, 163, 98, 0.25)",
+                      },
+                    }}
+                  >
+                    Sign Up
+                  </Button>
                 </Box>
               )}
             </Box>
@@ -398,6 +582,13 @@ function ResponsiveAppBar() {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Luxury Auth Modal for Storefront Sign In / Sign Up */}
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialTab={authModalTab}
+      />
     </>
   );
 }

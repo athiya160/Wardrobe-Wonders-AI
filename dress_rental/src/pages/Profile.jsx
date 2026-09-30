@@ -62,7 +62,8 @@ const Profile = () => {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    window.dispatchEvent(new Event("auth_updated"));
+    window.location.href = "/";
   };
 
   const renderContent = () => {

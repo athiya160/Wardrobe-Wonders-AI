@@ -116,9 +116,18 @@ const SignUp = () => {
     try {
       const res = await axios.post(`${BASE_URL}/register`, payload);
       if (res.data?.status || res.status === 200) {
+        if (res.data?.token && res.data?.user) {
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          window.dispatchEvent(new Event("auth_updated"));
+        }
         setSuccess(true);
         setTimeout(() => {
-          navigate("/login");
+          if (role === "provider") {
+            navigate("/provider-dashboard");
+          } else {
+            navigate("/");
+          }
         }, 1200);
       } else {
         setError(res.data?.message || "Registration failed. Please try again.");

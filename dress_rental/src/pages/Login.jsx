@@ -64,6 +64,7 @@ const Login = () => {
       if (res.data?.status && res.data?.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        window.dispatchEvent(new Event("auth_updated"));
 
         const role = res.data.user.role || res.data.user.type;
         const stateFrom = location?.state?.from;
