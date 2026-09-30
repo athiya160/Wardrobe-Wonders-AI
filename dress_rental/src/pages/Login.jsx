@@ -119,7 +119,7 @@ const Login = () => {
         }}
       >
         {/* Brand Header */}
-        <Box sx={{ mb: { xs: 4, sm: 5 } }}>
+        <Box sx={{ mb: { xs: 4, sm: 5 }, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Link to="/" style={{ display: "inline-block" }}>
             <img
               src={logo}
@@ -127,6 +127,22 @@ const Login = () => {
               style={{ height: 38, objectFit: "contain" }}
             />
           </Link>
+          <Button
+            component={Link}
+            to="/"
+            size="small"
+            sx={{
+              color: "#8A6D3B",
+              fontWeight: 700,
+              fontSize: "0.82rem",
+              textTransform: "none",
+              borderRadius: 1.5,
+              px: 1.5,
+              "&:hover": { backgroundColor: "rgba(209, 163, 98, 0.08)" },
+            }}
+          >
+            ← Return to Storefront
+          </Button>
         </Box>
 
         {/* Editorial Titles */}
