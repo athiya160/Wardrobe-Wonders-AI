@@ -28,7 +28,12 @@ import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import AuthModal from './AuthModal';
+import { RecruiterTourModal } from './RecruiterTourModal';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -91,6 +96,7 @@ function ResponsiveAppBar() {
 
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
   const [authModalTab, setAuthModalTab] = React.useState("login");
+  const [recruiterTourOpen, setRecruiterTourOpen] = React.useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = React.useState(null);
   const [token, setToken] = React.useState(() => localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = React.useState(() => {
@@ -188,6 +194,32 @@ function ResponsiveAppBar() {
                 onClose={handleCloseNavMenu}
                 sx={{ display: { xs: "block", md: "none" } }}
               >
+                {/* Mobile Recruiter Quick Tour Action */}
+                <MenuItem
+                  onClick={() => {
+                    handleCloseNavMenu();
+                    setRecruiterTourOpen(true);
+                  }}
+                  aria-label="Open Recruiter Quick Tour and System Specifications"
+                  sx={{
+                    bgcolor: "#1A1817",
+                    color: "#D1A362",
+                    borderRadius: 1.5,
+                    mx: 1,
+                    mb: 1.5,
+                    py: 1,
+                    "&:hover": { bgcolor: "#2C2825" },
+                    "&:focus-visible": { outline: "2px solid #D1A362" },
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center" width="100%" justifyContent="center">
+                    <AutoAwesomeIcon sx={{ fontSize: 18, color: "#D1A362" }} />
+                    <Typography textAlign="center" fontWeight={800} fontSize="0.88rem" color="#D1A362">
+                      Recruiter Quick Tour ⚙️
+                    </Typography>
+                  </Stack>
+                </MenuItem>
+
                 {pages.map((page) => (
                   <MenuItem onClick={() => { handleCloseNavMenu(); navigate(page.path); }} key={page.name}>
                     <Typography textAlign="center">{page.name}</Typography>
@@ -261,6 +293,80 @@ function ResponsiveAppBar() {
                   <LocalMallOutlinedIcon />
                 </Badge>
               </IconButton>
+
+              {/* Desktop Recruiter Quick Tour Action */}
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => setRecruiterTourOpen(true)}
+                startIcon={<AutoAwesomeIcon sx={{ color: "#D1A362", fontSize: "1.05rem" }} />}
+                aria-label="Open Recruiter Quick Tour and System Specifications"
+                sx={{
+                  bgcolor: "#1A1817",
+                  color: "#FFFFFF",
+                  border: "1px solid #D1A362",
+                  fontWeight: 700,
+                  fontSize: "0.82rem",
+                  textTransform: "none",
+                  borderRadius: 1.8,
+                  px: 1.6,
+                  py: 0.6,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                  display: { xs: "none", lg: "inline-flex" },
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    bgcolor: "#2C2825",
+                    borderColor: "#E5C287",
+                    boxShadow: "0 4px 14px rgba(209, 163, 98, 0.3)",
+                    transform: "translateY(-1px)",
+                  },
+                  "&:focus-visible": {
+                    outline: "2px solid #D1A362",
+                    outlineOffset: "2px",
+                  },
+                }}
+              >
+                Recruiter Tour ⚙️
+              </Button>
+
+              {/* Compact Recruiter Tour for Medium Viewports */}
+              <Tooltip title="Recruiter Quick Tour & Architecture Specs">
+                <IconButton
+                  onClick={() => setRecruiterTourOpen(true)}
+                  aria-label="Open Recruiter Quick Tour and System Specifications"
+                  sx={{
+                    display: { xs: "none", md: "inline-flex", lg: "none" },
+                    color: "#A07028",
+                    border: "1px solid #D1A362",
+                    borderRadius: 1.8,
+                    p: 0.8,
+                    bgcolor: "#FAF8F5",
+                    "&:hover": { bgcolor: "#F5EFE6" },
+                    "&:focus-visible": { outline: "2px solid #D1A362", outlineOffset: "2px" },
+                  }}
+                >
+                  <AutoAwesomeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
+              {/* Direct GitHub Source Link */}
+              <Tooltip title="View Verified Source Code on GitHub">
+                <IconButton
+                  component="a"
+                  href="https://github.com/athiya160/Wardrobe-Wonders-AI"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View verified source code on GitHub"
+                  sx={{
+                    color: "#4A4A4A",
+                    display: { xs: "none", xl: "inline-flex" },
+                    "&:hover": { color: "#1A1A1A" },
+                    "&:focus-visible": { outline: "2px solid #D1A362", outlineOffset: "2px" },
+                  }}
+                >
+                  <GitHubIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
               
               {token && currentUser ? (
                 <Box display="flex" alignItems="center" gap={1.5} sx={{ ml: 1 }}>
@@ -588,6 +694,12 @@ function ResponsiveAppBar() {
         open={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialTab={authModalTab}
+      />
+
+      {/* Recruiter Quick Tour & Architecture Specs Modal */}
+      <RecruiterTourModal
+        open={recruiterTourOpen}
+        onClose={() => setRecruiterTourOpen(false)}
       />
     </>
   );

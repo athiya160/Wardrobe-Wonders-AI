@@ -31,9 +31,15 @@ import PersonIcon from "@mui/icons-material/Person";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import { useNavigate } from "react-router-dom";
+
+// Configurable Developer Profile Links
+const DEVELOPER_GITHUB_URL = "https://github.com/athiya160/Wardrobe-Wonders-AI";
+const DEVELOPER_RESUME_PATH = "/Athiya_Tabassum_Resume.pdf";
+const DEVELOPER_LINKEDIN_URL = import.meta.env.VITE_DEVELOPER_LINKEDIN_URL || "https://www.linkedin.com/in/athiya-tabassum";
 
 export const RecruiterTourModal = ({ open, onClose }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -221,9 +227,9 @@ export const RecruiterTourModal = ({ open, onClose }) => {
                     Python FastAPI, Groq LLM API (openai/gpt-oss-20b), FAISS vector store.
                   </Typography>
                   <Stack direction="row" spacing={1} flexWrap="wrap" gap={0.8}>
-                    <Chip label="<300ms Inference" size="small" variant="outlined" />
-                    <Chip label="RAG Recommendations" size="small" variant="outlined" />
-                    <Chip label="Resilient Regex Fallback" size="small" variant="outlined" />
+                    <Chip label="FastAPI Microservice" size="small" variant="outlined" />
+                    <Chip label="Groq Llama-3 & FAISS" size="small" variant="outlined" />
+                    <Chip label="Active MongoDB Regex Fallback" size="small" variant="outlined" />
                   </Stack>
                 </Paper>
               </Grid>
@@ -254,9 +260,13 @@ export const RecruiterTourModal = ({ open, onClose }) => {
         {/* TAB 1: 1-CLICK ROLE SWITCHER */}
         {activeTab === 1 && (
           <Stack spacing={3}>
+            <Alert severity="info" sx={{ bgcolor: "#F5F8FA", color: "#1B3A4B", border: "1px solid #D1E3ED", borderRadius: 2 }}>
+              <strong>Safe Synthetic Demo Accounts:</strong> One-click testing executes standard <code>POST /login</code> with real bcrypt hash verification and cryptographically signed JWT sessions. All operations strictly enforce server-side Role-Based Access Control (RBAC) without any backdoors or authentication bypasses.
+            </Alert>
+
             <Typography variant="body2" color="text.secondary">
               Recruiters and hiring managers can test any of the 3 persona workflows with 1 click.
-              Session credentials will be saved and you will be routed directly to that persona’s view.
+              Pre-seeded with synthetic catalog and transaction data for safe demonstration.
             </Typography>
 
             {loginFeedback && (
@@ -398,13 +408,13 @@ export const RecruiterTourModal = ({ open, onClose }) => {
 
             <Divider />
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between" alignItems="center">
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} flexWrap="wrap" justifyContent="space-between" alignItems="center">
               <Button
                 variant="outlined"
                 startIcon={<LaunchIcon />}
                 href="https://wardrobe-wonders-ai.onrender.com/health"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{ textTransform: "none", color: "#1A1817", borderColor: "#DDD" }}
               >
@@ -413,13 +423,42 @@ export const RecruiterTourModal = ({ open, onClose }) => {
               <Button
                 variant="outlined"
                 startIcon={<LaunchIcon />}
-                href="https://github.com/athiya160/Wardrobe-Wonders-AI"
+                href={DEVELOPER_GITHUB_URL}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{ textTransform: "none", color: "#1A1817", borderColor: "#DDD" }}
               >
                 GitHub Repository
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<LaunchIcon />}
+                href={DEVELOPER_LINKEDIN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                sx={{ textTransform: "none", color: "#0077B5", borderColor: "#B8D4E3" }}
+              >
+                LinkedIn Profile
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<FileDownloadIcon />}
+                href={DEVELOPER_RESUME_PATH}
+                download="Athiya_Tabassum_Resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                sx={{
+                  textTransform: "none",
+                  bgcolor: "#1A1817",
+                  color: "#D1A362",
+                  fontWeight: 700,
+                  "&:hover": { bgcolor: "#2C2825" },
+                }}
+              >
+                Download Resume
               </Button>
             </Stack>
           </Stack>
