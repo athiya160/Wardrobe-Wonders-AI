@@ -2,6 +2,7 @@ import { Router } from "express";
 import productModel from "../models/productModel.js";
 import ReportModel from "../models/ReportModel.js";
 import mongoose from "mongoose";
+import { aiStylistChat, aiOutfitRecommendation } from "../services/ai.service.js";
 const productRouter = new Router();
 
 productRouter.get("/gender/:gender", async (req, res) => {
@@ -102,27 +103,11 @@ productRouter.post("/search", async (req, res) => {
 productRouter.post("/recommend-outfit", async (req, res) => {
   try {
     const { budget, gender, occasion, color, season, style } = req.body;
-    let query = {};
-    if (gender) query.gender = gender;
-    if (occasion) query.category = occasion;
-    if (budget) query.price = { $lte: Number(budget) };
-    
-    // Find some matching products
-    const products = await productModel.find(query).limit(5);
-    
-    // Fallback if no exact match
-    const finalProducts = products.length > 0 ? products : await productModel.find().limit(5);
-    
-    // Format to match the Stylist.jsx expectation
-    const formattedOutfit = finalProducts.map(p => ({
-      product: p,
-      reason: `This ${p.name} perfectly matches your ${style || "preferred"} style for a ${occasion || "event"}.`
-    }));
-    
-    res.json({ outfit: formattedOutfit });
+    const result = await aiOutfitRecommendation({ budget, gender, occasion, color, season, style });
+    return res.json(result);
   } catch (err) {
-    console.error("Error with mock AI Stylist:", err);
-    res.status(500).send("AI Stylist Failed");
+    console.error("Error with AI Stylist recommendation:", err);
+    return res.status(500).json({ outfit: [] });
   }
 });
 
@@ -191,63 +176,14 @@ productRouter.post("/similar", async (req, res) => {
 productRouter.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
-    if (!message || !message.trim()) {
-      return res.json({
-        text: "Hello! I am your AI Fashion Stylist. What kind of outfit or occasion are you shopping for today?",
-        products: []
-      });
-    }
-
-    // Attempt high-accuracy Groq / FastAPI AI response first
-    const fastApiUrl = process.env.FASTAPI_URL || "http://127.0.0.1:8001";
-    try {
-      const response = await fetch(`${fastApiUrl}/ai/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-        signal: AbortSignal.timeout(4000),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.text) {
-          return res.json(data);
-        }
-      }
-    } catch (aiErr) {
-      console.warn("FastAPI chat unavailable, falling back to resilient semantic catalog match:", aiErr.message);
-    }
-
-    // Resilient Fallback Matching on MongoDB
-    const msgLower = message.toLowerCase();
-    let query = {};
-    
-    if (msgLower.includes("wedding") || msgLower.includes("bridal") || msgLower.includes("groom")) {
-      query = { category: "Wedding" };
-    } else if (msgLower.includes("party")) {
-      query = { category: "Party" };
-    } else if (msgLower.includes("under 3000")) {
-      query = { price: { $lt: 3000 } };
-    } else if (msgLower.includes("men")) {
-      query = { gender: "men" };
-    } else if (msgLower.includes("women")) {
-      query = { gender: "women" };
-    }
-
-    let products = await productModel.find(query).limit(3);
-    if (!products || products.length === 0) {
-      products = await productModel.find().limit(3);
-    }
-    
-    return res.json({
-      text: `I found some stylish designer options for you based on "${message}". Take a look at these pieces from our collection!`,
-      products: products
-    });
+    const response = await aiStylistChat(message);
+    return res.json(response);
   } catch (err) {
     console.error("AI chat processing error:", err);
     return res.json({
-      text: "I am ready to help you find the perfect outfit! Try searching for wedding wear, cocktail dresses, or sherwanis.",
-      products: []
+      text: "I am ready to help you find the perfect outfit! Try searching for wedding wear, cocktail dresses, or royal sherwanis.",
+      products: [],
+      source: "error_fallback"
     });
   }
 });

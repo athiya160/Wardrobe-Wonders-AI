@@ -2,6 +2,7 @@ import { Router } from "express";
 import ProductModel from "../models/productModel.js";
 import OrderModel from "../models/OrderModel.js";
 import { authenticateToken, requireRole } from "../middleware/auth.js";
+import { aiGenerateDescription, aiGenerateTags } from "../services/ai.service.js";
 
 const providerRouter = new Router();
 
@@ -443,84 +444,14 @@ providerRouter.put("/orders/:id/status", async (req, res) => {
  * Step 7: AI fashion copywriter for dress listings with smart fallback
  */
 providerRouter.post("/ai/generate-description", async (req, res) => {
-  const { productName, category, price, brand } = req.body;
-  const cleanName = (productName || "Luxury Dress").trim();
-  const cleanCategory = (category || "Occasion Wear").trim();
-  const numPrice = Number(price) || 2500;
-
-  // 1. Try FastAPI Microservice if accessible
-  const fastApiUrl = process.env.FASTAPI_URL || "http://127.0.0.1:8001";
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(`${fastApiUrl}/ai/generate-description`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        productName: cleanName,
-        category: cleanCategory,
-        price: numPrice,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (response.ok) {
-      const data = await response.json();
-      return res.status(200).json({
-        status: true,
-        source: "fastapi_groq",
-        data: data,
-      });
-    }
-  } catch (aiErr) {
-    // FastAPI unavailable or timed out; continue to intelligent fallback
+    const { productName, category, price, brand } = req.body;
+    const result = await aiGenerateDescription({ productName, category, price, brand });
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Error in AI description generator:", err);
+    return res.status(500).json({ status: false, message: "AI Generator Error" });
   }
-
-  // 2. High-converting editorial fashion heuristic fallback
-  const brandPrefix = brand && brand.trim() ? `${brand.trim()} ` : "";
-  const title = `${brandPrefix}${cleanName} - Premium ${cleanCategory} Collection`;
-
-  const occasionMap = {
-    wedding: "Bridal Receptions, Sangeet & Traditional Weddings",
-    bridal: "Bridal Receptions, Sangeet & Traditional Weddings",
-    party: "Cocktail Galas, Black-Tie Soirées & Red Carpet Events",
-    cocktail: "Cocktail Galas, Black-Tie Soirées & Red Carpet Events",
-    formal: "Black-Tie Galas, Award Banquets & Formal Evenings",
-    traditional: "Royal Festive Celebrations, Diwali & Traditional Pujas",
-    casual: "Weekend Brunches, Sunset Dinners & Garden Parties",
-  };
-
-  const lowerCat = cleanCategory.toLowerCase();
-  const matchedOccasion =
-    Object.entries(occasionMap).find(([key]) => lowerCat.includes(key))?.[1] ||
-    "Special Celebrations & High-Fashion Events";
-
-  const description =
-    `Turn heads in this exquisite ${cleanName}. Masterfully designed for ${matchedOccasion.toLowerCase()}, ` +
-    `this piece balances couture aesthetics with flattering comfort. Tailored with premium luxury fabric, ` +
-    `intricate finishing, and unforgettable movement, it ensures you make a breathtaking entrance without the commitment of ownership.`;
-
-  const defaultTags = [
-    cleanCategory,
-    "Designer Rental",
-    "Luxury Fashion",
-    "Wardrobe Wonders",
-    "Couture",
-    "Boutique Collection",
-  ];
-
-  return res.status(200).json({
-    status: true,
-    source: "editorial_fashion_ai",
-    data: {
-      title,
-      description,
-      tags: defaultTags,
-      occasion: matchedOccasion,
-    },
-  });
 });
 
 /**
@@ -528,99 +459,14 @@ providerRouter.post("/ai/generate-description", async (req, res) => {
  * Step 7: AI garment attribute extractor with smart fallback
  */
 providerRouter.post("/ai/generate-tags", async (req, res) => {
-  const { productName, category, description } = req.body;
-  const text = `${productName || ""} ${category || ""} ${description || ""}`.toLowerCase();
-
-  // 1. Try FastAPI
-  const fastApiUrl = process.env.FASTAPI_URL || "http://127.0.0.1:8001";
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(`${fastApiUrl}/ai/generate-tags`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        productName: productName || "Dress",
-        category: category || "Fashion",
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (response.ok) {
-      const data = await response.json();
-      return res.status(200).json({
-        status: true,
-        source: "fastapi_groq",
-        data: data,
-      });
-    }
-  } catch (aiErr) {
-    // FastAPI unavailable or timed out; continue to intelligent fallback
+    const { productName, category, description } = req.body;
+    const result = await aiGenerateTags({ productName, category, description });
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Error in AI tag generator:", err);
+    return res.status(500).json({ status: false, message: "AI Tag Extractor Error" });
   }
-
-  // 2. Intelligent attribute detection fallback
-  const colorMap = [
-    ["gold", "Imperial Gold"],
-    ["red", "Crimson Red"],
-    ["maroon", "Royal Maroon"],
-    ["emerald", "Emerald Green"],
-    ["green", "Forest Green"],
-    ["blue", "Sapphire Blue"],
-    ["navy", "Midnight Navy"],
-    ["black", "Obsidian Black"],
-    ["white", "Pearl White"],
-    ["ivory", "Ivory Cream"],
-    ["pink", "Blush Pink"],
-    ["rose", "Rose Gold"],
-    ["silver", "Metallic Silver"],
-    ["yellow", "Mustard Yellow"],
-    ["purple", "Royal Purple"],
-  ];
-  const detectedColor = colorMap.find(([k]) => text.includes(k))?.[1] || "Artisanal Jewel Tone";
-
-  const patternMap = [
-    ["sequin", "Hand-embroidered Sequins"],
-    ["zari", "Intricate Zari & Zardozi"],
-    ["floral", "Bespoke Floral Motif"],
-    ["embroider", "Artisanal Hand Embroidery"],
-    ["print", "Designer Printed Silk"],
-    ["velvet", "Rich Velvet Texture"],
-    ["lace", "French Chantilly Lace"],
-    ["solid", "Minimalist Solid Silk"],
-  ];
-  const detectedPattern = patternMap.find(([k]) => text.includes(k))?.[1] || "Artisanal Embroidery";
-
-  const styleMap = [
-    ["lehenga", "Royal Indo-Western Bridal"],
-    ["saree", "Contemporary Draped Saree"],
-    ["gown", "Red Carpet Evening Silhouette"],
-    ["anarkali", "Flared Heritage Anarkali"],
-    ["suit", "Tailored Luxury Power Dressing"],
-    ["kurti", "Sophisticated Festive Ensemble"],
-    ["western", "Modern Haute Couture"],
-  ];
-  const detectedStyle = styleMap.find(([k]) => text.includes(k))?.[1] || "Contemporary Couture";
-
-  const seasonMap = [
-    ["summer", "Summer Soirée"],
-    ["winter", "Winter Velvet & Regal Evenings"],
-    ["spring", "Spring Bloom"],
-    ["autumn", "Festive Autumn"],
-  ];
-  const detectedSeason = seasonMap.find(([k]) => text.includes(k))?.[1] || "All-Season Luxury";
-
-  return res.status(200).json({
-    status: true,
-    source: "fashion_attributes_ai",
-    data: {
-      color: detectedColor,
-      pattern: detectedPattern,
-      style: detectedStyle,
-      season: detectedSeason,
-    },
-  });
 });
 
 export default providerRouter;

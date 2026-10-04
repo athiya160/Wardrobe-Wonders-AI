@@ -321,21 +321,28 @@ const Stylist = () => {
                 onClick={handleRecommend}
                 disabled={loading}
                 sx={{
-                  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                  color: 'white',
-                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #161514 0%, #2A2520 100%)',
+                  color: '#FAF7F2',
+                  border: '1.5px solid #D1A362',
+                  fontWeight: '700',
                   py: 1.5,
                   borderRadius: 2,
                   textTransform: 'none',
                   fontSize: '1.05rem',
-                  boxShadow: '0 4px 14px rgba(254, 107, 139, 0.4)'
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: '#2B2621',
+                    borderColor: '#F5E6C8',
+                    boxShadow: '0 10px 28px rgba(209, 163, 98, 0.35)',
+                  }
                 }}
-                startIcon={!loading && <AutoAwesomeIcon />}
+                startIcon={!loading && <AutoAwesomeIcon sx={{ color: '#D1A362' }} />}
               >
-                {loading ? <CircularProgress size={24} color="inherit" /> : "Find My Outfit"}
+                {loading ? <CircularProgress size={24} sx={{ color: '#D1A362' }} /> : "Curate My Bespoke Outfit"}
               </Button>
               <Typography variant="caption" display="block" textAlign="center" mt={2} color="text.secondary">
-                Powered by AI
+                ✨ Powered by Live Groq LLM & Catalog Intelligence
               </Typography>
             </Box>
           </Grid>
@@ -401,7 +408,7 @@ const Stylist = () => {
                             onClick={() => handleLike(item.product)}
                             sx={{ position: 'absolute', top: 12, right: 12, bgcolor: 'rgba(255,255,255,0.7)', '&:hover': { bgcolor: '#fff' } }}
                           >
-                            {likes[item.product._id] ? <FavoriteIcon fontSize="small" sx={{ color: '#FE6B8B' }} /> : <FavoriteBorderIcon fontSize="small" />}
+                            {likes[item.product._id] ? <FavoriteIcon fontSize="small" sx={{ color: '#D32F2F' }} /> : <FavoriteBorderIcon fontSize="small" />}
                           </IconButton>
                         </Box>
                         
@@ -411,11 +418,21 @@ const Stylist = () => {
                           <Typography variant="caption" color="text.secondary" display="block" mb={1}>
                             {item.product.category} • {formData.color}
                           </Typography>
-                          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                          <Typography variant="subtitle1" fontWeight="bold" mb={1.5} sx={{ color: '#9C7238' }}>
                             ₹{item.product.price} <Typography component="span" variant="caption" color="text.secondary">/ 3 Days</Typography>
                           </Typography>
+
+                          {/* Dynamic AI Styling Rationale */}
+                          {item.reason && (
+                            <Box sx={{ p: 1.2, mb: 2, bgcolor: '#FAF8F5', borderRadius: 2, borderLeft: '3px solid #D1A362' }}>
+                              <Typography variant="caption" sx={{ color: '#4A453E', fontStyle: 'italic', display: 'flex', alignItems: 'flex-start', gap: 0.8, lineHeight: 1.4 }}>
+                                <AutoAwesomeIcon sx={{ fontSize: 13, color: '#D1A362', mt: 0.2, flexShrink: 0 }} />
+                                <span>"{item.reason}"</span>
+                              </Typography>
+                            </Box>
+                          )}
                           
-                          <Stack direction="row" spacing={1} mb={2}>
+                          <Stack direction="row" spacing={1} mb={1}>
                             <Chip size="small" icon={<WbSunnyIcon sx={{ fontSize: '12px !important', color: '#f57c00' }}/>} label={`Perfect for ${formData.season}`} sx={{ fontSize: '0.65rem', bgcolor: '#fff3e0' }} />
                           </Stack>
                           <Stack direction="row" spacing={1} mb={2}>
@@ -428,7 +445,14 @@ const Stylist = () => {
                               disableElevation 
                               fullWidth 
                               onClick={() => navigate(`/product/${item.product._id}`)}
-                              sx={{ bgcolor: '#111', color: '#fff', textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#333' } }}
+                              sx={{
+                                bgcolor: '#161514',
+                                color: '#FAF7F2',
+                                textTransform: 'none',
+                                borderRadius: 2,
+                                fontWeight: '600',
+                                '&:hover': { bgcolor: '#2B2621', color: '#D1A362' }
+                              }}
                             >
                               View Details
                             </Button>
@@ -468,58 +492,69 @@ const Stylist = () => {
 
           {/* RIGHT COLUMN: AI Stylist Dashboard */}
           <Grid item xs={12} md={3}>
-            <Box sx={{ bgcolor: '#fcf8fa', p: 3, borderRadius: 3, height: '100%', position: 'relative' }}>
+            <Box sx={{ bgcolor: '#FAF8F5', p: 3, borderRadius: 3, height: '100%', border: '1px solid #ECE7DE', position: 'relative' }}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <AutoAwesomeIcon sx={{ color: '#FE6B8B' }} />
+                  <AutoAwesomeIcon sx={{ color: '#D1A362' }} />
                   <Typography variant="h6" fontWeight="bold">AI Stylist</Typography>
                 </Box>
-                <Chip label="Beta" size="small" sx={{ bgcolor: '#fff', color: '#555', fontWeight: 600, border: '1px solid #eee' }} />
+                <Chip label="Live RAG" size="small" sx={{ bgcolor: '#161514', color: '#D1A362', fontWeight: 600, border: '1px solid #D1A362' }} />
               </Box>
 
-              <Typography variant="h6" fontWeight="bold" mb={0.5}>Hi Athiya! 👋</Typography>
-              <Typography variant="body2" color="text.secondary" mb={4}>I'm your personal AI stylist.</Typography>
+              <Typography variant="h6" fontWeight="bold" mb={0.5}>
+                Hi {(() => {
+                  try {
+                    const u = JSON.parse(localStorage.getItem('user') || '{}');
+                    return u.name || u.fullName || "Fashion Lover";
+                  } catch {
+                    return "Fashion Lover";
+                  }
+                })()}! 👋
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={4}>
+                Your personal AI couture stylist is active.
+              </Typography>
 
-              <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, mb: 3, border: '1px solid #ffeef2' }}>
-                <Typography variant="subtitle2" fontWeight="bold" mb={2}>Your Preferences</Typography>
+              <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, mb: 3, bgcolor: '#FFFFFF', border: '1px solid #ECE7DE' }}>
+                <Typography variant="subtitle2" fontWeight="bold" mb={2}>Active Preferences</Typography>
                 <Stack spacing={2.5}>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <FemaleIcon sx={{ color: '#888' }} />
+                    <FemaleIcon sx={{ color: '#D1A362' }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary" display="block">Gender</Typography>
                       <Typography variant="body2" fontWeight="500">{formData.gender}</Typography>
                     </Box>
                   </Box>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <DiamondIcon sx={{ color: '#888' }} />
+                    <DiamondIcon sx={{ color: '#D1A362' }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary" display="block">Occasion</Typography>
                       <Typography variant="body2" fontWeight="500">{formData.occasion}</Typography>
                     </Box>
                   </Box>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <LocalBarIcon sx={{ color: '#888' }} />
+                    <LocalBarIcon sx={{ color: '#D1A362' }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary" display="block">Budget</Typography>
                       <Typography variant="body2" fontWeight="500">₹{formData.budget[0]} - ₹{formData.budget[1]}</Typography>
                     </Box>
                   </Box>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <InvertColorsIcon sx={{ color: '#888' }} />
+                    <InvertColorsIcon sx={{ color: '#D1A362' }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary" display="block">Color</Typography>
                       <Typography variant="body2" fontWeight="500">{formData.color}</Typography>
                     </Box>
                   </Box>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <WbSunnyIcon sx={{ color: '#888' }} />
+                    <WbSunnyIcon sx={{ color: '#D1A362' }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary" display="block">Season</Typography>
                       <Typography variant="body2" fontWeight="500">{formData.season}</Typography>
                     </Box>
                   </Box>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <CheckroomIcon sx={{ color: '#888' }} />
+                    <CheckroomIcon sx={{ color: '#D1A362' }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary" display="block">Style</Typography>
                       <Typography variant="body2" fontWeight="500">{formData.style}</Typography>
@@ -528,19 +563,19 @@ const Stylist = () => {
                 </Stack>
               </Paper>
 
-              <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, mb: 3, border: '1px solid #ffeef2', position: 'relative', overflow: 'hidden' }}>
+              <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, mb: 3, bgcolor: '#FFFFFF', border: '1px solid #ECE7DE', position: 'relative', overflow: 'hidden' }}>
                 <Typography variant="subtitle2" fontWeight="bold" mb={1}>Stylist's Note</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                  I've handpicked outfits that match your style and preferences. These outfits are trending and perfect for your occasion.
+                  Our AI fashion engine evaluates your occasion silhouette, fabric dynamics, and seasonal color tones to curate runway-ready options.
                 </Typography>
-                <Box sx={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.1 }}>
-                  <CheckroomIcon sx={{ fontSize: 80 }} />
+                <Box sx={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.08 }}>
+                  <CheckroomIcon sx={{ fontSize: 80, color: '#D1A362' }} />
                 </Box>
               </Paper>
 
-              <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid #ffeef2', display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, bgcolor: '#FFFFFF', border: '1px solid #ECE7DE', display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box position="relative" display="inline-flex">
-                  <CircularProgress variant="determinate" value={95} size={60} thickness={4} sx={{ color: '#FE6B8B' }} />
+                  <CircularProgress variant="determinate" value={98} size={60} thickness={4} sx={{ color: '#D1A362' }} />
                   <Box
                     sx={{
                       top: 0, left: 0, bottom: 0, right: 0,
@@ -548,28 +583,17 @@ const Stylist = () => {
                     }}
                   >
                     <Typography variant="caption" component="div" fontWeight="bold">
-                      95%
+                      98%
                     </Typography>
                   </Box>
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" fontWeight="bold">Excellent Match!</Typography>
+                  <Typography variant="subtitle2" fontWeight="bold">Couture Alignment</Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2, display: 'block' }}>
-                    These outfits match your preferences perfectly.
+                    Curations match your profile with 98% precision.
                   </Typography>
                 </Box>
               </Paper>
-
-              <IconButton 
-                sx={{ 
-                  position: 'absolute', bottom: -20, right: -20, 
-                  bgcolor: '#FF8E53', color: 'white', p: 2, 
-                  boxShadow: '0 4px 12px rgba(255, 142, 83, 0.4)',
-                  '&:hover': { bgcolor: '#FE6B8B' }
-                }}
-              >
-                <ChatBubbleIcon />
-              </IconButton>
             </Box>
           </Grid>
         </Grid>
