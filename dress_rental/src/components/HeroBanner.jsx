@@ -90,14 +90,15 @@ export const HeroBanner = () => {
       {/* Main Content */}
       <ContentWrapper>
         <Chip
-          label="✨ THE NEW ERA OF PEER-TO-PEER CIRCULAR LUXURY"
+          icon={<AutoAwesomeIcon sx={{ fontSize: 14, color: "#D1A362 !important" }} />}
+          label="CIRCULAR LUXURY COUTURE & HERITAGE JEWELLERY"
           sx={{
-            backgroundColor: "rgba(209, 163, 98, 0.18)",
+            backgroundColor: "rgba(209, 163, 98, 0.16)",
             color: "#D1A362",
             border: "1px solid rgba(209, 163, 98, 0.4)",
             fontWeight: 800,
-            fontSize: "0.76rem",
-            letterSpacing: "0.08em",
+            fontSize: "0.75rem",
+            letterSpacing: "0.1em",
             mb: 3,
             py: 0.5,
             px: 1.5,
@@ -116,7 +117,7 @@ export const HeroBanner = () => {
             textShadow: "0 2px 16px rgba(0,0,0,0.5)",
           }}
         >
-          Haute Couture on Demand. <br />
+          Haute Couture & Heritage Jewellery. <br />
           <Typography
             component="span"
             variant="inherit"
@@ -136,13 +137,13 @@ export const HeroBanner = () => {
             color: "#E2DACB",
             fontSize: { xs: "1rem", sm: "1.15rem" },
             lineHeight: 1.6,
-            maxWidth: "720px",
+            maxWidth: "760px",
             mx: "auto",
             mb: 4.5,
             textShadow: "0 1px 4px rgba(0,0,0,0.6)",
           }}
         >
-          Borrow authenticated bridal lehengas, bespoke tuxedos, and red-carpet gowns. Guaranteed doorstep delivery, verified escrow protection, and AI-powered personalized styling.
+          Borrow authenticated bridal lehengas, bespoke tuxedos, and authentic 1-gram gold jewellery. Guaranteed doorstep delivery, verified escrow protection, and AI-powered fit consultation.
         </Typography>
 
         {/* Primary CTA Buttons */}
@@ -151,6 +152,7 @@ export const HeroBanner = () => {
           spacing={2}
           justifyContent="center"
           alignItems="center"
+          flexWrap="wrap"
         >
           <Button
             variant="contained"
@@ -161,7 +163,8 @@ export const HeroBanner = () => {
               backgroundColor: "#D1A362",
               color: "#1A1817",
               fontWeight: 800,
-              fontSize: "0.95rem",
+              fontSize: "0.92rem",
+              letterSpacing: "0.02em",
               px: 3.5,
               py: 1.4,
               borderRadius: 1.5,
@@ -173,7 +176,7 @@ export const HeroBanner = () => {
               },
             }}
           >
-            Explore Women's Couture
+            Explore Bridal Couture
           </Button>
 
           <Button
@@ -181,11 +184,12 @@ export const HeroBanner = () => {
             size="large"
             onClick={() => navigate("/jewellery")}
             sx={{
-              backgroundColor: "rgba(209, 163, 98, 0.2)",
+              backgroundColor: "rgba(209, 163, 98, 0.22)",
               border: "1px solid #D1A362",
               color: "#FFFFFF",
               fontWeight: 800,
-              fontSize: "0.95rem",
+              fontSize: "0.92rem",
+              letterSpacing: "0.02em",
               px: 3,
               py: 1.4,
               borderRadius: 1.5,
@@ -197,7 +201,7 @@ export const HeroBanner = () => {
               },
             }}
           >
-            Bridal Jewellery 💍
+            1-Gram Gold Jewellery
           </Button>
 
           <Button
@@ -205,24 +209,24 @@ export const HeroBanner = () => {
             size="large"
             onClick={() => navigate("/m-dress")}
             sx={{
-              borderColor: "rgba(255,255,255,0.4)",
+              borderColor: "rgba(255,255,255,0.45)",
               color: "#FFFFFF",
               fontWeight: 700,
-              fontSize: "0.95rem",
-              px: 3.5,
+              fontSize: "0.92rem",
+              px: 3,
               py: 1.4,
               borderRadius: 1.5,
               textTransform: "none",
               backdropFilter: "blur(6px)",
-              backgroundColor: "rgba(0,0,0,0.25)",
+              backgroundColor: "rgba(0,0,0,0.3)",
               "&:hover": {
                 borderColor: "#D1A362",
-                backgroundColor: "rgba(209,163,98,0.12)",
+                backgroundColor: "rgba(209,163,98,0.15)",
                 color: "#D1A362",
               },
             }}
           >
-            Explore Men's Collection
+            Men's Tailoring
           </Button>
 
           <Button
@@ -238,7 +242,7 @@ export const HeroBanner = () => {
               "&:hover": { color: "#D1A362", backgroundColor: "transparent" },
             }}
           >
-            Consult AI Stylist ✨
+            AI Outfit Concierge
           </Button>
         </Stack>
 

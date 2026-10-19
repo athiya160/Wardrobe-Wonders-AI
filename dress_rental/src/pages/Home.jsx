@@ -103,6 +103,33 @@ const StyledTab = styled(Tab)({
 const defaultCollections = {
   recommended: [
     {
+      _id: "jewel_01",
+      name: "Padmavati 1-Gram Gold Lakshmi Temple Nakshi Bridal Set",
+      price: 2400,
+      advance: 4000,
+      image: "/assets/Jewellery/image_20261019_002031.jpg",
+      category: "Temple Jewellery",
+      gender: "jewellery",
+    },
+    {
+      _id: "jewel_04",
+      name: "Kavya Grand Uncut Kundan & Polki Choker Set",
+      price: 3200,
+      advance: 5000,
+      image: "/assets/Jewellery/image_20261019_002035.jpg",
+      category: "Kundan & Polki",
+      gender: "jewellery",
+    },
+    {
+      _id: "jewel_03",
+      name: "Aura Rose Gold American Diamond (AD) Bridal Choker Set",
+      price: 1600,
+      advance: 3000,
+      image: "/assets/Jewellery/image_20261019_002857.jpg",
+      category: "American Diamond",
+      gender: "jewellery",
+    },
+    {
       _id: "6aa94b47b6771fe766b90fab",
       name: "Regal Crimson Bridal Lehenga",
       price: 14000,
@@ -272,6 +299,12 @@ const Home = () => {
 
   const filteredNewArrivals = data.recommended.filter((dress) => {
     if (newArrivalsTab === "all") return true;
+    if (newArrivalsTab === "jewellery") {
+      return (
+        dress.gender?.toLowerCase() === "jewellery" ||
+        (dress.category || "").toLowerCase().includes("jewel")
+      );
+    }
     return dress.gender?.toLowerCase() === newArrivalsTab;
   });
 
@@ -305,6 +338,7 @@ const Home = () => {
               />
               <StyledTabs value={newArrivalsTab} onChange={handleTabChange} centered>
                 <StyledTab label="All Collections" value="all" />
+                <StyledTab label="Bridal Jewellery" value="jewellery" />
                 <StyledTab label="Women's Couture" value="women" />
                 <StyledTab label="Men's Tailoring" value="men" />
               </StyledTabs>
@@ -320,9 +354,11 @@ const Home = () => {
               <Button
                 variant="outlined"
                 endIcon={<ArrowForwardIcon />}
-                onClick={() =>
-                  navigate(newArrivalsTab === "men" ? "/m-dress" : "/w-dress")
-                }
+                onClick={() => {
+                  if (newArrivalsTab === "men") navigate("/m-dress");
+                  else if (newArrivalsTab === "jewellery") navigate("/jewellery");
+                  else navigate("/w-dress");
+                }}
                 sx={{
                   borderColor: "#1A1817",
                   color: "#1A1817",
@@ -339,7 +375,11 @@ const Home = () => {
                   },
                 }}
               >
-                View Full {newArrivalsTab === "men" ? "Men's" : "Women's"} Catalog
+                {newArrivalsTab === "men"
+                  ? "View Full Men's Catalog"
+                  : newArrivalsTab === "jewellery"
+                  ? "Explore All Bridal Jewellery (50+ Sets)"
+                  : "View Full Women's Catalog"}
               </Button>
             </Box>
           </Box>

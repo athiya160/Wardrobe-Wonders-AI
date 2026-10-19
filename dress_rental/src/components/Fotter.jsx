@@ -32,7 +32,7 @@ const Fotter = () => {
               WARDROBE WONDERS
             </Typography>
             <Typography variant="caption" sx={{ color: "#888", display: "block", mt: 0.5, lineHeight: 1.5 }}>
-              India’s premier peer-to-peer luxury fashion rental marketplace. Authenticated designer bridalwear, couture sherwanis, and red carpet attire delivered with door-to-door sanitization and insured deposit escrow.
+              India’s premier peer-to-peer luxury fashion and bridal jewellery rental marketplace. Authenticated designer bridalwear, couture sherwanis, and 1-gram gold jewellery sets delivered with door-to-door sanitization and insured deposit escrow.
             </Typography>
           </Box>
 
@@ -55,6 +55,7 @@ const Fotter = () => {
           >
             <Link to="/about-us">About WW</Link>
             <Link to="/contact">Concierge</Link>
+            <Link to="/jewellery">Bridal Jewellery</Link>
             <Link to="/terms">Terms of Service</Link>
             <Link to="/privacy">Privacy</Link>
             <Link to="/rental-policy">Rental Policy</Link>
@@ -88,7 +89,7 @@ const Fotter = () => {
                 "&:hover": { color: "#D1A362" },
               }}
             >
-              System Architecture & Specs ⚙️
+              System Architecture & Specs
             </Typography>
             <Typography variant="caption" sx={{ color: "#444" }}>•</Typography>
             <a
@@ -97,7 +98,7 @@ const Fotter = () => {
               rel="noreferrer"
               style={{ color: "#888", fontSize: "0.72rem", textDecoration: "none" }}
             >
-              Live API Status 🟢
+              Live API Status
             </a>
             <Typography variant="caption" sx={{ color: "#444" }}>•</Typography>
             <Typography variant="caption" sx={{ color: "#888", fontSize: "0.72rem" }}>

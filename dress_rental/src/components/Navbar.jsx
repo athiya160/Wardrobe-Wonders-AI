@@ -77,13 +77,14 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const pages = [
-  { name: "AI Stylist ✨", path: "/stylist" },
-  { name: "Jewellery 💍", path: "/jewellery" },
-  { name: "Women's", path: "/w-dress" },
-  { name: "Men's", path: "/m-dress" },
-  { name: "About Us", path: "/about-us" },
+  { name: "Bridal Jewellery", path: "/jewellery", badge: "NEW" },
+  { name: "Women's Couture", path: "/w-dress" },
+  { name: "Men's Tailoring", path: "/m-dress" },
+  { name: "AI Stylist", path: "/stylist", isAi: true },
+  { name: "Atelier", path: "/about-us" },
   { name: "Contact", path: "/contact" },
 ];
+
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -177,6 +178,25 @@ function ResponsiveAppBar() {
 
   return (
     <>
+      {/* Top Editorial Luxury Strip */}
+      <Box
+        sx={{
+          backgroundColor: "#1A1817",
+          color: "#E2DACB",
+          py: 0.6,
+          px: 2,
+          textAlign: "center",
+          fontSize: "0.75rem",
+          fontWeight: 600,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          borderBottom: "1px solid rgba(209, 163, 98, 0.25)",
+          display: { xs: "none", sm: "block" },
+        }}
+      >
+        Authenticated Bridal Couture & 1-Gram Gold Jewellery • Doorstep Delivery & Sanitized Escrow
+      </Box>
+
       <AppBar position="sticky" sx={{ backgroundColor: '#FFFFFF', color: '#1A1A1A', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
         <Container maxWidth="xl">
           <Toolbar disableGutters sx={{ minHeight: '80px !important' }}>
@@ -216,14 +236,34 @@ function ResponsiveAppBar() {
                   <Stack direction="row" spacing={1} alignItems="center" width="100%" justifyContent="center">
                     <AutoAwesomeIcon sx={{ fontSize: 18, color: "#D1A362" }} />
                     <Typography textAlign="center" fontWeight={800} fontSize="0.88rem" color="#D1A362">
-                      Recruiter Quick Tour ⚙️
+                      Recruiter Quick Tour
                     </Typography>
                   </Stack>
                 </MenuItem>
 
                 {pages.map((page) => (
                   <MenuItem onClick={() => { handleCloseNavMenu(); navigate(page.path); }} key={page.name}>
-                    <Typography textAlign="center">{page.name}</Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography textAlign="center" fontWeight={600} fontSize="0.9rem">
+                        {page.name}
+                      </Typography>
+                      {page.badge && (
+                        <Chip
+                          label={page.badge}
+                          size="small"
+                          sx={{
+                            height: 16,
+                            fontSize: "0.6rem",
+                            fontWeight: 800,
+                            bgcolor: "#D1A362",
+                            color: "#1A1817",
+                          }}
+                        />
+                      )}
+                      {page.isAi && (
+                        <AutoAwesomeIcon sx={{ fontSize: 14, color: "#D1A362" }} />
+                      )}
+                    </Box>
                   </MenuItem>
                 ))}
                 <Divider sx={{ my: 1 }} />
@@ -264,10 +304,44 @@ function ResponsiveAppBar() {
               </Menu>
             </Box>
 
-            <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, gap: 2 }}>
+            <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5 }}>
               {pages.map((page) => (
-                <Button key={page.name} onClick={() => navigate(page.path)} sx={{ color: "#1A1A1A", display: "block", textTransform: 'none', fontWeight: 600, fontSize: '0.95rem', '&:hover': { color: '#D1A362', backgroundColor: 'transparent' } }}>
+                <Button
+                  key={page.name}
+                  onClick={() => navigate(page.path)}
+                  sx={{
+                    color: "#1A1817",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                    letterSpacing: "0.01em",
+                    px: 1.5,
+                    py: 0.7,
+                    borderRadius: 1.5,
+                    "&:hover": { color: "#D1A362", backgroundColor: "rgba(209, 163, 98, 0.08)" },
+                  }}
+                >
                   {page.name}
+                  {page.badge && (
+                    <Chip
+                      label={page.badge}
+                      size="small"
+                      sx={{
+                        height: 16,
+                        fontSize: "0.6rem",
+                        fontWeight: 800,
+                        bgcolor: "#D1A362",
+                        color: "#1A1817",
+                        ml: 0.8,
+                        px: 0.2,
+                      }}
+                    />
+                  )}
+                  {page.isAi && (
+                    <AutoAwesomeIcon sx={{ fontSize: 13, color: "#D1A362", ml: 0.6 }} />
+                  )}
                 </Button>
               ))}
             </Box>
@@ -277,7 +351,7 @@ function ResponsiveAppBar() {
                 <SearchIcon sx={{ color: '#9e9e9e', fontSize: '1.2rem' }} />
               </SearchIconWrapper>
               <StyledInputBase
-                placeholder="Ask AI (e.g. Red wedding dress under 3000)"
+                placeholder="Ask AI or search bridal, 1-gram gold, tuxedos..."
                 inputProps={{ 'aria-label': 'search' }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -286,10 +360,10 @@ function ResponsiveAppBar() {
             </Search>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 2 }}>
-              <IconButton onClick={() => setWishlistOpen(true)} sx={{ color: '#1A1A1A', '&:hover': { color: '#D1A362' } }}>
+              <IconButton onClick={() => setWishlistOpen(true)} sx={{ color: '#1A1817', '&:hover': { color: '#D1A362' } }}>
                 <FavoriteBorderIcon />
               </IconButton>
-              <IconButton onClick={() => setCartOpen(true)} sx={{ color: '#1A1A1A', '&:hover': { color: '#D1A362' } }}>
+              <IconButton onClick={() => setCartOpen(true)} sx={{ color: '#1A1817', '&:hover': { color: '#D1A362' } }}>
                 <Badge badgeContent={cartItems.length} sx={{ '& .MuiBadge-badge': { backgroundColor: '#1A1A1A', color: '#FFF' } }}>
                   <LocalMallOutlinedIcon />
                 </Badge>
@@ -327,7 +401,7 @@ function ResponsiveAppBar() {
                   },
                 }}
               >
-                Recruiter Tour ⚙️
+                Recruiter Tour
               </Button>
 
               {/* Compact Recruiter Tour for Medium Viewports */}

@@ -140,12 +140,23 @@ const ProductCard = ({ dress, sx }) => {
           {dress.gender && (
             <Chip
               size="small"
-              label={dress.gender.toUpperCase()}
+              label={
+                dress.gender.toLowerCase() === "jewellery" || (dress.category || "").toLowerCase().includes("jewel")
+                  ? "1-GRAM GOLD"
+                  : dress.gender.toUpperCase()
+              }
               sx={{
-                backgroundColor: "rgba(26, 24, 23, 0.75)",
-                color: "#D1A362",
-                fontWeight: 700,
+                backgroundColor:
+                  dress.gender.toLowerCase() === "jewellery" || (dress.category || "").toLowerCase().includes("jewel")
+                    ? "#D1A362"
+                    : "rgba(26, 24, 23, 0.75)",
+                color:
+                  dress.gender.toLowerCase() === "jewellery" || (dress.category || "").toLowerCase().includes("jewel")
+                    ? "#1A1817"
+                    : "#D1A362",
+                fontWeight: 800,
                 fontSize: "0.65rem",
+                letterSpacing: "0.04em",
                 height: 22,
               }}
             />
@@ -200,7 +211,7 @@ const ProductCard = ({ dress, sx }) => {
                 lineHeight: 1.2,
               }}
             >
-              ₹{dress.price?.toLocaleString()}
+              ₹{Number(dress.price || dress.rentalPricePerDay || 0).toLocaleString("en-IN")}
               <Typography
                 component="span"
                 variant="caption"
@@ -214,7 +225,7 @@ const ProductCard = ({ dress, sx }) => {
               variant="caption"
               sx={{ color: "#8A6D3B", fontSize: "0.72rem", display: "block" }}
             >
-              ₹{(dress.advance || 2500)?.toLocaleString()} refundable deposit
+              ₹{Number(dress.advance || dress.securityDeposit || 2500).toLocaleString("en-IN")} refundable deposit
             </Typography>
           </Box>
 

@@ -84,12 +84,12 @@ const ProductsGrid = styled(Box)({
 });
 
 const JEWELLERY_CATEGORIES = [
-  { key: "All", label: "All Jewellery", icon: "💎" },
-  { key: "Temple", label: "Temple Gold (Muhurtham)", icon: "🕉️" },
-  { key: "Kundan", label: "Kundan & Jadau (Bridal)", icon: "👑" },
-  { key: "American Diamond", label: "American Diamond (Engagement)", icon: "✨" },
-  { key: "Antique Matte", label: "Antique Matte Gold", icon: "🔱" },
-  { key: "Floral", label: "Haldi & Mehendi Floral", icon: "🌼" },
+  { key: "All", label: "All Collections" },
+  { key: "Temple", label: "Temple Gold (Muhurtham)" },
+  { key: "Kundan", label: "Kundan & Jadau (Bridal)" },
+  { key: "American Diamond", label: "American Diamond (Engagement)" },
+  { key: "Antique Matte", label: "Antique Matte Gold" },
+  { key: "Floral", label: "Haldi & Mehendi Floral" },
 ];
 
 // Offline & fallback mock items ensuring zero blank screen if backend hasn't seeded yet
@@ -657,7 +657,7 @@ const Jewellery = () => {
                 key={cat.key}
                 selected={selectedStyle === cat.key}
                 onClick={() => handleStyleChange(cat.key)}
-                label={`${cat.icon} ${cat.label}`}
+                label={cat.label}
               />
             ))}
           </Stack>

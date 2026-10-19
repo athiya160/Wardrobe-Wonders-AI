@@ -76,6 +76,13 @@ const categories = [
       "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800",
     link: "/m-dress",
   },
+  {
+    title: "Haldi & Sangeet Ensembles",
+    subtitle: "Floral Jewellery Sets & Vibrant Festive Attire",
+    tag: "20+ PIECES",
+    image: "/assets/Jewellery/image_20261019_002905.jpg",
+    link: "/jewellery?style=Floral",
+  },
 ];
 
 export const CategorySection = () => {
