@@ -208,13 +208,31 @@ Respond strictly in valid JSON:
  */
 export async function aiOutfitRecommendation({ occasion, budget, gender, color, season, style }) {
   let query = {};
-  if (gender) query.gender = String(gender).toLowerCase();
-  if (occasion) query.category = new RegExp(occasion, "i");
+  const isJewellery = gender && (gender.toLowerCase() === "jewellery" || gender.toLowerCase() === "jewelry");
+
+  if (isJewellery) {
+    query.$or = [{ gender: "jewellery" }, { category: "Jewellery" }];
+    if (occasion && occasion !== "all") {
+      query.$and = [
+        { $or: [{ gender: "jewellery" }, { category: "Jewellery" }] },
+        { $or: [{ occasion: new RegExp(occasion, "i") }, { description: new RegExp(occasion, "i") }, { tags: new RegExp(occasion, "i") }] }
+      ];
+      delete query.$or;
+    }
+  } else {
+    if (gender) query.gender = String(gender).toLowerCase();
+    if (occasion) query.category = new RegExp(occasion, "i");
+  }
+
   if (budget) query.price = { $lte: Number(budget) };
 
   let products = await productModel.find(query).limit(6);
   if (!products || products.length === 0) {
-    products = await productModel.find().limit(6);
+    if (isJewellery) {
+      products = await productModel.find({ $or: [{ gender: "jewellery" }, { category: "Jewellery" }] }).limit(6);
+    } else {
+      products = await productModel.find().limit(6);
+    }
   }
 
   // Generate dynamic styling rationale via Groq

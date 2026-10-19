@@ -78,8 +78,9 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 const pages = [
   { name: "AI Stylist ✨", path: "/stylist" },
-  { name: "Men's", path: "/m-dress" },
+  { name: "Jewellery 💍", path: "/jewellery" },
   { name: "Women's", path: "/w-dress" },
+  { name: "Men's", path: "/m-dress" },
   { name: "About Us", path: "/about-us" },
   { name: "Contact", path: "/contact" },
 ];

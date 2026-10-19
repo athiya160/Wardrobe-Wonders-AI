@@ -38,6 +38,13 @@ const CardOverlay = styled(Box)({
 
 const categories = [
   {
+    title: "1-Gram Gold & Bridal Jewellery",
+    subtitle: "Nakshi Temple Sets, Kundan Chokers & AD Suites",
+    tag: "50+ PIECES",
+    image: "/assets/Jewellery/image_20261019_002033.jpg",
+    link: "/jewellery",
+  },
+  {
     title: "Bridal & Heritage Lehengas",
     subtitle: "Sabyasachi, Manish Malhotra & Raw Silk Sets",
     tag: "36+ PIECES",
@@ -46,11 +53,11 @@ const categories = [
     link: "/w-dress",
   },
   {
-    title: "Black-Tie Tuxedos & Suits",
-    subtitle: "Italian Wool, Satin Shawl Lapels & 3-Piece Sets",
-    tag: "24+ PIECES",
+    title: "Royal Sherwanis & Bandhgalas",
+    subtitle: "Hand-Embroidered Zari & Raw Silk Kurtas",
+    tag: "28+ PIECES",
     image:
-      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&q=80&w=800",
     link: "/m-dress",
   },
   {
@@ -62,11 +69,11 @@ const categories = [
     link: "/w-dress",
   },
   {
-    title: "Royal Sherwanis & Bandhgalas",
-    subtitle: "Hand-Embroidered Zari & Raw Silk Kurtas",
-    tag: "28+ PIECES",
+    title: "Black-Tie Tuxedos & Suits",
+    subtitle: "Italian Wool, Satin Shawl Lapels & 3-Piece Sets",
+    tag: "24+ PIECES",
     image:
-      "https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800",
     link: "/m-dress",
   },
 ];
@@ -114,7 +121,7 @@ export const CategorySection = () => {
         {/* Categories Grid */}
         <Grid container spacing={3.5}>
           {categories.map((category, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+            <Grid item xs={12} sm={6} md={4} key={index}>
               <CategoryCard onClick={() => navigate(category.link)}>
                 <CardMedia
                   component="img"

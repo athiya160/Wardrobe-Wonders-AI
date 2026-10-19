@@ -71,6 +71,9 @@ const SAMPLE_ASSETS = [
   { label: "Chic Summer Outfit", url: "/assets/Women/outfit_01.png", category: "Casual", gender: "women" },
   { label: "Classic Tuxedo", url: "/assets/Men/suit_01.png", category: "Formal", gender: "men" },
   { label: "Royal Groom Sherwani", url: "/assets/Men/sherwani_01.png", category: "Wedding", gender: "men" },
+  { label: "1-Gram Gold Temple Set", url: "/assets/Jewellery/image_20261019_002031.jpg", category: "Jewellery", gender: "jewellery" },
+  { label: "Royal Kundan Bridal Set", url: "/assets/Jewellery/image_20261019_003318.jpg", category: "Jewellery", gender: "jewellery" },
+  { label: "American Diamond Choker", url: "/assets/Jewellery/image_20261019_002857.jpg", category: "Jewellery", gender: "jewellery" },
   { label: "Festive Kurta Set", url: "/assets/Men/sherwani_05.png", category: "Traditional", gender: "men" },
   { label: "Urban Minimalist Look", url: "/assets/Men/casual_01.png", category: "Casual", gender: "men" },
 ];
@@ -1101,6 +1104,7 @@ const ProviderStudio = () => {
                                   label="Category"
                                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                 >
+                                  <MenuItem value="Jewellery">Jewellery & Bridal Sets</MenuItem>
                                   <MenuItem value="Traditional">Traditional</MenuItem>
                                   <MenuItem value="Wedding">Wedding</MenuItem>
                                   <MenuItem value="Party">Party</MenuItem>
@@ -1119,6 +1123,7 @@ const ProviderStudio = () => {
                                   label="Target Section"
                                   onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                                 >
+                                  <MenuItem value="jewellery">Jewellery & Bridal Suites</MenuItem>
                                   <MenuItem value="women">Women's Collection</MenuItem>
                                   <MenuItem value="men">Men's Collection</MenuItem>
                                   <MenuItem value="unisex">Unisex / Adaptive</MenuItem>

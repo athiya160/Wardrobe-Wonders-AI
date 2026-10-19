@@ -85,6 +85,292 @@ const mockProducts = [
   { name: "Sky Blue Linen Shirt & Navy Trousers", price: 1150, advance: "300", image: "/assets/Men/casual_06.png", stock: "10", category: "Casual", gender: "men" },
   { name: "Obsidian Hoodie & Heather Grey Joggers", price: 1300, advance: "300", image: "/assets/Men/casual_07.png", stock: "6", category: "Casual", gender: "men" },
   { name: "Stone Canvas Overshirt & Olive Chinos", price: 1350, advance: "350", image: "/assets/Men/casual_08.png", stock: "8", category: "Casual", gender: "men" },
+
+  // Jewellery — 1-Gram Gold, Temple & Royal Kundan Bridal Sets
+  {
+    name: "Padmavati 1-Gram Gold Lakshmi Temple Nakshi Bridal Set",
+    price: 2400,
+    rentalPricePerDay: 2400,
+    advance: "4000",
+    securityDeposit: 4000,
+    image: "/assets/Jewellery/image_20261019_002031.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002031.jpg",
+      "/assets/Jewellery/image_20261019_002031_1.jpg",
+      "/assets/Jewellery/image_20261019_002031_2.jpg",
+      "/assets/Jewellery/image_20261019_002031_3.jpg"
+    ],
+    stock: "4",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Temple",
+    color: "Antique Gold",
+    description: "Authentic 24K 1-gram micro gold plated temple jewelry set designed with traditional Nakshi craftsmanship and Goddess Lakshmi motifs. Comes with matching Jhumkas and pearl droplets. Sanitized and sealed for Hindu wedding Muhurtham ceremonies.",
+    tags: ["1-gram gold", "temple", "nakshi", "lakshmi", "bridal jewellery", "muhurtham", "marriage"]
+  },
+  {
+    name: "Kempu Ratna 1-Gram Gold Lakshmi Bridal Haram & Jhumka Set",
+    price: 2800,
+    rentalPricePerDay: 2800,
+    advance: "4500",
+    securityDeposit: 4500,
+    image: "/assets/Jewellery/image_20261019_002033.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002033.jpg",
+      "/assets/Jewellery/image_20261019_002033_1.jpg",
+      "/assets/Jewellery/image_20261019_002033_2.jpg",
+      "/assets/Jewellery/image_20261019_002033_3.jpg",
+      "/assets/Jewellery/image_20261019_002033_4.jpg"
+    ],
+    stock: "3",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Temple",
+    color: "Antique Gold & Ruby",
+    description: "Royal South Indian Kemp stone antique matte temple bridal haram set. Features Goddess Lakshmi pendant, peacock carvings, matching earrings, and maang tikka. Paired ideally with Kanjeevaram and silk sarees.",
+    tags: ["kemp jewellery", "1 gram gold", "temple haram", "south indian bride", "marriage", "muhurtham"]
+  },
+  {
+    name: "Aura Rose Gold American Diamond (AD) Bridal Choker Set",
+    price: 1600,
+    rentalPricePerDay: 1600,
+    advance: "3000",
+    securityDeposit: 3000,
+    image: "/assets/Jewellery/image_20261019_002857.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002857.jpg",
+      "/assets/Jewellery/image_20261019_002857_1.jpg",
+      "/assets/Jewellery/image_20261019_002857_2.jpg",
+      "/assets/Jewellery/image_20261019_002857_3.jpg"
+    ],
+    stock: "5",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Engagement",
+    style: "American Diamond",
+    color: "Rose Gold Diamond",
+    description: "High-grade Cubic Zirconia solitaires encrusted in rose gold finish. Includes contouring choker and pear-cut drop earrings. Designed for Hindu engagements, ring ceremonies, and reception gowns.",
+    tags: ["american diamond", "ad choker", "engagement jewellery", "rose gold", "reception"]
+  },
+  {
+    name: "Imperial Kundan & Jadau Royal 7-Piece Bridal Set with Mathapatti & Nath",
+    price: 3200,
+    rentalPricePerDay: 3200,
+    advance: "5000",
+    securityDeposit: 5000,
+    image: "/assets/Jewellery/image_20261019_003318.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_003318.jpg",
+      "/assets/Jewellery/image_20261019_003319.jpg",
+      "/assets/Jewellery/image_20261019_003319_1.jpg",
+      "/assets/Jewellery/image_20261019_003319_2.jpg",
+      "/assets/Jewellery/image_20261019_003319_3.jpg"
+    ],
+    stock: "3",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Kundan",
+    color: "Gold & Emerald Green",
+    description: "Magnificent 7-piece royal bridal collection complete with Kundan choker, rani haar, broad mathapatti, bridal nath with pearl chain, jhumkas, ring, and kadas. Handcrafted with emerald green and ruby gemstones for wedding pheras.",
+    tags: ["kundan", "jadau", "bridal set", "mathapatti", "nath", "marriage", "pherhas"]
+  },
+  {
+    name: "Mayuri Antique Matte 1-Gram Gold Peacock Waist Belt (Vaddanam) & Haar",
+    price: 1900,
+    rentalPricePerDay: 1900,
+    advance: "3500",
+    securityDeposit: 3500,
+    image: "/assets/Jewellery/image_20261019_002032.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002032.jpg",
+      "/assets/Jewellery/image_20261019_002034.jpg",
+      "/assets/Jewellery/image_20261019_002038.jpg"
+    ],
+    stock: "4",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Antique Matte",
+    color: "Matte Gold",
+    description: "Traditional peacock-motif Nakshi bridal waist belt (Vaddanam/Ottiyanam) and collar necklace. Cast in brass with 1-gram matte gold electroplating and antique patina finish.",
+    tags: ["vaddanam", "waist belt", "peacock", "1 gram gold", "traditional wedding"]
+  },
+  {
+    name: "Rajputana Uncut Polki & Meenakari Choker Set",
+    price: 2100,
+    rentalPricePerDay: 2100,
+    advance: "3800",
+    securityDeposit: 3800,
+    image: "/assets/Jewellery/image_20261019_002858.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002858.jpg",
+      "/assets/Jewellery/image_20261019_002858_1.jpg"
+    ],
+    stock: "4",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Sangeet",
+    style: "Kundan",
+    color: "Gold & Mint Green",
+    description: "Royal uncut Polki stones set in gold foil with reverse turquoise Meenakari artwork. Lightweight and glamorous for Sangeet dances and cocktail evenings.",
+    tags: ["polki", "meenakari", "sangeet jewellery", "choker", "lehenga jewellery"]
+  },
+  {
+    name: "Celeste Zirconia & Rhodium Solitaire Waterfall Necklace Set",
+    price: 1800,
+    rentalPricePerDay: 1800,
+    advance: "3200",
+    securityDeposit: 3200,
+    image: "/assets/Jewellery/image_20261019_002859.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002859.jpg",
+      "/assets/Jewellery/image_20261019_002859_1.jpg",
+      "/assets/Jewellery/image_20261019_002859_2.jpg",
+      "/assets/Jewellery/image_20261019_002859_3.jpg"
+    ],
+    stock: "4",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Reception",
+    style: "American Diamond",
+    color: "Silver Diamond",
+    description: "Dazzling diamond-look waterfall collar necklace with matching chandelier drops. Rhodium electroplated for platinum-like gleam under stage spotlights.",
+    tags: ["reception jewellery", "diamond necklace", "zirconia", "western bridal"]
+  },
+  {
+    name: "Sita Kalyanam Heritage Kasu Mala & Lakshmi Choker Combo",
+    price: 2600,
+    rentalPricePerDay: 2600,
+    advance: "4200",
+    securityDeposit: 4200,
+    image: "/assets/Jewellery/image_20261019_003320.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_003320.jpg",
+      "/assets/Jewellery/image_20261019_003320_1.jpg",
+      "/assets/Jewellery/image_20261019_003320_2.jpg",
+      "/assets/Jewellery/image_20261019_003320_3.jpg",
+      "/assets/Jewellery/image_20261019_003323.jpg"
+    ],
+    stock: "3",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Temple",
+    color: "1-Gram Yellow Gold",
+    description: "Sacred coin necklace (Kasu Mala) paired with a high choker necklace, embellished with temple deities, South Sea pearl drops, and rich ruby gems.",
+    tags: ["kasu mala", "lakshmi coin", "temple combo", "south indian wedding", "marriage"]
+  },
+  {
+    name: "Noor Emerald Beaded Jadau Choker with Chandbali Earrings",
+    price: 2200,
+    rentalPricePerDay: 2200,
+    advance: "3600",
+    securityDeposit: 3600,
+    image: "/assets/Jewellery/image_20261019_002900.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002900.jpg",
+      "/assets/Jewellery/image_20261019_002900_1.jpg",
+      "/assets/Jewellery/image_20261019_002901.jpg"
+    ],
+    stock: "5",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Engagement",
+    style: "Kundan",
+    color: "Gold & Emerald Green",
+    description: "Traditional Jadau choker featuring hand-strung Colombian emerald beads, delicate floral Kundan panels, and royal crescent Chandbali earrings.",
+    tags: ["jadau", "chandbali", "emerald choker", "engagement", "sangeet"]
+  },
+  {
+    name: "Vrinda Haldi & Mehendi Yellow Floral Pearl Jewelry Set",
+    price: 850,
+    rentalPricePerDay: 850,
+    advance: "1200",
+    securityDeposit: 1200,
+    image: "/assets/Jewellery/image_20261019_002905.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002905.jpg",
+      "/assets/Jewellery/image_20261019_002907.jpg",
+      "/assets/Jewellery/image_20261019_002909.jpg"
+    ],
+    stock: "8",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Haldi",
+    style: "Floral",
+    color: "Marigold Yellow & Pearl White",
+    description: "Handcrafted artificial marigold and jasmine flower jewelry set with pearl clusters, floral tiara, earrings, double haathphools, and floral anklets for Haldi rituals.",
+    tags: ["haldi jewellery", "floral jewellery", "mehendi set", "gota patti", "haldi ceremony"]
+  },
+  {
+    name: "Devangana Handcrafted 1-Gram Gold Broad Kadas & Temple Bangles Set",
+    price: 950,
+    rentalPricePerDay: 950,
+    advance: "1800",
+    securityDeposit: 1800,
+    image: "/assets/Jewellery/image_20261019_002925.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002925.jpg",
+      "/assets/Jewellery/image_20261019_002926.jpg",
+      "/assets/Jewellery/image_20261019_002926_1.jpg",
+      "/assets/Jewellery/image_20261019_002935.jpg"
+    ],
+    stock: "6",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Antique Matte",
+    color: "Antique Gold",
+    description: "Set of 4 heavy screw-type bridal bangles with micro-carved elephant and floral motifs in 1-gram antique gold polish. Fits standard 2.4 to 2.8 wrist sizes.",
+    tags: ["bangles", "kadas", "temple bangles", "1 gram gold", "bridal choora"]
+  },
+  {
+    name: "Ananya Traditional Mathapatti, Borla & Statement Jhumkas Combo",
+    price: 1400,
+    rentalPricePerDay: 1400,
+    advance: "2500",
+    securityDeposit: 2500,
+    image: "/assets/Jewellery/image_20261019_002040.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002040.jpg",
+      "/assets/Jewellery/image_20261019_002043.jpg",
+      "/assets/Jewellery/image_20261019_002045.jpg",
+      "/assets/Jewellery/image_20261019_002052.jpg"
+    ],
+    stock: "4",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Kundan",
+    color: "Gold & Ruby",
+    description: "Regal forehead mathapatti with authentic Rajasthani Borla and 3-tier grand jhumkas. Enriched with ruby cabochons and pearl latkans.",
+    tags: ["mathapatti", "borla", "sheeshpatti", "jhumkas", "bridal forehead"]
+  },
+  {
+    name: "Meenakshi Divine Temple Vanki (Armlet) & Nethi Chutti Set",
+    price: 1200,
+    rentalPricePerDay: 1200,
+    advance: "2200",
+    securityDeposit: 2200,
+    image: "/assets/Jewellery/image_20261019_002111.jpg",
+    images: [
+      "/assets/Jewellery/image_20261019_002111.jpg",
+      "/assets/Jewellery/image_20261019_002116.jpg",
+      "/assets/Jewellery/image_20261019_002118.jpg",
+      "/assets/Jewellery/image_20261019_002130.jpg"
+    ],
+    stock: "4",
+    category: "Jewellery",
+    gender: "jewellery",
+    occasion: "Marriage",
+    style: "Temple",
+    color: "1-Gram Matte Gold",
+    description: "Pair of Vanki (bridal upper-armlets) with snake/peacock carving and matching bridal Maang Tikka (Nethi Chutti). Hand-polished in 1-gram matte gold.",
+    tags: ["vanki", "armlet", "bajuband", "nethi chutti", "temple wedding"]
+  }
 ];
 
 async function seedDB() {

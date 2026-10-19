@@ -7,7 +7,12 @@ const productRouter = new Router();
 
 productRouter.get("/gender/:gender", async (req, res) => {
   const { gender } = req.params;
-  const products = await productModel.find({ gender: gender });
+  const target = String(gender).toLowerCase();
+  let query = { gender: target };
+  if (target === "jewellery" || target === "jewelry") {
+    query = { $or: [{ gender: "jewellery" }, { gender: "jewelry" }, { category: "Jewellery" }, { category: "jewellery" }] };
+  }
+  const products = await productModel.find(query);
   res.send(products);
 });
 
@@ -116,7 +121,8 @@ productRouter.post("/personalized-home", async (req, res) => {
     // Fetch products and categorize them for the homepage
     const women = await productModel.find({ gender: "women" }).limit(4);
     const men = await productModel.find({ gender: "men" }).limit(4);
-    const recommended = [...women, ...men];
+    const jewellery = await productModel.find({ $or: [{ gender: "jewellery" }, { category: "Jewellery" }] }).limit(4);
+    const recommended = [...women, ...men, ...jewellery];
     
     const trending = await productModel.find().sort({ price: -1 }).limit(6);
     const ai_picks = await productModel.find().limit(5).then(docs => docs.map(d => ({ product: d })));

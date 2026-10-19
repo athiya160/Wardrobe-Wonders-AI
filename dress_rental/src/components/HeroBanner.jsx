@@ -177,6 +177,30 @@ export const HeroBanner = () => {
           </Button>
 
           <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate("/jewellery")}
+            sx={{
+              backgroundColor: "rgba(209, 163, 98, 0.2)",
+              border: "1px solid #D1A362",
+              color: "#FFFFFF",
+              fontWeight: 800,
+              fontSize: "0.95rem",
+              px: 3,
+              py: 1.4,
+              borderRadius: 1.5,
+              textTransform: "none",
+              backdropFilter: "blur(6px)",
+              "&:hover": {
+                backgroundColor: "#D1A362",
+                color: "#1A1817",
+              },
+            }}
+          >
+            Bridal Jewellery 💍
+          </Button>
+
+          <Button
             variant="outlined"
             size="large"
             onClick={() => navigate("/m-dress")}

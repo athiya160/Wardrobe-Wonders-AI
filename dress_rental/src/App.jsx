@@ -8,6 +8,7 @@ import AvailableDresses from "./pages/MDress";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Fdress from "./pages/Fdress";
+import Jewellery from "./pages/Jewellery";
 import Dashboard from "./pages/Admin";
 import VerifyPayment from "./pages/VerifyPayment";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -32,6 +33,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/m-dress" element={<AvailableDresses />} />
           <Route path="/w-dress" element={<Fdress />} />
+          <Route path="/jewellery" element={<Jewellery />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/stylist" element={<Stylist />} />
           <Route path="/product/:id" element={<ProductDetail />} />

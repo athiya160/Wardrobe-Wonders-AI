@@ -111,8 +111,10 @@ const Stylist = () => {
   };
 
   const filteredRecs = recommendations.filter(item => {
+    if (!item?.product) return false;
     if (activeTab === "Women") return item.product.gender === "women";
     if (activeTab === "Men") return item.product.gender === "men";
+    if (activeTab === "Jewellery") return item.product.gender === "jewellery" || item.product.category === "Jewellery";
     return true;
   });
 
@@ -134,9 +136,9 @@ const Stylist = () => {
               </Typography>
 
               {/* Gender */}
-              <Typography variant="subtitle2" fontWeight="600" mb={1.5}>Gender</Typography>
-              <Grid container spacing={2} mb={4}>
-                <Grid item xs={6}>
+              <Typography variant="subtitle2" fontWeight="600" mb={1.5}>Department</Typography>
+              <Grid container spacing={1.5} mb={4}>
+                <Grid item xs={4}>
                   <Button
                     fullWidth
                     variant={formData.gender === "Women" ? "outlined" : "text"}
@@ -147,14 +149,15 @@ const Stylist = () => {
                       bgcolor: formData.gender === "Women" ? '#fffbf5' : '#f9f9f9',
                       textTransform: 'none',
                       borderRadius: 2,
-                      py: 1
+                      py: 1,
+                      fontSize: '0.82rem'
                     }}
                     startIcon={<FemaleIcon />}
                   >
                     Women
                   </Button>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={4}>
                   <Button
                     fullWidth
                     variant={formData.gender === "Men" ? "outlined" : "text"}
@@ -165,11 +168,31 @@ const Stylist = () => {
                       bgcolor: formData.gender === "Men" ? '#fffbf5' : '#f9f9f9',
                       textTransform: 'none',
                       borderRadius: 2,
-                      py: 1
+                      py: 1,
+                      fontSize: '0.82rem'
                     }}
                     startIcon={<MaleIcon />}
                   >
                     Men
+                  </Button>
+                </Grid>
+                <Grid item xs={4}>
+                  <Button
+                    fullWidth
+                    variant={formData.gender === "Jewellery" ? "outlined" : "text"}
+                    onClick={() => handleUpdate("gender", "Jewellery")}
+                    sx={{
+                      borderColor: formData.gender === "Jewellery" ? '#D1A362' : '#eee',
+                      color: formData.gender === "Jewellery" ? '#D1A362' : '#555',
+                      bgcolor: formData.gender === "Jewellery" ? '#fffbf5' : '#f9f9f9',
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      py: 1,
+                      fontSize: '0.82rem'
+                    }}
+                    startIcon={<DiamondIcon />}
+                  >
+                    Jewellery 💍
                   </Button>
                 </Grid>
               </Grid>
@@ -369,22 +392,29 @@ const Stylist = () => {
                   Outfits curated by our AI stylist
                 </Typography>
 
-                <Box display="flex" gap={1} mb={4}>
-                  {["All", "Women", "Men"].map(tab => (
-                    <Chip
-                      key={tab}
-                      label={`${tab} (${tab === "All" ? recommendations.length : recommendations.filter(r => r.product.gender === tab.toLowerCase()).length})`}
-                      clickable
-                      onClick={() => setActiveTab(tab)}
-                      sx={{
-                        bgcolor: activeTab === tab ? '#111' : '#fff',
-                        color: activeTab === tab ? '#fff' : '#555',
-                        border: '1px solid',
-                        borderColor: activeTab === tab ? '#111' : '#eee',
-                        fontWeight: activeTab === tab ? 600 : 400
-                      }}
-                    />
-                  ))}
+                <Box display="flex" gap={1} mb={4} flexWrap="wrap">
+                  {["All", "Women", "Men", "Jewellery"].map(tab => {
+                    const count = tab === "All"
+                      ? recommendations.length
+                      : tab === "Jewellery"
+                      ? recommendations.filter(r => r.product?.gender === "jewellery" || r.product?.category === "Jewellery").length
+                      : recommendations.filter(r => r.product?.gender === tab.toLowerCase()).length;
+                    return (
+                      <Chip
+                        key={tab}
+                        label={`${tab} (${count})`}
+                        clickable
+                        onClick={() => setActiveTab(tab)}
+                        sx={{
+                          bgcolor: activeTab === tab ? '#111' : '#fff',
+                          color: activeTab === tab ? '#fff' : '#555',
+                          border: '1px solid',
+                          borderColor: activeTab === tab ? '#111' : '#eee',
+                          fontWeight: activeTab === tab ? 600 : 400
+                        }}
+                      />
+                    );
+                  })}
                 </Box>
 
                 <Grid container spacing={3} mb={4}>
