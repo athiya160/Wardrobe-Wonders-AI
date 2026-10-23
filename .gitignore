@@ -43,3 +43,11 @@ data/product_vectors.index
 dress_rental_backend/uploads/*
 !dress_rental_backend/uploads/.gitkeep
 
+# Mobile & Android builds
+*.apk
+*.aab
+**/android/.gradle/
+**/android/app/build/
+**/android/build/
+**/android/local.properties
+
