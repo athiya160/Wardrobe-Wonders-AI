@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -9,6 +10,8 @@ import {
   CircularProgress,
   Alert,
   LinearProgress,
+  Chip,
+  Divider,
 } from "@mui/material";
 import {
   Visibility,
@@ -20,12 +23,17 @@ import {
   EmailOutlined as EmailIcon,
   PhoneOutlined as PhoneIcon,
   LockOutlined as LockIcon,
+  ArrowForward as ArrowForwardIcon,
+  VerifiedUserOutlined as ShieldIcon,
+  LocalShippingOutlined as DeliveryIcon,
+  DiamondOutlined as DiamondIcon,
+  AutoAwesome as SparkleIcon,
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useState } from "react";
 import { BASE_URL } from "../config/axiosConfig";
 import logo from "../assets/logo.png";
+
 const heroImage = "/assets/Women/look_01.png";
 
 // Password strength calculator
@@ -68,6 +76,26 @@ const SignUp = () => {
 
   const passwordStrength = getPasswordStrength(password);
 
+  const fillDemo = (demoRole) => {
+    setError("");
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    if (demoRole === "customer") {
+      setRole("customer");
+      setFullName("Priya Sharma");
+      setEmail(`priya.client${randomSuffix}@wardrobewonders.com`);
+      setPhone("9876543210");
+      setPassword("Password123!");
+      setConfirmPassword("Password123!");
+    } else if (demoRole === "provider") {
+      setRole("provider");
+      setFullName("Heritage Bridal Studio");
+      setEmail(`boutique${randomSuffix}@wardrobewonders.com`);
+      setPhone("9812345678");
+      setPassword("Password123!");
+      setConfirmPassword("Password123!");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -99,7 +127,7 @@ const SignUp = () => {
     const nameParts = fullName.trim().split(" ");
     const firstname = nameParts[0] || "";
     const lastname = nameParts.slice(1).join(" ") || "";
-    const username = email.split("@")[0];
+    const username = email.split("@")[0] + "_" + Math.floor(10 + Math.random() * 90);
 
     const payload = {
       name: fullName.trim(),
@@ -153,25 +181,32 @@ const SignUp = () => {
       sx={{
         minHeight: "100vh",
         display: "flex",
-        backgroundColor: "#FAFAFA",
-        color: "#1A1A1A",
+        backgroundColor: "#FCFAF7",
+        color: "#1A1817",
       }}
     >
-      {/* LEFT / MAIN FORM PANEL */}
+      {/* LEFT / LUXURY FORM PANEL */}
       <Box
         sx={{
-          flex: { xs: "1 1 100%", md: "0 0 54%", lg: "0 0 50%" },
+          flex: { xs: "1 1 100%", md: "0 0 52%", lg: "0 0 48%" },
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          px: { xs: 2.5, sm: 6, md: 7, lg: 9 },
-          py: { xs: 4, sm: 6 },
-          maxWidth: { md: "680px" },
+          px: { xs: 2.5, sm: 5, md: 6, lg: 8 },
+          py: { xs: 3.5, sm: 5 },
+          maxWidth: { md: "640px" },
           mx: "auto",
         }}
       >
         {/* Brand Header */}
-        <Box sx={{ mb: { xs: 3, sm: 4 }, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Box
+          sx={{
+            mb: { xs: 2.5, sm: 3.5 },
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Link to="/" style={{ display: "inline-block" }}>
             <img
               src={logo}
@@ -198,646 +233,727 @@ const SignUp = () => {
         </Box>
 
         {/* Editorial Titles */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 2.5 }}>
+          <Stack direction="row" spacing={1} alignItems="center" mb={0.8}>
+            <SparkleIcon sx={{ color: "#D1A362", fontSize: 18 }} />
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#A07028",
+                fontWeight: 800,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                fontSize: "0.74rem",
+              }}
+            >
+              Exclusive Membership
+            </Typography>
+          </Stack>
+
           <Typography
             variant="h4"
             component="h1"
             sx={{
-              fontWeight: 800,
+              fontFamily: '"Playfair Display", "Georgia", serif',
+              fontWeight: 700,
               fontSize: { xs: "1.75rem", sm: "2.1rem" },
               letterSpacing: "-0.02em",
-              color: "#1A1A1A",
+              color: "#1A1817",
               lineHeight: 1.2,
-              mb: 1,
+              mb: 0.8,
             }}
           >
-            Your wardrobe. Your way.
+            Create Your Account.
           </Typography>
           <Typography
-            variant="body1"
+            variant="body2"
             sx={{
-              color: "#666666",
-              fontSize: { xs: "0.95rem", sm: "1.05rem" },
+              color: "#6E685F",
+              fontSize: "0.92rem",
               lineHeight: 1.5,
             }}
           >
-            Rent the looks you love or turn your wardrobe into income.
+            Rent authenticated bridal couture and 1-gram gold jewellery, or monetize your designer closet.
           </Typography>
         </Box>
 
         {/* ROLE SELECTION CARDS */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 2.5 }}>
           <Typography
             variant="caption"
             sx={{
               fontWeight: 700,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "#888888",
+              color: "#8E8880",
               display: "block",
-              mb: 1.5,
+              mb: 1.2,
+              fontSize: "0.72rem",
             }}
           >
-            Choose your account type
+            Select Your Membership Type:
           </Typography>
 
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            sx={{ width: "100%" }}
-          >
-            {/* Customer Card */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+            {/* Customer Role */}
             <Box
               role="button"
               tabIndex={0}
-              aria-pressed={role === "customer"}
               onClick={() => setRole("customer")}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") setRole("customer");
-              }}
               sx={{
                 flex: 1,
-                p: 2.5,
-                borderRadius: 2.5,
+                p: 1.8,
+                borderRadius: 2,
                 cursor: "pointer",
                 border:
                   role === "customer"
                     ? "2px solid #D1A362"
-                    : "1.5px solid #EAEAEA",
+                    : "1px solid #ECE7DE",
                 backgroundColor:
                   role === "customer"
-                    ? "rgba(209, 163, 98, 0.06)"
+                    ? "rgba(209, 163, 98, 0.08)"
                     : "#FFFFFF",
                 boxShadow:
                   role === "customer"
-                    ? "0 6px 20px rgba(209, 163, 98, 0.15)"
-                    : "0 2px 8px rgba(0,0,0,0.02)",
-                transition: "all 0.25s ease",
-                position: "relative",
+                    ? "0 4px 16px rgba(209, 163, 98, 0.15)"
+                    : "none",
+                transition: "all 0.2s ease",
                 display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1.5,
                 "&:hover": {
                   borderColor: "#D1A362",
-                  transform: "translateY(-2px)",
-                },
-                "&:focus-visible": {
-                  outline: "2px solid #D1A362",
-                  outlineOffset: 2,
+                  transform: "translateY(-1px)",
                 },
               }}
             >
-              <Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    mb: 1.5,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 42,
-                      height: 42,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor:
-                        role === "customer" ? "#D1A362" : "#F5F5F5",
-                      color: role === "customer" ? "#FFFFFF" : "#1A1A1A",
-                      transition: "all 0.25s ease",
-                    }}
-                  >
-                    <CustomerIcon fontSize="small" />
-                  </Box>
-                  {role === "customer" && (
-                    <CheckIcon sx={{ color: "#D1A362", fontSize: 20 }} />
-                  )}
-                </Box>
-
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700, color: "#1A1A1A", mb: 0.5 }}
-                >
-                  Rent Clothes
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#666666", fontSize: "0.85rem", lineHeight: 1.4 }}
-                >
-                  Discover beautiful outfits for every occasion without buying them.
-                </Typography>
-              </Box>
-
               <Box
                 sx={{
-                  mt: 2,
-                  py: 0.6,
-                  px: 1.5,
+                  width: 36,
+                  height: 36,
                   borderRadius: 1.5,
-                  display: "inline-block",
-                  alignSelf: "flex-start",
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
-                  backgroundColor:
-                    role === "customer" ? "#1A1A1A" : "transparent",
-                  color: role === "customer" ? "#FFFFFF" : "#888888",
-                  border:
-                    role === "customer" ? "none" : "1px solid #E0E0E0",
-                  transition: "all 0.2s ease",
+                  bgcolor: role === "customer" ? "#1A1817" : "#F7F5F0",
+                  color: role === "customer" ? "#D1A362" : "#777",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                I’m a Customer
+                <CustomerIcon fontSize="small" />
+              </Box>
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      color: "#1A1817",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    Client / Renter
+                  </Typography>
+                  {role === "customer" && (
+                    <CheckIcon sx={{ fontSize: 16, color: "#D1A362" }} />
+                  )}
+                </Stack>
+                <Typography variant="caption" sx={{ color: "#777", fontSize: "0.72rem", display: "block" }}>
+                  Borrow couture for 10% of retail
+                </Typography>
               </Box>
             </Box>
 
-            {/* Provider Card */}
+            {/* Boutique Lender Role */}
             <Box
               role="button"
               tabIndex={0}
-              aria-pressed={role === "provider"}
               onClick={() => setRole("provider")}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") setRole("provider");
-              }}
               sx={{
                 flex: 1,
-                p: 2.5,
-                borderRadius: 2.5,
+                p: 1.8,
+                borderRadius: 2,
                 cursor: "pointer",
                 border:
                   role === "provider"
                     ? "2px solid #D1A362"
-                    : "1.5px solid #EAEAEA",
+                    : "1px solid #ECE7DE",
                 backgroundColor:
                   role === "provider"
-                    ? "rgba(209, 163, 98, 0.06)"
+                    ? "rgba(209, 163, 98, 0.08)"
                     : "#FFFFFF",
                 boxShadow:
                   role === "provider"
-                    ? "0 6px 20px rgba(209, 163, 98, 0.15)"
-                    : "0 2px 8px rgba(0,0,0,0.02)",
-                transition: "all 0.25s ease",
-                position: "relative",
+                    ? "0 4px 16px rgba(209, 163, 98, 0.15)"
+                    : "none",
+                transition: "all 0.2s ease",
                 display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1.5,
                 "&:hover": {
                   borderColor: "#D1A362",
-                  transform: "translateY(-2px)",
-                },
-                "&:focus-visible": {
-                  outline: "2px solid #D1A362",
-                  outlineOffset: 2,
+                  transform: "translateY(-1px)",
                 },
               }}
             >
-              <Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    mb: 1.5,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 42,
-                      height: 42,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor:
-                        role === "provider" ? "#D1A362" : "#F5F5F5",
-                      color: role === "provider" ? "#FFFFFF" : "#1A1A1A",
-                      transition: "all 0.25s ease",
-                    }}
-                  >
-                    <ProviderIcon fontSize="small" />
-                  </Box>
-                  {role === "provider" && (
-                    <CheckIcon sx={{ color: "#D1A362", fontSize: 20 }} />
-                  )}
-                </Box>
-
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700, color: "#1A1A1A", mb: 0.5 }}
-                >
-                  Lend Clothes & Earn
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#666666", fontSize: "0.85rem", lineHeight: 1.4 }}
-                >
-                  Share pieces from your wardrobe and earn from every rental.
-                </Typography>
-              </Box>
-
               <Box
                 sx={{
-                  mt: 2,
-                  py: 0.6,
-                  px: 1.5,
+                  width: 36,
+                  height: 36,
                   borderRadius: 1.5,
-                  display: "inline-block",
-                  alignSelf: "flex-start",
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
-                  backgroundColor:
-                    role === "provider" ? "#1A1A1A" : "transparent",
-                  color: role === "provider" ? "#FFFFFF" : "#888888",
-                  border:
-                    role === "provider" ? "none" : "1px solid #E0E0E0",
-                  transition: "all 0.2s ease",
+                  bgcolor: role === "provider" ? "#1A1817" : "#F7F5F0",
+                  color: role === "provider" ? "#D1A362" : "#777",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                I’m a Provider
+                <ProviderIcon fontSize="small" />
+              </Box>
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      color: "#1A1817",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    Boutique Lender
+                  </Typography>
+                  {role === "provider" && (
+                    <CheckIcon sx={{ fontSize: 16, color: "#D1A362" }} />
+                  )}
+                </Stack>
+                <Typography variant="caption" sx={{ color: "#777", fontSize: "0.72rem", display: "block" }}>
+                  List outfits & earn rental income
+                </Typography>
               </Box>
             </Box>
           </Stack>
         </Box>
 
-        {/* FEEDBACK ALERTS */}
+        {/* Feedback Alerts */}
         {error && (
           <Alert
             severity="error"
             onClose={() => setError("")}
-            sx={{ mb: 2.5, borderRadius: 2 }}
+            sx={{
+              mb: 2.5,
+              borderRadius: 2,
+              backgroundColor: "#FFF5F5",
+              color: "#C53030",
+              border: "1px solid #FED7D7",
+              fontSize: "0.85rem",
+            }}
           >
             {error}
           </Alert>
         )}
+
         {success && (
-          <Alert severity="success" sx={{ mb: 2.5, borderRadius: 2 }}>
-            Account created successfully! Preparing your experience...
+          <Alert
+            severity="success"
+            sx={{
+              mb: 2.5,
+              borderRadius: 2,
+              backgroundColor: "#F0FFF4",
+              color: "#276749",
+              border: "1px solid #C6F6D5",
+              fontSize: "0.85rem",
+            }}
+          >
+            Welcome to Wardrobe Wonders! Your account has been registered. Redirecting...
           </Alert>
         )}
 
-        {/* SIGNUP FORM */}
-        <form onSubmit={handleSubmit} noValidate>
-          <Stack spacing={2.2}>
+        {/* Registration Form */}
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack spacing={2}>
             {/* Full Name */}
-            <TextField
-              fullWidth
-              label="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. Sophia Miller"
-              required
-              disabled={isLoading || success}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon sx={{ color: "#888", fontSize: 20 }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  backgroundColor: "#FFFFFF",
-                },
-              }}
-            />
-
-            {/* Email & Phone */}
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                fullWidth
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                required
-                disabled={isLoading || success}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon sx={{ color: "#888", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    backgroundColor: "#FFFFFF",
-                  },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Mobile Phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="10-digit number"
-                required
-                disabled={isLoading || success}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIcon sx={{ color: "#888", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    backgroundColor: "#FFFFFF",
-                  },
-                }}
-              />
-            </Stack>
-
-            {/* Password */}
             <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3D3935",
+                  mb: 0.6,
+                  display: "block",
+                  fontSize: "0.78rem",
+                }}
+              >
+                Full Name
+              </Typography>
               <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimum 6 characters"
                 required
-                disabled={isLoading || success}
+                fullWidth
+                size="small"
+                placeholder="e.g. Priya Sharma"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockIcon sx={{ color: "#888", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        size="small"
-                      >
-                        {showPassword ? (
-                          <VisibilityOff fontSize="small" />
-                        ) : (
-                          <Visibility fontSize="small" />
-                        )}
-                      </IconButton>
+                      <PersonIcon sx={{ color: "#9E968B", fontSize: 20 }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 1.5,
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    backgroundColor: "#FFFFFF",
+                    borderRadius: 1.5,
+                    "& fieldset": { borderColor: "#E5DFD5" },
+                    "&:hover fieldset": { borderColor: "#D1A362" },
+                    "&.Mui-focused fieldset": { borderColor: "#D1A362", borderWidth: 1.5 },
                   },
                 }}
               />
-
-              {/* Password Strength Indicator */}
-              {password && (
-                <Box sx={{ mt: 1, px: 0.5 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ color: "#777" }}>
-                      Password Strength
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontWeight: 700,
-                        color: passwordStrength.color,
-                      }}
-                    >
-                      {passwordStrength.label}
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={passwordStrength.score}
-                    sx={{
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: "#EBEBEB",
-                      "& .MuiLinearProgress-bar": {
-                        backgroundColor: passwordStrength.color,
-                        borderRadius: 2,
-                        transition: "all 0.3s ease",
-                      },
-                    }}
-                  />
-                </Box>
-              )}
             </Box>
 
-            {/* Confirm Password */}
-            <TextField
-              fullWidth
-              label="Confirm Password"
-              type={showConfirmPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repeat your password"
-              required
-              disabled={isLoading || success}
-              error={Boolean(confirmPassword && password !== confirmPassword)}
-              helperText={
-                confirmPassword && password !== confirmPassword
-                  ? "Passwords do not match"
-                  : ""
-              }
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon sx={{ color: "#888", fontSize: 20 }} />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle confirm password visibility"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      edge="end"
-                      size="small"
-                    >
-                      {showConfirmPassword ? (
-                        <VisibilityOff fontSize="small" />
-                      ) : (
-                        <Visibility fontSize="small" />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  backgroundColor: "#FFFFFF",
-                },
-              }}
-            />
+            {/* Email & Phone Dual Row */}
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3D3935",
+                    mb: 0.6,
+                    display: "block",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  Email Address
+                </Typography>
+                <TextField
+                  required
+                  fullWidth
+                  size="small"
+                  type="email"
+                  placeholder="priya@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon sx={{ color: "#9E968B", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 1.5,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1.5,
+                      "& fieldset": { borderColor: "#E5DFD5" },
+                      "&:hover fieldset": { borderColor: "#D1A362" },
+                      "&.Mui-focused fieldset": { borderColor: "#D1A362", borderWidth: 1.5 },
+                    },
+                  }}
+                />
+              </Box>
 
-            {/* Submit Button */}
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3D3935",
+                    mb: 0.6,
+                    display: "block",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  Mobile Number
+                </Typography>
+                <TextField
+                  required
+                  fullWidth
+                  size="small"
+                  placeholder="10-digit number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PhoneIcon sx={{ color: "#9E968B", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 1.5,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1.5,
+                      "& fieldset": { borderColor: "#E5DFD5" },
+                      "&:hover fieldset": { borderColor: "#D1A362" },
+                      "&.Mui-focused fieldset": { borderColor: "#D1A362", borderWidth: 1.5 },
+                    },
+                  }}
+                />
+              </Box>
+            </Stack>
+
+            {/* Password & Confirm Password */}
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3D3935",
+                    mb: 0.6,
+                    display: "block",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  Password
+                </Typography>
+                <TextField
+                  required
+                  fullWidth
+                  size="small"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LockIcon sx={{ color: "#9E968B", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          aria-label="toggle password visibility"
+                        >
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 1.5,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1.5,
+                      "& fieldset": { borderColor: "#E5DFD5" },
+                      "&:hover fieldset": { borderColor: "#D1A362" },
+                      "&.Mui-focused fieldset": { borderColor: "#D1A362", borderWidth: 1.5 },
+                    },
+                  }}
+                />
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3D3935",
+                    mb: 0.6,
+                    display: "block",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  Confirm Password
+                </Typography>
+                <TextField
+                  required
+                  fullWidth
+                  size="small"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LockIcon sx={{ color: "#9E968B", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          edge="end"
+                          aria-label="toggle confirm password visibility"
+                        >
+                          {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 1.5,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1.5,
+                      "& fieldset": { borderColor: "#E5DFD5" },
+                      "&:hover fieldset": { borderColor: "#D1A362" },
+                      "&.Mui-focused fieldset": { borderColor: "#D1A362", borderWidth: 1.5 },
+                    },
+                  }}
+                />
+              </Box>
+            </Stack>
+
+            {/* Password Strength Meter */}
+            {password && (
+              <Box sx={{ mt: -0.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.4}>
+                  <Typography variant="caption" sx={{ fontSize: "0.7rem", color: "#888" }}>
+                    Password Strength:
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: "0.72rem", fontWeight: 700, color: passwordStrength.color }}>
+                    {passwordStrength.label}
+                  </Typography>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={passwordStrength.score}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    bgcolor: "#EAEAEA",
+                    "& .MuiLinearProgress-bar": { bgcolor: passwordStrength.color, borderRadius: 2 },
+                  }}
+                />
+              </Box>
+            )}
+
+            {/* Submit CTA */}
             <Button
               type="submit"
-              variant="contained"
               fullWidth
               disabled={isLoading || success}
+              endIcon={!isLoading && <ArrowForwardIcon />}
               sx={{
-                py: 1.5,
-                mt: 1,
-                fontSize: "1rem",
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-                borderRadius: 2,
-                backgroundColor: "#1A1A1A",
+                mt: 1.5,
+                py: 1.3,
+                backgroundColor: "#1A1817",
                 color: "#FFFFFF",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+                border: "1px solid #D1A362",
+                fontWeight: 700,
+                fontSize: "0.92rem",
+                textTransform: "none",
+                borderRadius: 1.5,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+                transition: "all 0.25s ease",
                 "&:hover": {
-                  backgroundColor: "#333333",
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.22)",
+                  backgroundColor: "#2E2A27",
+                  borderColor: "#E5C287",
+                  boxShadow: "0 8px 24px rgba(209, 163, 98, 0.3)",
+                  transform: "translateY(-1px)",
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "#E2DCD2",
+                  color: "#9C958A",
+                  borderColor: "transparent",
                 },
               }}
             >
               {isLoading ? (
-                <CircularProgress size={24} sx={{ color: "#FFFFFF" }} />
+                <CircularProgress size={22} sx={{ color: "#D1A362" }} />
               ) : (
-                "Create Account"
+                "Create Account & Explore Collection"
               )}
             </Button>
           </Stack>
-        </form>
+        </Box>
 
-        {/* Footer Link */}
-        <Box sx={{ textAlign: "center", mt: 3 }}>
-          <Typography variant="body2" sx={{ color: "#666666" }}>
+        {/* Link to Sign In */}
+        <Box sx={{ mt: 2.5, textAlign: "center" }}>
+          <Typography variant="body2" sx={{ color: "#777", fontSize: "0.85rem" }}>
             Already have an account?{" "}
             <Link
               to="/login"
               style={{
-                color: "#D1A362",
+                color: "#A07028",
                 fontWeight: 700,
                 textDecoration: "none",
               }}
             >
-              Sign in
+              Sign In here →
             </Link>
           </Typography>
         </Box>
+
+        {/* 1-Click Demo Profiles Helper Strip */}
+        <Box
+          sx={{
+            mt: 3,
+            pt: 2,
+            borderTop: "1px solid #ECE7DE",
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              color: "#999288",
+              fontSize: "0.74rem",
+              fontWeight: 600,
+              display: "block",
+              mb: 1,
+            }}
+          >
+            QUICK TEST PROFILES (1-CLICK FILL):
+          </Typography>
+          <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap">
+            <Chip
+              label="New Client Demo"
+              size="small"
+              onClick={() => fillDemo("customer")}
+              sx={{
+                bgcolor: "#FFFFFF",
+                border: "1px solid #E2DCD2",
+                fontWeight: 700,
+                fontSize: "0.72rem",
+                cursor: "pointer",
+                "&:hover": { borderColor: "#D1A362", bgcolor: "#FAF6F0" },
+              }}
+            />
+            <Chip
+              label="Boutique Lender Demo"
+              size="small"
+              onClick={() => fillDemo("provider")}
+              sx={{
+                bgcolor: "#FFFFFF",
+                border: "1px solid #E2DCD2",
+                fontWeight: 700,
+                fontSize: "0.72rem",
+                cursor: "pointer",
+                "&:hover": { borderColor: "#D1A362", bgcolor: "#FAF6F0" },
+              }}
+            />
+          </Stack>
+        </Box>
       </Box>
 
-      {/* RIGHT / EDITORIAL SHOWCASE PANEL (Desktop Only) */}
+      {/* RIGHT / EDITORIAL SHOWCASE (Desktop Viewports) */}
       <Box
         sx={{
           display: { xs: "none", md: "flex" },
-          flex: { md: "0 0 46%", lg: "0 0 50%" },
+          flex: { md: "0 0 48%", lg: "0 0 52%" },
           position: "relative",
           backgroundImage: `url("${heroImage}")`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "center 20%",
           flexDirection: "column",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           p: { md: 6, lg: 8 },
           overflow: "hidden",
           "&::before": {
             content: '""',
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            inset: 0,
             background:
-              "linear-gradient(180deg, rgba(26,26,26,0.3) 0%, rgba(26,26,26,0.85) 100%)",
+              "linear-gradient(180deg, rgba(18,16,15,0.45) 0%, rgba(18,16,15,0.7) 50%, rgba(18,16,15,0.95) 100%)",
           },
         }}
       >
-        <Box sx={{ position: "relative", zIndex: 1, color: "#FFFFFF" }}>
-          <Typography
-            variant="caption"
+        {/* Top Floating Tag */}
+        <Box sx={{ position: "relative", zIndex: 2, display: "flex", justifyContent: "flex-end" }}>
+          <Chip
+            icon={<DiamondIcon sx={{ fontSize: 14, color: "#D1A362 !important" }} />}
+            label="AUTHENTICATED CIRCULAR COUTURE"
             sx={{
-              display: "inline-block",
-              px: 1.5,
-              py: 0.5,
-              borderRadius: 1,
-              backgroundColor: "rgba(209, 163, 98, 0.9)",
-              color: "#1A1A1A",
-              fontWeight: 800,
-              fontSize: "0.75rem",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              mb: 2,
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              backdropFilter: "blur(8px)",
+              color: "#E2DACB",
+              border: "1px solid rgba(209, 163, 98, 0.4)",
+              fontWeight: 700,
+              fontSize: "0.72rem",
+              letterSpacing: "0.06em",
             }}
-          >
-            Sustainable Luxury Fashion
-          </Typography>
+          />
+        </Box>
 
+        {/* Bottom Editorial Content & Trust Accolades */}
+        <Box sx={{ position: "relative", zIndex: 2, color: "#FFFFFF" }}>
           <Typography
             variant="h3"
             sx={{
-              fontWeight: 800,
-              fontSize: { md: "2.3rem", lg: "2.8rem" },
-              lineHeight: 1.15,
+              fontFamily: '"Playfair Display", "Georgia", serif',
+              fontWeight: 700,
+              fontSize: { md: "2.4rem", lg: "3rem" },
+              lineHeight: 1.18,
               letterSpacing: "-0.02em",
               mb: 2,
+              textShadow: "0 2px 14px rgba(0,0,0,0.5)",
             }}
           >
-            Wear the runway. Monetize your closet.
+            Rent the Iconic. <br />
+            Monetize the Timeless.
           </Typography>
 
           <Typography
             variant="body1"
             sx={{
-              color: "rgba(255, 255, 255, 0.82)",
-              fontSize: "1.05rem",
+              color: "#E5DEC9",
+              fontSize: "1.02rem",
               lineHeight: 1.6,
-              maxWidth: 480,
-              mb: 3,
+              maxWidth: 520,
+              mb: 4,
+              textShadow: "0 1px 4px rgba(0,0,0,0.6)",
             }}
           >
-            Join India’s premier peer-to-peer designer wardrobe collective. Rent
-            iconic outfits for celebrations, or earn effortlessly from garments you already own.
+            Access million-rupee wardrobes for wedding festivities, galas, and celebrations at 10% of retail price. Complete with doorstep white-glove delivery, sanitization, and escrow protection.
           </Typography>
 
-          <Stack direction="row" spacing={3} sx={{ pt: 1, borderTop: "1px solid rgba(255,255,255,0.2)" }}>
+          {/* Trust Matrix Strip */}
+          <Box
+            sx={{
+              pt: 3,
+              borderTop: "1px solid rgba(255,255,255,0.18)",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 2,
+            }}
+          >
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: "#D1A362" }}>
-                1,000+
-              </Typography>
-              <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.7)" }}>
-                Curated Styles
+              <Box display="flex" alignItems="center" gap={0.8} mb={0.5}>
+                <ShieldIcon sx={{ color: "#D1A362", fontSize: 18 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: "0.82rem" }}>
+                  100% Escrow
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: "#BFB8A9", fontSize: "0.72rem", lineHeight: 1.3, display: "block" }}>
+                Funds released to lender only after you inspect & approve.
               </Typography>
             </Box>
+
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: "#D1A362" }}>
-                100%
-              </Typography>
-              <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.7)" }}>
-                Verified Quality
+              <Box display="flex" alignItems="center" gap={0.8} mb={0.5}>
+                <DeliveryIcon sx={{ color: "#D1A362", fontSize: 18 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: "0.82rem" }}>
+                  Doorstep Delivery
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: "#BFB8A9", fontSize: "0.72rem", lineHeight: 1.3, display: "block" }}>
+                Sanitized & pressed, delivered 48h before your event.
               </Typography>
             </Box>
+
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: "#D1A362" }}>
-                Doorstep
-              </Typography>
-              <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.7)" }}>
-                Delivery & Return
+              <Box display="flex" alignItems="center" gap={0.8} mb={0.5}>
+                <SparkleIcon sx={{ color: "#D1A362", fontSize: 18 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: "0.82rem" }}>
+                  AI Fit Match
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: "#BFB8A9", fontSize: "0.72rem", lineHeight: 1.3, display: "block" }}>
+                Precision measurements and stylist consultation included.
               </Typography>
             </Box>
-          </Stack>
+          </Box>
         </Box>
       </Box>
     </Box>

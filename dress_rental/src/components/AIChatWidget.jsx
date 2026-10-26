@@ -134,7 +134,7 @@ const AIChatWidget = () => {
           <Box
             sx={{
               position: "fixed",
-              bottom: { xs: 20, sm: 28 },
+              bottom: { xs: 80, sm: 28 },
               right: { xs: 20, sm: 28 },
               zIndex: 9999,
               display: "flex",
@@ -212,7 +212,7 @@ const AIChatWidget = () => {
             elevation={12}
             sx={{
               position: "fixed",
-              bottom: { xs: 12, sm: 24 },
+              bottom: { xs: 74, sm: 24 },
               right: { xs: 12, sm: 24 },
               width: { xs: "calc(100vw - 24px)", sm: 400 },
               height: { xs: "calc(100vh - 36px)", sm: 600 },

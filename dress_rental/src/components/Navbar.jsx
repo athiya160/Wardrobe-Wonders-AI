@@ -32,6 +32,7 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import Collapse from '@mui/material/Collapse';
 import AuthModal from './AuthModal';
 import { RecruiterTourModal } from './RecruiterTourModal';
 
@@ -89,6 +90,7 @@ const pages = [
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = React.useState(false);
   const navigate = useNavigate();
 
   const [cartItems, setCartItems] = React.useState([]);
@@ -199,12 +201,12 @@ function ResponsiveAppBar() {
 
       <AppBar position="sticky" sx={{ backgroundColor: '#FFFFFF', color: '#1A1A1A', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
         <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ minHeight: '80px !important' }}>
-            <Box component="a" href="/" sx={{ mr: 4, display: 'flex', alignItems: 'center' }}>
-              <img src={logo} alt="Logo" style={{ height: '40px', objectFit: 'contain' }} />
+          <Toolbar disableGutters sx={{ minHeight: { xs: '62px !important', md: '80px !important' }, px: { xs: 1.5, sm: 2 } }}>
+            <Box component="a" href="/" sx={{ mr: { xs: 'auto', md: 4 }, display: 'flex', alignItems: 'center' }}>
+              <img src={logo} alt="Logo" style={{ height: '34px', objectFit: 'contain' }} />
             </Box>
 
-            <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
+            <Box sx={{ display: { xs: "flex", md: "none" }, mr: 1 }}>
               <IconButton size="large" onClick={handleOpenNavMenu} color="inherit">
                 <MenuIcon />
               </IconButton>
@@ -346,7 +348,7 @@ function ResponsiveAppBar() {
               ))}
             </Box>
 
-            <Search>
+            <Search sx={{ display: { xs: "none", md: "block" } }}>
               <SearchIconWrapper>
                 <SearchIcon sx={{ color: '#9e9e9e', fontSize: '1.2rem' }} />
               </SearchIconWrapper>
@@ -359,7 +361,9 @@ function ResponsiveAppBar() {
               />
             </Search>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1.5, md: 2 }, ml: { xs: 0, md: 2 } }}>
+              {/* Mobile Search Toggle */}
+              <IconButton onClick={() => setMobileSearchOpen(!mobileSearchOpen)} sx={{ display: { xs: "inline-flex", md: "none" }, color: mobileSearchOpen ? "#D1A362" : "#1A1817", p: 1 }} aria-label="Toggle Search"><SearchIcon fontSize="small" /></IconButton>
               <IconButton onClick={() => setWishlistOpen(true)} sx={{ color: '#1A1817', '&:hover': { color: '#D1A362' } }}>
                 <FavoriteBorderIcon />
               </IconButton>
@@ -583,60 +587,82 @@ function ResponsiveAppBar() {
                   </Menu>
                 </Box>
               ) : (
-                <Box display="flex" alignItems="center" gap={1.2} sx={{ ml: 1 }}>
-                  <Button
+                <>
+                  <IconButton
                     onClick={() => {
                       setAuthModalTab("login");
                       setAuthModalOpen(true);
                     }}
-                    startIcon={<PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} />}
                     sx={{
+                      display: { xs: "inline-flex", md: "none" },
                       color: "#1A1817",
-                      textTransform: "none",
-                      fontWeight: 600,
-                      fontSize: "0.88rem",
-                      px: 1.5,
-                      py: 0.6,
-                      borderRadius: 1.5,
-                      "&:hover": {
-                        color: "#D1A362",
-                        backgroundColor: "rgba(209, 163, 98, 0.08)",
-                      },
+                      p: 1,
+                      "&:hover": { color: "#D1A362" },
                     }}
+                    aria-label="Account Login"
                   >
-                    Log In
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      setAuthModalTab("signup");
-                      setAuthModalOpen(true);
-                    }}
-                    sx={{
-                      bgcolor: "#1A1817",
-                      color: "#FFFFFF",
-                      border: "1px solid #D1A362",
-                      textTransform: "none",
-                      fontWeight: 700,
-                      fontSize: "0.85rem",
-                      px: 2,
-                      py: 0.6,
-                      borderRadius: 1.5,
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        bgcolor: "#2C2825",
-                        borderColor: "#E5C287",
-                        boxShadow: "0 4px 14px rgba(209, 163, 98, 0.25)",
-                      },
-                    }}
-                  >
-                    Sign Up
-                  </Button>
-                </Box>
+                    <PersonOutlineOutlinedIcon fontSize="small" />
+                  </IconButton>
+                  <Box alignItems="center" gap={1.2} sx={{ ml: 1, display: { xs: "none", md: "flex" } }}>
+                    <Button
+                      onClick={() => {
+                        setAuthModalTab("login");
+                        setAuthModalOpen(true);
+                      }}
+                      startIcon={<PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} />}
+                      sx={{
+                        color: "#1A1817",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: "0.88rem",
+                        px: 1.5,
+                        py: 0.6,
+                        borderRadius: 1.5,
+                        "&:hover": {
+                          color: "#D1A362",
+                          backgroundColor: "rgba(209, 163, 98, 0.08)",
+                        },
+                      }}
+                    >
+                      Log In
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        setAuthModalTab("signup");
+                        setAuthModalOpen(true);
+                      }}
+                      sx={{
+                        bgcolor: "#1A1817",
+                        color: "#FFFFFF",
+                        border: "1px solid #D1A362",
+                        textTransform: "none",
+                        fontWeight: 700,
+                        fontSize: "0.85rem",
+                        px: 2,
+                        py: 0.6,
+                        borderRadius: 1.5,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          bgcolor: "#2C2825",
+                          borderColor: "#E5C287",
+                          boxShadow: "0 4px 14px rgba(209, 163, 98, 0.25)",
+                        },
+                      }}
+                    >
+                      Sign Up
+                    </Button>
+                  </Box>
+                </>
               )}
             </Box>
           </Toolbar>
+          <Collapse in={mobileSearchOpen}>
+            <Box sx={{ py: 1.5, px: 1, borderTop: "1px solid #ECE7DE", display: { xs: "block", md: "none" } }}>
+              <StyledInputBase autoFocus={mobileSearchOpen} fullWidth placeholder="Search bridal, 1-gram gold, sherwani..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && searchQuery.trim()) { setMobileSearchOpen(false); navigate(`/search?q=${encodeURIComponent(searchQuery)}`); } }} sx={{ backgroundColor: "#FAF9F7", borderRadius: 2, px: 2, py: 0.6, border: "1.5px solid #D1A362", width: "100%" }} />
+            </Box>
+          </Collapse>
         </Container>
       </AppBar>
 

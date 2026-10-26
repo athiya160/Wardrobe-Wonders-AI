@@ -1,93 +1,133 @@
+import React from "react";
 import { Box, Typography, Container, Grid } from "@mui/material";
 import { styled } from "@mui/system";
-import LocalPlayOutlinedIcon from '@mui/icons-material/LocalPlayOutlined'; // Using as a proxy for the crown
-import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
-import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import FaceRetouchingNaturalIcon from '@mui/icons-material/FaceRetouchingNatural';
+import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 const StripContainer = styled(Box)({
   backgroundColor: "#FFFFFF",
-  padding: "40px 0",
-  borderBottom: "1px solid #EEEEEE",
+  padding: "24px 0",
+  borderBottom: "1px solid #ECE7DE",
+  borderTop: "1px solid #F5EFE6",
 });
 
-const FeatureItem = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '16px',
-  padding: '0 24px',
-  position: 'relative',
-  "&:not(:last-child)::after": {
-    content: '""',
-    position: 'absolute',
-    right: 0,
-    top: '10%',
-    height: '80%',
-    width: '1px',
-    backgroundColor: '#EEEEEE',
-    [theme.breakpoints.down('md')]: {
-      display: 'none'
-    }
+const FeatureCard = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "12px 14px",
+  borderRadius: "12px",
+  backgroundColor: "#FAF9F6",
+  border: "1px solid #EFEAE1",
+  height: "100%",
+  transition: "all 0.25s ease",
+  "&:hover": {
+    borderColor: "#D1A362",
+    backgroundColor: "#F7F2E9",
+    transform: "translateY(-2px)",
   },
-  [theme.breakpoints.down('md')]: {
-    padding: '16px 0',
-    justifyContent: 'center',
-  }
+  [theme.breakpoints.up("md")]: {
+    backgroundColor: "transparent",
+    border: "none",
+    padding: "0 20px",
+    borderRadius: 0,
+    "&:hover": {
+      backgroundColor: "transparent",
+      transform: "none",
+    },
+    position: "relative",
+    "&:not(:last-child)::after": {
+      content: '""',
+      position: "absolute",
+      right: 0,
+      top: "15%",
+      height: "70%",
+      width: "1px",
+      backgroundColor: "#ECE7DE",
+    },
+  },
 }));
 
-const IconWrapper = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#444',
-  '& svg': {
-    fontSize: '2rem',
-  }
+const IconBadge = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minWidth: 40,
+  height: 40,
+  borderRadius: "10px",
+  backgroundColor: "rgba(209, 163, 98, 0.12)",
+  color: "#9C7238",
+  "& svg": {
+    fontSize: "1.35rem",
+  },
 });
 
 const FeaturesStrip = () => {
   const features = [
     {
-      icon: <LocalPlayOutlinedIcon />,
-      title: "Premium Collection",
-      subtitle: "Handpicked designer outfits"
+      icon: <DiamondOutlinedIcon />,
+      title: "Haute Couture",
+      subtitle: "Authenticated designer outfits",
     },
     {
       icon: <SecurityOutlinedIcon />,
-      title: "Easy & Secure",
-      subtitle: "Safe payments & easy returns"
+      title: "Escrow Protection",
+      subtitle: "Safe payments & refund guarantee",
     },
     {
       icon: <EventAvailableOutlinedIcon />,
       title: "Flexible Rentals",
-      subtitle: "Rent for any occasion"
+      subtitle: "3-day or 7-day bookings",
     },
     {
-      icon: <FaceRetouchingNaturalIcon />,
-      title: "AI Stylist",
-      subtitle: "Get outfit suggestions"
-    }
+      icon: <AutoAwesomeIcon />,
+      title: "AI Fit Concierge",
+      subtitle: "Instant size & style advice",
+    },
   ];
 
   return (
     <StripContainer>
       <Container maxWidth="xl">
-        <Grid container>
+        <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
           {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <FeatureItem>
-                <IconWrapper>
-                  {feature.icon}
-                </IconWrapper>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#222' }}>
+            <Grid item xs={6} sm={6} md={3} key={index}>
+              <FeatureCard>
+                <IconBadge>{feature.icon}</IconBadge>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      color: "#1A1817",
+                      fontSize: { xs: "0.8rem", sm: "0.88rem" },
+                      lineHeight: 1.2,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
                     {feature.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#777', mt: 0.5 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "#7A7369",
+                      display: "block",
+                      fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                      lineHeight: 1.3,
+                      mt: 0.3,
+                      whiteSpace: { xs: "nowrap", sm: "normal" },
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
                     {feature.subtitle}
                   </Typography>
                 </Box>
-              </FeatureItem>
+              </FeatureCard>
             </Grid>
           ))}
         </Grid>
