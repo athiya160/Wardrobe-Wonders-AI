@@ -24,6 +24,7 @@ import MyRentals from "./pages/MyRentals";
 import Legal from "./pages/Legal";
 import AIChatWidget from "./components/AIChatWidget";
 import BottomNavBar from "./components/BottomNavBar";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -75,7 +76,7 @@ function App() {
             </Route>
 
             {/* Fallback 404 Route */}
-            <Route path="*" element={<h1>Not Found</h1>} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>
         <AIChatWidget />

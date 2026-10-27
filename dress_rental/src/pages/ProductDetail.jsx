@@ -137,20 +137,20 @@ const ProductDetail = () => {
       navigate("/login", { state: { from: `/checkout/address/${product._id}` } });
       return;
     }
-    if (dateConflict) return alert("Selected rental dates are not available.");
-    if (qty < 1) return alert("Select at least 1 day rental");
+    if (dateConflict) { setReportFeedback({ open: true, message: "Selected rental dates are reserved or unavailable.", severity: "error" }); return; }
+    if (qty < 1) { setReportFeedback({ open: true, message: "Please select at least 1 day for rental.", severity: "warning" }); return; }
     navigate(`/checkout/address/${product._id}`, {
       state: { qty, startDate, endDate, product },
     });
   };
 
   const submitReview = async () => {
-    if (!newReview.comment || !newReview.username) return alert("Please fill out review");
+    if (!newReview.comment || !newReview.username) { setReportFeedback({ open: true, message: "Please provide both a comment and your name.", severity: "warning" }); return; }
     try {
       const res = await axios.post(`${BASE_URL}/products/${id}/review`, newReview);
       setProduct(res.data);
       setNewReview({ rating: 5, comment: "", username: "" });
-      alert("Review submitted!");
+      setReportFeedback({ open: true, message: "Thank you! Your review has been published.", severity: "success" });
     } catch (err) {
       console.error(err);
     }
