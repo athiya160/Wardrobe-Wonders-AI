@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import UserModel from "../models/UserModel.js";
+import { getJwtSecret } from "../config/envValidator.js";
 
 /**
  * Authentication Middleware
@@ -20,7 +21,7 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
-    const secret = process.env.JWT_SECRET || process.env.SECRET || "change_this_in_production";
+    const secret = getJwtSecret();
     let decoded;
     try {
       decoded = jwt.verify(token, secret);

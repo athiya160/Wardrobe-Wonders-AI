@@ -83,6 +83,14 @@ export const saveFile = async (file, req) => {
   }
 };
 
+const MIME_TO_EXT = {
+  "image/jpeg": ".jpg",
+  "image/jpg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+};
+
 /**
  * Save file to local uploads directory
  */
@@ -91,8 +99,9 @@ const saveToLocal = async (file, req) => {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   }
 
-  const ext = path.extname(file.originalname) || ".jpg";
-  const uniqueName = `dress_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
+  // Strictly enforce safe image extension derived from verified MIME type, never raw user filename
+  const safeExt = MIME_TO_EXT[file.mimetype.toLowerCase()] || ".jpg";
+  const uniqueName = `dress_${Date.now()}_${Math.round(Math.random() * 1e9)}${safeExt}`;
   const targetPath = path.join(UPLOADS_DIR, uniqueName);
 
   await fs.promises.writeFile(targetPath, file.buffer);

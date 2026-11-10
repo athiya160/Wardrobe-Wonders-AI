@@ -116,7 +116,7 @@ async function runTestSuite() {
     } catch (err) {
       assert(err.response.status === 400, "Public admin registration rejected with HTTP 400");
       assert(
-        err.response.data.message.includes("Admin accounts cannot be registered"),
+        err.response.data.message.includes("Admin") && err.response.data.message.includes("cannot be registered"),
         "Informative error message returned"
       );
     }

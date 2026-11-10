@@ -3,6 +3,8 @@ import productModel from "../models/productModel.js";
 import ReportModel from "../models/ReportModel.js";
 import mongoose from "mongoose";
 import { aiStylistChat, aiOutfitRecommendation } from "../services/ai.service.js";
+import { findDateConflict, calculateServerPricing } from "../services/bookingSafetyService.js";
+import { aiLimiter } from "../middleware/security.js";
 const productRouter = new Router();
 
 productRouter.get("/gender/:gender", async (req, res) => {
@@ -12,17 +14,17 @@ productRouter.get("/gender/:gender", async (req, res) => {
   if (target === "jewellery" || target === "jewelry") {
     query = { $or: [{ gender: "jewellery" }, { gender: "jewelry" }, { category: "Jewellery" }, { category: "jewellery" }] };
   }
-  const products = await productModel.find(query);
+  const products = await productModel.find(query).lean();
   res.send(products);
 });
 
 productRouter.get("/category/:category", async (req, res) => {
   const { category } = req.params;
-  const products = await productModel.find({ category: category });
+  const products = await productModel.find({ category: category }).lean();
   res.send(products);
 });
 productRouter.get("/", async (_, res) => {
-  const products = await productModel.find();
+  const products = await productModel.find().lean();
   res.send(products);
 });
 productRouter.post("/create", async (req, res) => {
@@ -41,7 +43,7 @@ productRouter.post("/delete", async (req, res) => {
   res.send(product);
 });
 
-productRouter.post("/search", async (req, res) => {
+productRouter.post("/search", aiLimiter, async (req, res) => {
   const { query } = req.body;
   if (!query) {
     return res.status(400).send("query is required");
@@ -136,7 +138,7 @@ productRouter.post("/personalized-home", async (req, res) => {
 
 productRouter.get("/detail/:id", async (req, res) => {
   try {
-    const product = await productModel.findById(req.params.id);
+    const product = await productModel.findById(req.params.id).lean();
     if (!product) return res.status(404).send("Product not found");
     res.send(product);
   } catch (err) {
@@ -148,7 +150,7 @@ productRouter.get("/detail/:id", async (req, res) => {
 productRouter.post("/:id/review", async (req, res) => {
   try {
     const { rating, comment, username } = req.body;
-    const product = await productModel.findById(req.params.id);
+    const product = await productModel.findById(req.params.id).lean();
     if (!product) return res.status(404).send("Product not found");
     
     product.reviews.push({ rating, comment, username });
@@ -179,7 +181,7 @@ productRouter.post("/similar", async (req, res) => {
   }
 });
 
-productRouter.post("/chat", async (req, res) => {
+productRouter.post("/chat", aiLimiter, async (req, res) => {
   try {
     const { message } = req.body;
     const response = await aiStylistChat(message);
@@ -244,7 +246,7 @@ productRouter.post("/:id/check-availability", async (req, res) => {
       return res.status(400).json({ status: false, message: "Invalid date range provided." });
     }
 
-    const product = await productModel.findById(req.params.id);
+    const product = await productModel.findById(req.params.id).lean();
     if (!product) {
       return res.status(404).json({ status: false, message: "Dress not found." });
     }
@@ -329,7 +331,7 @@ productRouter.post("/:id/report", async (req, res) => {
       });
     }
 
-    const product = await productModel.findById(req.params.id);
+    const product = await productModel.findById(req.params.id).lean();
     if (!product) {
       return res.status(404).json({ success: false, message: "Garment listing not found." });
     }

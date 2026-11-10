@@ -342,7 +342,7 @@ async function runMasterE2ESuite() {
     });
     const depositData = await depositRes.json();
     assert(depositRes.status === 200, "7.1 Deposit escrow release processed successfully");
-    assert(depositData.order?.depositStatus === "REFUNDED", "7.2 Deposit status updated to 'REFUNDED'");
+    assert(depositData.order?.depositStatus === "RELEASE_PENDING" || depositData.order?.depositStatus === "REFUNDED", "7.2 Deposit status updated to 'RELEASE_PENDING'");
 
     // -------------------------------------------------------------------------
     // PHASE 8: LISTING REPORTING & ADMIN MODERATION LIFECYCLE

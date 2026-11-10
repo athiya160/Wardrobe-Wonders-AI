@@ -127,7 +127,7 @@ const ProductModel = new Schema(
       {
         startDate: { type: Date, required: true },
         endDate: { type: Date, required: true },
-        orderId: { type: Schema.Types.ObjectId, ref: "order" },
+        orderId: { type: Schema.Types.Mixed, ref: "order" },
       },
     ],
     reviews: [
@@ -176,5 +176,7 @@ ProductModel.pre("save", function (next) {
 
   next();
 });
+
+ProductModel.index({ "bookedDates.startDate": 1, "bookedDates.endDate": 1 });
 
 export default model("Product", ProductModel);

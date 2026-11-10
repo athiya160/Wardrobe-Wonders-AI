@@ -51,3 +51,12 @@ dress_rental_backend/uploads/*
 **/android/build/
 **/android/local.properties
 
+# Local development and test databases
+dress_rental_backend/dev_db/
+dress_rental_backend/test_temp_db/
+**/dev_db/
+**/test_temp_db/
+*.wt
+*.lock
+
+

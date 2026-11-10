@@ -22,8 +22,12 @@ const OrderSchema = Schema({
     street: String,
     city: String,
     zip: String,
+    pincode: String,
     houseNo: String,
     landmark: String,
+    state: String,
+    phone: String,
+    name: String,
   },
   paymentMethod: {
     type: String,
@@ -39,6 +43,9 @@ const OrderSchema = Schema({
   },
   transactionId: {
     type: String,
+    unique: true,
+    sparse: true,
+    index: true,
   },
   // Step 8 & 9 Rental Lifecycle Fields
   providerId: {
@@ -98,16 +105,83 @@ const OrderSchema = Schema({
     type: String,
     enum: ["customer", "provider", "admin"],
   },
-  // Step 12: Payment & Security Deposit Lifecycle
+  // Step 12: Payment, Security Deposit & Refund Lifecycle
   paymentStatus: {
     type: String,
-    enum: ["PENDING", "PROCESSING", "PAID", "FAILED", "CANCELLED", "REFUND_PENDING", "REFUNDED"],
-    default: "PAID",
+    enum: [
+      "PENDING",
+      "PROCESSING",
+      "PAID",
+      "FAILED",
+      "CANCELLED",
+      "REFUND_PENDING",
+      "REFUNDED",
+      "REFUND_REQUIRED",
+      "PAYMENT_AMOUNT_MISMATCH",
+    ],
+    default: "PENDING",
   },
   depositStatus: {
     type: String,
-    enum: ["HELD", "RELEASE_PENDING", "REFUNDED", "PARTIALLY_DEDUCTED", "DEDUCTED"],
+    enum: [
+      "NOT_APPLICABLE",
+      "HELD",
+      "RELEASE_PENDING",
+      "REFUND_PROCESSING",
+      "REFUNDED",
+      "PARTIALLY_DEDUCTED",
+      "DEDUCTED",
+      "MANUAL_REFUND_REQUIRED",
+    ],
     default: "HELD",
+  },
+  refundStatus: {
+    type: String,
+    enum: [
+      "NOT_REQUESTED",
+      "PENDING",
+      "PROCESSING",
+      "SUCCEEDED",
+      "FAILED",
+      "MANUAL_REFUND_REQUIRED",
+    ],
+    default: "NOT_REQUESTED",
+  },
+  refundAmount: {
+    type: Number,
+    default: 0,
+  },
+  refundReason: {
+    type: String,
+    default: "",
+  },
+  refundTransactionId: {
+    type: String,
+  },
+  refundInitiatedAt: {
+    type: Date,
+  },
+  refundCompletedAt: {
+    type: Date,
+  },
+  refundFailureReason: {
+    type: String,
+    default: "",
+  },
+  manualRefundNotes: {
+    type: String,
+    default: "",
+  },
+  manualRefundProcessedBy: {
+    type: Schema.Types.ObjectId,
+    ref: "user",
+  },
+  manualRefundProcessedAt: {
+    type: Date,
+  },
+  failureReason: {
+    type: String,
+    default: "",
   },
   depositRefundedAt: {
     type: Date,
@@ -121,5 +195,8 @@ const OrderSchema = Schema({
     default: 0,
   },
 });
+
+OrderSchema.index({ userEmail: 1, orderDate: -1 });
+OrderSchema.index({ providerId: 1, requestStatus: 1 });
 
 export default model("order", OrderSchema);

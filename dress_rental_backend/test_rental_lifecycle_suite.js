@@ -257,14 +257,14 @@ async function runRentalLifecycleSuite() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        startDate: "2026-10-15",
-        endDate: "2026-10-19",
+        startDate: "2027-10-15",
+        endDate: "2027-10-19",
       }),
     });
     const checkOpenData = await checkOpenRes.json();
 
     assert(checkOpenRes.status === 200, "Check availability returns HTTP 200");
-    assert(checkOpenData.available === true, "Dates 2026-10-15 to 2026-10-19 are confirmed available");
+    assert(checkOpenData.available === true, "Dates 2027-10-15 to 2027-10-19 are confirmed available");
     assert(checkOpenData.days === 4, "Rental duration accurately calculated as 4 days");
     assert(checkOpenData.estimatedRentalFee === 2500 * 4, "Rental fee accurately calculated (₹10,000)");
     assert(checkOpenData.totalEstimated === 10000 + 5000, "Total accurately includes security deposit (₹15,000)");
@@ -282,8 +282,8 @@ async function runRentalLifecycleSuite() {
         email: "step69_cust@test.com",
         dressId: testListingId,
         quantity: 4,
-        startDate: "2026-10-15",
-        endDate: "2026-10-19",
+        startDate: "2027-10-15",
+        endDate: "2027-10-19",
         totalAmount: 15000,
         address: {
           street: "12 Marine Drive",
@@ -312,8 +312,8 @@ async function runRentalLifecycleSuite() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        startDate: "2026-10-17", // overlaps with 10-15 to 10-19
-        endDate: "2026-10-21",
+        startDate: "2027-10-17", // overlaps with 10-15 to 10-19
+        endDate: "2027-10-21",
       }),
     });
     const conflictData = await conflictRes.json();

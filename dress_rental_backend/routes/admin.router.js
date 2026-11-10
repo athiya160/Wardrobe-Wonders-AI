@@ -45,7 +45,10 @@ adminRouter.get("/overview", async (req, res) => {
       OrderModel.countDocuments({ requestStatus: { $in: ["Cancelled", "Declined"] } }),
       ReportModel.countDocuments(),
       ReportModel.countDocuments({ status: "pending" }),
-      OrderModel.find({ requestStatus: "Completed" }),
+      OrderModel.find({
+        requestStatus: "Completed",
+        paymentStatus: { $nin: ["FAILED", "CANCELLED", "REFUND_REQUIRED"] },
+      }).select("totalAmount rentalFee securityDeposit").lean(),
     ]);
 
     // Financial calculations: marketplace transaction volume & platform 15% revenue
@@ -131,7 +134,8 @@ adminRouter.get("/users", async (req, res) => {
 
     const users = await UserModel.find(filter)
       .select("-password -passwordHash")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
@@ -222,7 +226,8 @@ adminRouter.get("/listings", async (req, res) => {
 
     const listings = await ProductModel.find(filter)
       .populate("providerId", "name email phone")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
@@ -295,7 +300,8 @@ adminRouter.get("/orders", async (req, res) => {
     const orders = await OrderModel.find(filter)
       .populate("product")
       .populate("providerId", "name email phone")
-      .sort({ orderDate: -1 });
+      .sort({ orderDate: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,

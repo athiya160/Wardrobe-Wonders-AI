@@ -3,6 +3,8 @@ import ProductModel from "../models/productModel.js";
 import OrderModel from "../models/OrderModel.js";
 import { authenticateToken, requireRole } from "../middleware/auth.js";
 import { aiGenerateDescription, aiGenerateTags } from "../services/ai.service.js";
+import { atomicReleaseDates } from "../services/bookingSafetyService.js";
+import { aiLimiter } from "../middleware/security.js";
 
 const providerRouter = new Router();
 
@@ -282,9 +284,16 @@ providerRouter.get("/stats", async (req, res) => {
     const totalOrders = orders.length;
 
     // Provider earns 85% of garment rental fees (excluding refundable security deposits)
+    // Only paid orders (or completed COD) count towards provider revenue
     let payableEarnings = 0;
     let pendingEarnings = 0;
     orders.forEach((order) => {
+      if (order.paymentStatus !== "PAID" && !(order.paymentMethod === "cod" && order.requestStatus === "Completed")) {
+        return;
+      }
+      if (order.paymentStatus === "FAILED" || order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUND_REQUIRED") {
+        return;
+      }
       const fee = Number(order.rentalFee) || Math.max(0, (Number(order.totalAmount) || 0) - (Number(order.securityDeposit) || 0));
       const providerShare = Math.round(fee * 0.85);
       if (order.requestStatus === "Completed") {
@@ -386,43 +395,85 @@ providerRouter.put("/orders/:id/status", async (req, res) => {
     const newStatus = requestStatus || status;
     const now = new Date();
 
-    if (newStatus) {
-      order.requestStatus = newStatus;
-      if (newStatus === "Accepted") {
-        order.status = "Confirmed";
-        order.acceptedAt = now;
-      } else if (newStatus === "Declined") {
-        order.status = "Cancelled";
-        order.paymentStatus = "REFUNDED";
-        order.depositStatus = "REFUNDED";
-        order.declinedAt = now;
-        order.declineReason = declineReason || "Unavailable for requested dates";
-      } else if (newStatus === "Active") {
-        order.status = "Delivered";
-        order.dispatchedAt = now;
-      } else if (newStatus === "Completed") {
-        order.status = "Completed";
-        order.completedAt = now;
-        if (inspectionNotes) order.inspectionNotes = inspectionNotes;
-        if (req.body.depositAction === "deduct") {
-          const deduction = Number(req.body.deductionAmount) || 0;
-          order.depositStatus = deduction >= (order.securityDeposit || 0) ? "DEDUCTED" : "PARTIALLY_DEDUCTED";
-          order.depositDeductionAmount = deduction;
-          order.depositDeductionReason = req.body.deductionReason || inspectionNotes || "Garment damage or late return";
-        } else {
-          order.depositStatus = "REFUNDED";
-          order.depositRefundedAt = now;
-        }
+    if (!newStatus) {
+      return res.status(400).json({ status: false, message: "Target status is required." });
+    }
+
+    const currentStatus = order.requestStatus || "Pending";
+
+    // Reject transitions on terminal states
+    const terminalStates = ["Cancelled", "Declined", "Completed"];
+    if (terminalStates.includes(currentStatus)) {
+      return res.status(400).json({
+        status: false,
+        message: `Invalid action: Order is in terminal state '${currentStatus}' and cannot be updated.`,
+      });
+    }
+
+    // State machine transition validation
+    const allowedTransitions = {
+      Pending: ["Accepted", "Declined"],
+      Accepted: ["Active", "Declined"],
+      Active: ["Completed"],
+    };
+
+    const validNextStates = allowedTransitions[currentStatus] || [];
+    if (!validNextStates.includes(newStatus)) {
+      return res.status(400).json({
+        status: false,
+        message: `Invalid order status transition from '${currentStatus}' to '${newStatus}'. Allowed: ${validNextStates.join(", ")}.`,
+      });
+    }
+
+    order.requestStatus = newStatus;
+
+    if (newStatus === "Accepted") {
+      order.status = "Confirmed";
+      order.acceptedAt = now;
+    } else if (newStatus === "Declined") {
+      order.status = "Cancelled";
+      order.declinedAt = now;
+      order.declineReason = declineReason || "Unavailable for requested dates";
+
+      // Honest refund status accounting
+      if (order.paymentStatus === "PAID") {
+        order.paymentStatus = "REFUND_PENDING";
+        order.refundStatus = "MANUAL_REFUND_REQUIRED";
+        order.refundAmount = order.totalAmount;
+        order.refundReason = order.declineReason;
+        order.refundInitiatedAt = now;
+        order.depositStatus = "RELEASE_PENDING";
+      } else {
+        order.paymentStatus = "CANCELLED";
+        order.refundStatus = "NOT_REQUESTED";
+        order.depositStatus = "NOT_APPLICABLE";
+      }
+    } else if (newStatus === "Active") {
+      order.status = "Delivered";
+      order.dispatchedAt = now;
+    } else if (newStatus === "Completed") {
+      order.status = "Completed";
+      order.completedAt = now;
+      if (inspectionNotes) order.inspectionNotes = inspectionNotes;
+
+      if (req.body.depositAction === "deduct") {
+        const maxDeposit = Number(order.securityDeposit) || 0;
+        const deduction = Math.min(maxDeposit, Math.max(0, Number(req.body.deductionAmount) || 0));
+        order.depositStatus = deduction >= maxDeposit ? "DEDUCTED" : "PARTIALLY_DEDUCTED";
+        order.depositDeductionAmount = deduction;
+        order.depositDeductionReason = req.body.deductionReason || inspectionNotes || "Garment damage or late return";
+      } else {
+        // Honest deposit status: release pending verified transfer
+        order.depositStatus = "RELEASE_PENDING";
       }
     }
 
     await order.save();
 
-    // If order was declined or cancelled, release booked date range from product immediately
-    if (newStatus === "Declined" || newStatus === "Cancelled") {
-      await ProductModel.findByIdAndUpdate(order.product._id, {
-        $pull: { bookedDates: { orderId: order._id } },
-      });
+    // If order was declined, release booked date range atomically
+    if (newStatus === "Declined") {
+      const prodId = order.product?._id || order.product;
+      await atomicReleaseDates(prodId, order._id);
     }
 
     return res.status(200).json({
@@ -443,7 +494,7 @@ providerRouter.put("/orders/:id/status", async (req, res) => {
  * POST /provider/ai/generate-description
  * Step 7: AI fashion copywriter for dress listings with smart fallback
  */
-providerRouter.post("/ai/generate-description", async (req, res) => {
+providerRouter.post("/ai/generate-description", aiLimiter, async (req, res) => {
   try {
     const { productName, category, price, brand } = req.body;
     const result = await aiGenerateDescription({ productName, category, price, brand });
@@ -458,7 +509,7 @@ providerRouter.post("/ai/generate-description", async (req, res) => {
  * POST /provider/ai/generate-tags
  * Step 7: AI garment attribute extractor with smart fallback
  */
-providerRouter.post("/ai/generate-tags", async (req, res) => {
+providerRouter.post("/ai/generate-tags", aiLimiter, async (req, res) => {
   try {
     const { productName, category, description } = req.body;
     const result = await aiGenerateTags({ productName, category, description });
