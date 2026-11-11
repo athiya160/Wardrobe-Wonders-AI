@@ -257,7 +257,8 @@ export const healthCheckHandler = (req, res) => {
   const isDbConnected = mongoose.connection.readyState === 1;
   const memoryUsage = process.memoryUsage();
 
-  res.status(isDbConnected ? 200 : 503).json({
+  // Return 200 for liveness probe so container remains active while DB connects
+  res.status(200).json({
     status: isDbConnected ? "healthy" : "degraded",
     service: "Wardrobe Wonders Marketplace API",
     version: "1.0.0",
