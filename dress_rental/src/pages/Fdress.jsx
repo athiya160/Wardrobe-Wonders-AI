@@ -233,11 +233,29 @@ const Fdress = () => {
   const filteredDresses = useMemo(() => {
     return dresses
       .filter((item) => {
-        // 1. Multi-category filter
+        // 1. Multi-category filter with intelligent fashion taxonomy
         if (selectedCategories.length > 0) {
-          const match = selectedCategories.some(
-            (c) => item.category && item.category.toLowerCase() === c.toLowerCase()
-          );
+          const match = selectedCategories.some((c) => {
+            const cat = (item.category || '').toLowerCase();
+            const name = (item.name || '').toLowerCase();
+            const target = c.toLowerCase();
+            if (target === 'dresses' || target === 'dress') {
+              return cat.includes('party') || cat.includes('evening') || cat.includes('gown') || cat.includes('casual') || name.includes('dress') || name.includes('gown') || name.includes('jumpsuit');
+            }
+            if (target === 'wedding' || target === 'bridal' || target === 'lehenga' || target === 'lehengas') {
+              return cat.includes('wedding') || cat.includes('bridal') || name.includes('lehenga') || name.includes('bridal');
+            }
+            if (target === 'traditional' || target === 'festive' || target === 'saree' || target === 'sarees') {
+              return cat.includes('traditional') || cat.includes('festive') || name.includes('saree') || name.includes('anarkali') || name.includes('kurta');
+            }
+            if (target === 'party' || target === 'cocktail') {
+              return cat.includes('party') || name.includes('sequin') || name.includes('cocktail');
+            }
+            if (target === 'evening wear' || target === 'gown' || target === 'gowns') {
+              return cat.includes('evening') || name.includes('gown') || name.includes('jumpsuit');
+            }
+            return cat === target || cat.includes(target) || name.includes(target);
+          });
           if (!match) return false;
         }
 

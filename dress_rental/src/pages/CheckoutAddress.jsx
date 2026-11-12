@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -13,10 +13,11 @@ import {
   Chip,
   Breadcrumbs,
   Link as MuiLink,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import ResponsiveAppBar from "../components/Navbar";
 import Fotter from "../components/Fotter";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
@@ -46,9 +47,80 @@ const CheckoutAddress = () => {
     state: "",
     zip: "",
     phone: "",
+    name: "",
   });
 
   const [error, setError] = useState("");
+  const token = localStorage.getItem("token");
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isManualAddress, setIsManualAddress] = useState(false);
+  const [saveToProfile, setSaveToProfile] = useState(false);
+
+  useEffect(() => {
+    if (token) {
+      axios
+        .get(`${BASE_URL}/user/addresses`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          if (res.data?.success && Array.isArray(res.data.addresses) && res.data.addresses.length > 0) {
+            setSavedAddresses(res.data.addresses);
+            const def = res.data.addresses.find((a) => a.isDefault) || res.data.addresses[0];
+            setSelectedAddressId(def._id || def.id);
+            setAddress({
+              houseNo: def.houseNo || "1",
+              street: def.street,
+              landmark: def.landmark || "",
+              city: def.city,
+              state: def.state,
+              zip: def.pincode,
+              phone: def.phone,
+              name: def.name,
+              _id: def._id,
+            });
+          } else {
+            setIsManualAddress(true);
+          }
+        })
+        .catch(() => {
+          setIsManualAddress(true);
+        });
+    } else {
+      setIsManualAddress(true);
+    }
+  }, [token]);
+
+  const handleSelectSavedAddress = (addr) => {
+    setSelectedAddressId(addr._id || addr.id);
+    setIsManualAddress(false);
+    setAddress({
+      houseNo: addr.houseNo || "1",
+      street: addr.street,
+      landmark: addr.landmark || "",
+      city: addr.city,
+      state: addr.state,
+      zip: addr.pincode,
+      phone: addr.phone,
+      name: addr.name,
+      _id: addr._id,
+    });
+  };
+
+  const handleUseNewAddress = () => {
+    setIsManualAddress(true);
+    setSelectedAddressId("new");
+    setAddress({
+      houseNo: "",
+      street: "",
+      landmark: "",
+      city: "",
+      state: "",
+      zip: "",
+      phone: "",
+      name: "",
+    });
+  };
 
   useEffect(() => {
     if (!product && id) {
@@ -74,15 +146,51 @@ const CheckoutAddress = () => {
   const securityDeposit = product ? Number(product.securityDeposit || product.advance) || 2500 : 2500;
   const totalAmount = rentalFee + securityDeposit;
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setError("");
     if (!address.houseNo.trim() || !address.street.trim() || !address.city.trim() || !address.zip.trim()) {
       setError("Please complete all required address fields (House/Building, Street, City, and ZIP code).");
       return;
     }
 
+    // If customer entered custom address and opted to save to profile
+    if (isManualAddress && saveToProfile && token) {
+      try {
+        const pin = address.zip.trim();
+        if (/^[1-9][0-9]{5}$/.test(pin)) {
+          await axios.post(
+            `${BASE_URL}/user/addresses`,
+            {
+              name: address.name || "Recipient",
+              street: address.street,
+              houseNo: address.houseNo,
+              landmark: address.landmark,
+              city: address.city,
+              state: address.state,
+              pincode: pin,
+              phone: address.phone || "9999999999",
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+      } catch (saveErr) {
+        console.error("Auto-save address error:", saveErr);
+      }
+    }
+
     navigate(`/checkout/payment/${id}`, {
-      state: { qty, startDate, endDate, address, product, rentalDays, rentalFee, securityDeposit, totalAmount },
+      state: {
+        qty,
+        startDate,
+        endDate,
+        address,
+        addressId: address._id,
+        product,
+        rentalDays,
+        rentalFee,
+        securityDeposit,
+        totalAmount,
+      },
     });
   };
 
@@ -202,7 +310,89 @@ const CheckoutAddress = () => {
                 </Box>
               )}
 
+              {/* Saved Addresses Quick Selection */}
+              {savedAddresses.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight={700} color="#1A1817" mb={1.5}>
+                    Select from Your Saved Delivery Addresses:
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {savedAddresses.map((sa) => {
+                      const isSelected = !isManualAddress && selectedAddressId === (sa._id || sa.id);
+                      return (
+                        <Grid item xs={12} sm={6} key={sa._id || sa.id}>
+                          <Paper
+                            elevation={0}
+                            onClick={() => handleSelectSavedAddress(sa)}
+                            sx={{
+                              p: 2,
+                              borderRadius: 2.5,
+                              border: isSelected ? "2px solid #D1A362" : "1px solid #ECE7DE",
+                              bgcolor: isSelected ? "#FAF8F5" : "#FFFFFF",
+                              cursor: "pointer",
+                              transition: "all 0.2s ease",
+                              "&:hover": { borderColor: "#D1A362" },
+                            }}
+                          >
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+                              <Typography variant="body2" fontWeight={700} color="#1A1817">
+                                {sa.name}
+                              </Typography>
+                              {sa.isDefault && (
+                                <Chip
+                                  label="Default"
+                                  size="small"
+                                  sx={{
+                                    height: 18,
+                                    fontSize: "0.65rem",
+                                    bgcolor: "#D1A362",
+                                    color: "#FFF",
+                                    fontWeight: 700,
+                                  }}
+                                />
+                              )}
+                            </Stack>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {sa.houseNo ? `${sa.houseNo}, ` : ""}{sa.street}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {sa.city}, {sa.state} - {sa.pincode}
+                            </Typography>
+                            <Typography variant="caption" color="#888" display="block" mt={0.5}>
+                              Phone: {sa.phone}
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+
+                  <Button
+                    size="small"
+                    onClick={handleUseNewAddress}
+                    sx={{
+                      mt: 1.5,
+                      color: isManualAddress ? "#D1A362" : "#666",
+                      fontWeight: 700,
+                      textTransform: "none",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    + Enter a different occasion address
+                  </Button>
+                  <Divider sx={{ my: 2, borderColor: "#ECE7DE" }} />
+                </Box>
+              )}
+
               <Stack spacing={2.5}>
+                <TextField
+                  fullWidth
+                  label="Recipient Full Name"
+                  placeholder="e.g. Priya Sharma"
+                  value={address.name || ""}
+                  onChange={(e) => setAddress({ ...address, name: e.target.value })}
+                />
+
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <TextField
@@ -281,6 +471,23 @@ const CheckoutAddress = () => {
                     startAdornment: <PhoneOutlinedIcon sx={{ color: "#9E9E9E", mr: 1, fontSize: 20 }} />,
                   }}
                 />
+
+                {token && (isManualAddress || savedAddresses.length === 0) && (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={saveToProfile}
+                        onChange={(e) => setSaveToProfile(e.target.checked)}
+                        sx={{ color: "#D1A362", "&.Mui-checked": { color: "#D1A362" } }}
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" color="text.secondary">
+                        Save this address to my profile for future rental bookings
+                      </Typography>
+                    }
+                  />
+                )}
 
                 {/* White-Glove Delivery Notice */}
                 <Box
@@ -465,7 +672,7 @@ const CheckoutAddress = () => {
                 </Box>
               </Stack>
 
-              {/* Escrow Guarantee Box */}
+              {/* Deposit Protection Box */}
               <Box
                 sx={{
                   mt: 3,
@@ -480,7 +687,7 @@ const CheckoutAddress = () => {
               >
                 <SecurityOutlinedIcon sx={{ color: "#D1A362", fontSize: 24 }} />
                 <Typography variant="caption" color="text.secondary" lineHeight={1.4}>
-                  <strong>Escrow Protection:</strong> Security deposits are safely held in simulated escrow and returned within 24 hours of garment return.
+                  <strong>Deposit Protection:</strong> Security deposits are safely held and refunded within 24 hours of garment return inspection.
                 </Typography>
               </Box>
             </Paper>

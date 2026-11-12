@@ -9,98 +9,105 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
-import logo from "../assets/logo.png";
-import { useNavigate } from "react-router-dom";
+import WardrobeWondersLogo from "./WardrobeWondersLogo";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
+import axios from "axios";
+import { BASE_URL } from "../config/axiosConfig";
 import SearchIcon from "@mui/icons-material/Search";
 import InputBase from "@mui/material/InputBase";
-import { styled, alpha } from "@mui/material/styles";
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import Badge from '@mui/material/Badge';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import Collapse from '@mui/material/Collapse';
-import AuthModal from './AuthModal';
-import { RecruiterTourModal } from './RecruiterTourModal';
+import { styled } from "@mui/material/styles";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import Badge from "@mui/material/Badge";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import Avatar from "@mui/material/Avatar";
+import Divider from "@mui/material/Divider";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Tooltip from "@mui/material/Tooltip";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import CheckroomIcon from "@mui/icons-material/Checkroom";
+import StoreIcon from "@mui/icons-material/Store";
+import Collapse from "@mui/material/Collapse";
+import CloseIcon from "@mui/icons-material/Close";
+import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
+import StyleOutlinedIcon from "@mui/icons-material/StyleOutlined";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: 4,
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: 8,
   backgroundColor: "#FAFAFA",
-  '&:hover': {
+  "&:hover": {
     backgroundColor: "#F5F5F5",
   },
-  marginRight: theme.spacing(2),
+  marginRight: theme.spacing(1.5),
   marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
+  width: "100%",
+  [theme.breakpoints.up("sm")]: {
+    marginLeft: theme.spacing(2),
+    width: "auto",
   },
-  border: "1px solid #E0E0E0",
+  border: "1px solid #ECE7DE",
+  transition: "all 0.2s ease",
+  "&:focus-within": {
+    borderColor: "#D1A362",
+    backgroundColor: "#FFFFFF",
+    boxShadow: "0 0 0 2px rgba(209, 163, 98, 0.15)",
+  },
 }));
 
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 1.5),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  fontSize: '0.9rem',
-  '& .MuiInputBase-input': {
+  color: "inherit",
+  fontSize: "0.88rem",
+  "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '350px',
+    paddingLeft: `calc(1em + ${theme.spacing(3)})`,
+    transition: theme.transitions.create("width"),
+    width: "100%",
+    [theme.breakpoints.up("md")]: {
+      width: "280px",
+    },
+    [theme.breakpoints.up("lg")]: {
+      width: "340px",
     },
   },
 }));
 
-const pages = [
-  { name: "Bridal Jewellery", path: "/jewellery", badge: "NEW" },
-  { name: "Women's Couture", path: "/w-dress" },
-  { name: "Men's Tailoring", path: "/m-dress" },
-  { name: "AI Stylist", path: "/stylist", isAi: true },
-  { name: "Atelier", path: "/about-us" },
-  { name: "Contact", path: "/contact" },
-];
-
-
 function ResponsiveAppBar() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isStoreMode = location.pathname.startsWith("/store");
+
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = React.useState(false);
-  const navigate = useNavigate();
 
   const [cartItems, setCartItems] = React.useState([]);
+  const [storeCartCount, setStoreCartCount] = React.useState(0);
   const [cartOpen, setCartOpen] = React.useState(false);
   const [wishlistOpen, setWishlistOpen] = React.useState(false);
   const [wishlistItems, setWishlistItems] = React.useState([]);
 
-  const [authModalOpen, setAuthModalOpen] = React.useState(false);
-  const [authModalTab, setAuthModalTab] = React.useState("login");
-  const [recruiterTourOpen, setRecruiterTourOpen] = React.useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = React.useState(null);
   const [token, setToken] = React.useState(() => localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = React.useState(() => {
@@ -113,11 +120,43 @@ function ResponsiveAppBar() {
 
   React.useEffect(() => {
     const updateCart = () => {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
       setCartItems(cart);
     };
-    const updateWishlist = () => {
-      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    const updateStoreCart = async () => {
+      const currentToken = localStorage.getItem("token");
+      if (currentToken) {
+        try {
+          const res = await axios.get(`${BASE_URL}/store/cart`, {
+            headers: { Authorization: `Bearer ${currentToken}` },
+          });
+          if (res.data?.success && res.data.cart) {
+            setStoreCartCount(res.data.cart.itemCount || 0);
+            return;
+          }
+        } catch {
+          // ignore
+        }
+      }
+      setStoreCartCount(0);
+    };
+    const updateWishlist = async () => {
+      const currentToken = localStorage.getItem("token");
+      if (currentToken) {
+        try {
+          const res = await axios.get(`${BASE_URL}/user/wishlist`, {
+            headers: { Authorization: `Bearer ${currentToken}` },
+          });
+          if (res.data?.success && Array.isArray(res.data.wishlist)) {
+            setWishlistItems(res.data.wishlist);
+            localStorage.setItem("wishlist", JSON.stringify(res.data.wishlist));
+            return;
+          }
+        } catch {
+          // Fall back to localStorage
+        }
+      }
+      const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
       setWishlistItems(wishlist);
     };
     const updateAuth = () => {
@@ -128,27 +167,33 @@ function ResponsiveAppBar() {
         setCurrentUser(null);
       }
     };
-    
+
     updateCart();
+    updateStoreCart();
     updateWishlist();
     updateAuth();
-    
-    window.addEventListener('cart_updated', updateCart);
-    window.addEventListener('wishlist_updated', updateWishlist);
-    window.addEventListener('auth_updated', updateAuth);
-    window.addEventListener('storage', updateAuth);
+
+    window.addEventListener("cart_updated", updateCart);
+    window.addEventListener("store_cart_updated", updateStoreCart);
+    window.addEventListener("wishlist_updated", updateWishlist);
+    window.addEventListener("auth_updated", updateAuth);
+    window.addEventListener("storage", updateAuth);
     return () => {
-      window.removeEventListener('cart_updated', updateCart);
-      window.removeEventListener('wishlist_updated', updateWishlist);
-      window.removeEventListener('auth_updated', updateAuth);
-      window.removeEventListener('storage', updateAuth);
+      window.removeEventListener("cart_updated", updateCart);
+      window.removeEventListener("store_cart_updated", updateStoreCart);
+      window.removeEventListener("wishlist_updated", updateWishlist);
+      window.removeEventListener("auth_updated", updateAuth);
+      window.removeEventListener("storage", updateAuth);
     };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("user_addresses");
+    localStorage.removeItem("wishlist");
     window.dispatchEvent(new Event("auth_updated"));
+    window.dispatchEvent(new Event("wishlist_updated"));
     setUserMenuAnchor(null);
     navigate("/");
   };
@@ -156,27 +201,81 @@ function ResponsiveAppBar() {
   const handleRemoveFromCart = (index) => {
     const newCart = [...cartItems];
     newCart.splice(index, 1);
-    localStorage.setItem('cart', JSON.stringify(newCart));
-    window.dispatchEvent(new Event('cart_updated'));
+    localStorage.setItem("cart", JSON.stringify(newCart));
+    window.dispatchEvent(new Event("cart_updated"));
   };
 
-  const handleRemoveFromWishlist = (id) => {
-    let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    wishlist = wishlist.filter(item => item._id !== id);
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    window.dispatchEvent(new Event('wishlist_updated'));
+  const handleRemoveFromWishlist = async (id) => {
+    const currentToken = localStorage.getItem("token");
+    if (currentToken) {
+      try {
+        await axios.delete(`${BASE_URL}/user/wishlist/${id}`, {
+          headers: { Authorization: `Bearer ${currentToken}` },
+        });
+      } catch (err) {
+        console.error("Failed to delete wishlist item on server:", err);
+      }
+    }
+    let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    wishlist = wishlist.filter((item) => (item._id || item) !== id);
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+    window.dispatchEvent(new Event("wishlist_updated"));
   };
-
-  const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
-  const handleCloseNavMenu = () => setAnchorElNav(null);
 
   const handleSearch = (e) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    if (e.key === "Enter" && searchQuery.trim()) {
+      if (isStoreMode) {
+        navigate(`/store?q=${encodeURIComponent(searchQuery.trim())}`);
+      } else {
+        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      }
     }
   };
 
   const totalCartPrice = cartItems.reduce((sum, item) => sum + (item.price || 0), 0);
+
+  // Categories configuration for desktop sub-bar
+  const subCategories = [
+    {
+      label: "Women",
+      path: isStoreMode ? "/store?category=Women" : "/w-dress",
+    },
+    {
+      label: "Men",
+      path: isStoreMode ? "/store?category=Men" : "/m-dress",
+    },
+    {
+      label: "Dresses",
+      path: isStoreMode ? "/store?category=Dresses" : "/w-dress?category=Dresses",
+    },
+    {
+      label: "Jewellery",
+      path: isStoreMode ? "/store?category=Jewellery" : "/jewellery",
+      badge: "1-Gram Gold",
+    },
+    {
+      label: "Accessories",
+      path: "/store?category=Accessories",
+    },
+    {
+      label: "Footwear",
+      path: "/store?category=Footwear",
+    },
+    {
+      label: "Pre-loved / Vintage",
+      path: "/store?condition=PRE_OWNED",
+      badge: "Shop",
+    },
+    {
+      label: "AI Stylist",
+      path: "/stylist",
+      isAi: true,
+    },
+    {
+      label: "Atelier",
+      path: "/about-us",
+    },
+  ];
 
   return (
     <>
@@ -196,139 +295,425 @@ function ResponsiveAppBar() {
           display: { xs: "none", sm: "block" },
         }}
       >
-        Authenticated Bridal Couture & 1-Gram Gold Jewellery • Doorstep Delivery & Sanitized Escrow
+        Authenticated Bridal Couture & 1-Gram Gold Jewellery • Doorstep Delivery & Refundable Security Deposit
       </Box>
 
-      <AppBar position="sticky" sx={{ backgroundColor: '#FFFFFF', color: '#1A1A1A', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+      {/* Main Top Navigation Header */}
+      <AppBar
+        position="sticky"
+        sx={{
+          backgroundColor: "#FFFFFF",
+          color: "#1A1817",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+          borderBottom: "1px solid #ECE7DE",
+        }}
+      >
         <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ minHeight: { xs: '62px !important', md: '80px !important' }, px: { xs: 1.5, sm: 2 } }}>
-            <Box component="a" href="/" sx={{ mr: { xs: 'auto', md: 4 }, display: 'flex', alignItems: 'center' }}>
-              <img src={logo} alt="Logo" style={{ height: '34px', objectFit: 'contain' }} />
-            </Box>
-
-            <Box sx={{ display: { xs: "flex", md: "none" }, mr: 1 }}>
-              <IconButton size="large" onClick={handleOpenNavMenu} color="inherit">
+          <Toolbar
+            disableGutters
+            sx={{
+              minHeight: { xs: "62px !important", md: "74px !important" },
+              px: { xs: 1, sm: 2 },
+              justifyContent: "space-between",
+            }}
+          >
+            {/* Left: Mobile Menu Button & Brand Logo */}
+            <Box display="flex" alignItems="center" gap={1}>
+              <IconButton
+                size="medium"
+                onClick={() => setMobileMenuOpen(true)}
+                color="inherit"
+                sx={{ display: { xs: "inline-flex", md: "none" } }}
+                aria-label="Open navigation menu"
+              >
                 <MenuIcon />
               </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorElNav}
-                open={Boolean(anchorElNav)}
-                onClose={handleCloseNavMenu}
-                sx={{ display: { xs: "block", md: "none" } }}
+
+              <Box
+                component={RouterLink}
+                to="/"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  textDecoration: "none",
+                  mr: { xs: 1, md: 3 },
+                }}
               >
-                {/* Mobile Recruiter Quick Tour Action */}
-                <MenuItem
-                  onClick={() => {
-                    handleCloseNavMenu();
-                    setRecruiterTourOpen(true);
-                  }}
-                  aria-label="Open Recruiter Quick Tour and System Specifications"
+                <WardrobeWondersLogo size="small" />
+              </Box>
+
+              {/* Primary Experience Mode Switcher (RENT vs BUY / STORE) */}
+              <Box
+                sx={{
+                  display: { xs: "none", md: "inline-flex" },
+                  p: 0.4,
+                  backgroundColor: "#F7F5F0",
+                  borderRadius: 2.5,
+                  border: "1px solid #ECE7DE",
+                }}
+              >
+                <Button
+                  onClick={() => navigate("/")}
+                  size="small"
+                  startIcon={<CheckroomIcon sx={{ fontSize: 16 }} />}
                   sx={{
-                    bgcolor: "#1A1817",
-                    color: "#D1A362",
-                    borderRadius: 1.5,
-                    mx: 1,
-                    mb: 1.5,
-                    py: 1,
-                    "&:hover": { bgcolor: "#2C2825" },
-                    "&:focus-visible": { outline: "2px solid #D1A362" },
+                    fontWeight: 800,
+                    fontSize: "0.82rem",
+                    letterSpacing: "0.05em",
+                    borderRadius: 2,
+                    textTransform: "none",
+                    px: 2,
+                    py: 0.6,
+                    backgroundColor: !isStoreMode ? "#1A1817" : "transparent",
+                    color: !isStoreMode ? "#FFFFFF" : "#6E685F",
+                    boxShadow: !isStoreMode ? "0 2px 8px rgba(0,0,0,0.12)" : "none",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: !isStoreMode ? "#2C2825" : "rgba(209, 163, 98, 0.12)",
+                      color: !isStoreMode ? "#FFFFFF" : "#1A1817",
+                    },
                   }}
                 >
-                  <Stack direction="row" spacing={1} alignItems="center" width="100%" justifyContent="center">
-                    <AutoAwesomeIcon sx={{ fontSize: 18, color: "#D1A362" }} />
-                    <Typography textAlign="center" fontWeight={800} fontSize="0.88rem" color="#D1A362">
-                      Recruiter Quick Tour
-                    </Typography>
-                  </Stack>
-                </MenuItem>
+                  RENT
+                </Button>
 
-                {pages.map((page) => (
-                  <MenuItem onClick={() => { handleCloseNavMenu(); navigate(page.path); }} key={page.name}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography textAlign="center" fontWeight={600} fontSize="0.9rem">
-                        {page.name}
-                      </Typography>
-                      {page.badge && (
-                        <Chip
-                          label={page.badge}
-                          size="small"
-                          sx={{
-                            height: 16,
-                            fontSize: "0.6rem",
-                            fontWeight: 800,
-                            bgcolor: "#D1A362",
-                            color: "#1A1817",
-                          }}
-                        />
-                      )}
-                      {page.isAi && (
-                        <AutoAwesomeIcon sx={{ fontSize: 14, color: "#D1A362" }} />
-                      )}
-                    </Box>
-                  </MenuItem>
-                ))}
-                <Divider sx={{ my: 1 }} />
-                {token && currentUser ? (
-                  <>
-                    <MenuItem onClick={() => { handleCloseNavMenu(); navigate("/profile"); }}>
-                      <Typography textAlign="center" fontWeight={600}>My Profile ({currentUser?.firstname || "User"})</Typography>
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        handleCloseNavMenu();
-                        navigate(currentUser?.role === "provider" ? "/provider-dashboard" : "/my-rentals");
-                      }}
-                    >
-                      <Typography textAlign="center" fontWeight={700} color="#D1A362">
-                        {currentUser?.role === "provider" ? "Provider Studio" : "My Rentals"}
-                      </Typography>
-                    </MenuItem>
-                    {currentUser?.role === "admin" && (
-                      <MenuItem onClick={() => { handleCloseNavMenu(); navigate("/admin"); }}>
-                        <Typography textAlign="center" fontWeight={700} color="#7A1C1C">Admin Console</Typography>
-                      </MenuItem>
-                    )}
-                    <MenuItem onClick={() => { handleCloseNavMenu(); handleLogout(); }}>
-                      <Typography textAlign="center" color="error.main" fontWeight={600}>Sign Out</Typography>
-                    </MenuItem>
-                  </>
-                ) : (
-                  <>
-                    <MenuItem onClick={() => { handleCloseNavMenu(); setAuthModalTab("login"); setAuthModalOpen(true); }}>
-                      <Typography textAlign="center" fontWeight={600}>Log In</Typography>
-                    </MenuItem>
-                    <MenuItem onClick={() => { handleCloseNavMenu(); setAuthModalTab("signup"); setAuthModalOpen(true); }}>
-                      <Typography textAlign="center" fontWeight={700} color="#D1A362">Sign Up / Join</Typography>
-                    </MenuItem>
-                  </>
-                )}
-              </Menu>
+                <Button
+                  onClick={() => navigate("/store")}
+                  size="small"
+                  startIcon={<StoreIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: "0.82rem",
+                    letterSpacing: "0.05em",
+                    borderRadius: 2,
+                    textTransform: "none",
+                    px: 2,
+                    py: 0.6,
+                    backgroundColor: isStoreMode ? "#9C7238" : "transparent",
+                    color: isStoreMode ? "#FFFFFF" : "#6E685F",
+                    boxShadow: isStoreMode ? "0 2px 8px rgba(156, 114, 56, 0.25)" : "none",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: isStoreMode ? "#855E2B" : "rgba(209, 163, 98, 0.12)",
+                      color: isStoreMode ? "#FFFFFF" : "#1A1817",
+                    },
+                  }}
+                >
+                  BUY / STORE
+                </Button>
+              </Box>
             </Box>
 
-            <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5 }}>
-              {pages.map((page) => (
+            {/* Center: Search Field */}
+            <Search sx={{ display: { xs: "none", md: "block" } }}>
+              <SearchIconWrapper>
+                <SearchIcon sx={{ color: "#9E9E9E", fontSize: "1.15rem" }} />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder={
+                  isStoreMode
+                    ? "Search verified boutique store products & brands..."
+                    : "Search bridal lehengas, 1-gram gold, tuxedos..."
+                }
+                inputProps={{ "aria-label": "search catalog" }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
+              />
+            </Search>
+
+            {/* Right: Actions, Bags, and User Profile */}
+            <Box display="flex" alignItems="center" gap={{ xs: 0.5, sm: 1.2 }}>
+              {/* Mobile Search Toggle */}
+              <IconButton
+                onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                sx={{ display: { xs: "inline-flex", md: "none" }, color: mobileSearchOpen ? "#D1A362" : "#1A1817" }}
+                aria-label="Toggle search"
+              >
+                <SearchIcon fontSize="small" />
+              </IconButton>
+
+              {/* Wishlist */}
+              <Tooltip title="Saved Wishlist">
+                <IconButton onClick={() => setWishlistOpen(true)} sx={{ color: "#1A1817", "&:hover": { color: "#D1A362" } }}>
+                  <FavoriteBorderIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
+              {/* Rental Bag (Separate) */}
+              <Tooltip title="Rental Bookings Cart">
+                <IconButton
+                  onClick={() => setCartOpen(true)}
+                  sx={{ color: "#1A1817", "&:hover": { color: "#D1A362" } }}
+                  aria-label="Rental Cart"
+                >
+                  <Badge badgeContent={cartItems.length} sx={{ "& .MuiBadge-badge": { backgroundColor: "#1A1817", color: "#FFF" } }}>
+                    <LocalMallOutlinedIcon fontSize="small" />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+
+              {/* Store Shopping Bag (Separate) */}
+              <Tooltip title="Store Shopping Bag">
+                <IconButton
+                  onClick={() => navigate("/store/cart")}
+                  sx={{ color: "#1A1817", "&:hover": { color: "#9C7238" } }}
+                  aria-label="Store Shopping Bag"
+                >
+                  <Badge
+                    badgeContent={storeCartCount}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        backgroundColor: "#9C7238",
+                        color: "#FFFFFF",
+                        fontWeight: 800,
+                      },
+                    }}
+                  >
+                    <StorefrontOutlinedIcon fontSize="small" />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+
+              {/* Authenticated User or Login/Signup Actions */}
+              {token && currentUser ? (
+                <Box display="flex" alignItems="center" sx={{ ml: 0.5 }}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={0.8}
+                    sx={{
+                      cursor: "pointer",
+                      px: 1.2,
+                      py: 0.5,
+                      borderRadius: 2,
+                      backgroundColor: "#F9F8F6",
+                      border: "1px solid #ECE7DE",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        borderColor: "#D1A362",
+                        backgroundColor: "#F5EFE6",
+                      },
+                    }}
+                    onClick={(e) => setUserMenuAnchor(e.currentTarget)}
+                  >
+                    <Avatar
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        bgcolor: "#1A1817",
+                        color: "#D1A362",
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {currentUser?.firstname ? currentUser.firstname[0].toUpperCase() : "U"}
+                    </Avatar>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      sx={{
+                        color: "#1A1817",
+                        fontSize: "0.85rem",
+                        display: { xs: "none", sm: "block" },
+                      }}
+                    >
+                      {currentUser?.firstname || "Account"}
+                    </Typography>
+                    <KeyboardArrowDownIcon fontSize="small" sx={{ color: "#666" }} />
+                  </Box>
+
+                  {/* User Dropdown Menu */}
+                  <Menu
+                    anchorEl={userMenuAnchor}
+                    open={Boolean(userMenuAnchor)}
+                    onClose={() => setUserMenuAnchor(null)}
+                    PaperProps={{
+                      sx: {
+                        mt: 1.5,
+                        minWidth: 240,
+                        borderRadius: 2.5,
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                        border: "1px solid #ECE7DE",
+                        py: 1,
+                      },
+                    }}
+                  >
+                    <Box sx={{ px: 2, py: 1.5 }}>
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: "#1A1817" }}>
+                        {currentUser?.name || `${currentUser?.firstname || ""} ${currentUser?.lastname || ""}`.trim() || "User"}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "#777", display: "block", mb: 0.8 }}>
+                        {currentUser?.email}
+                      </Typography>
+                      <Chip
+                        size="small"
+                        label={
+                          currentUser?.role === "admin"
+                            ? "Platform Admin"
+                            : currentUser?.role === "seller"
+                            ? "Verified Seller"
+                            : currentUser?.role === "provider"
+                            ? "Boutique Partner"
+                            : "Verified Customer"
+                        }
+                        sx={{
+                          fontSize: "0.68rem",
+                          height: 20,
+                          fontWeight: 700,
+                          bgcolor:
+                            currentUser?.role === "admin"
+                              ? "#7A1C1C"
+                              : currentUser?.role === "seller"
+                              ? "#9C7238"
+                              : currentUser?.role === "provider"
+                              ? "#A07028"
+                              : "#1A1817",
+                          color: "#FFF",
+                        }}
+                      />
+                    </Box>
+                    <Divider sx={{ my: 0.5 }} />
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/profile"); }}>
+                      <Typography variant="body2">My Account Profile</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/my-rentals"); }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#9C7238" }}>
+                        My Rentals & Bookings
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/store/orders"); }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        My Store Purchases
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/store/cart"); }}>
+                      <Typography variant="body2">Store Bag ({storeCartCount})</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/store/become-seller"); }}>
+                      <Typography variant="body2">Seller Hub / My Store</Typography>
+                    </MenuItem>
+                    {(currentUser?.role === "provider" || currentUser?.role === "admin") && (
+                      <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/provider-dashboard"); }}>
+                        <Typography variant="body2" color="#A07028" fontWeight={600}>
+                          Provider Studio
+                        </Typography>
+                      </MenuItem>
+                    )}
+                    {currentUser?.role === "admin" && (
+                      <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/admin"); }}>
+                        <Typography variant="body2" color="#7A1C1C" fontWeight={600}>
+                          Admin Console
+                        </Typography>
+                      </MenuItem>
+                    )}
+                    <Divider sx={{ my: 0.5 }} />
+                    <MenuItem onClick={handleLogout} sx={{ color: "#D32F2F" }}>
+                      <Typography variant="body2" fontWeight={600}>Sign Out</Typography>
+                    </MenuItem>
+                  </Menu>
+                </Box>
+              ) : (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Button
+                    onClick={() => navigate("/login")}
+                    sx={{
+                      color: "#1A1817",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      px: 1.5,
+                      py: 0.6,
+                      borderRadius: 1.5,
+                      "&:hover": { color: "#D1A362", backgroundColor: "rgba(209, 163, 98, 0.08)" },
+                    }}
+                  >
+                    Log In
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate("/signup")}
+                    sx={{
+                      bgcolor: "#1A1817",
+                      color: "#FFFFFF",
+                      border: "1px solid #1A1817",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: "0.84rem",
+                      px: 2,
+                      py: 0.6,
+                      borderRadius: 1.5,
+                      boxShadow: "none",
+                      "&:hover": {
+                        bgcolor: "#2C2825",
+                        borderColor: "#D1A362",
+                      },
+                    }}
+                  >
+                    Join
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Toolbar>
+
+          {/* Mobile Search Input Drawer Bar */}
+          <Collapse in={mobileSearchOpen}>
+            <Box sx={{ pb: 1.5, pt: 0.5, display: { xs: "block", md: "none" } }}>
+              <Search sx={{ mr: 0 }}>
+                <SearchIconWrapper>
+                  <SearchIcon sx={{ color: "#9E9E9E", fontSize: "1.1rem" }} />
+                </SearchIconWrapper>
+                <StyledInputBase
+                  fullWidth
+                  placeholder={
+                    isStoreMode
+                      ? "Search verified boutique store..."
+                      : "Search bridal lehengas, 1-gram gold, tuxedos..."
+                  }
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearch}
+                />
+              </Search>
+            </Box>
+          </Collapse>
+        </Container>
+
+        {/* Desktop Category Sub-Navigation Strip */}
+        <Box
+          sx={{
+            display: { xs: "none", md: "block" },
+            borderTop: "1px solid #F0ECE4",
+            backgroundColor: "#FCFAF7",
+            py: 0.8,
+          }}
+        >
+          <Container maxWidth="xl">
+            <Box display="flex" alignItems="center" justifyContent="center" gap={1.2}>
+              {subCategories.map((cat) => (
                 <Button
-                  key={page.name}
-                  onClick={() => navigate(page.path)}
+                  key={cat.label}
+                  onClick={() => navigate(cat.path)}
                   sx={{
-                    color: "#1A1817",
-                    display: "inline-flex",
-                    alignItems: "center",
+                    color: "#3A3631",
                     textTransform: "none",
                     fontWeight: 600,
-                    fontSize: "0.9rem",
-                    letterSpacing: "0.01em",
-                    px: 1.5,
-                    py: 0.7,
+                    fontSize: "0.84rem",
+                    letterSpacing: "0.02em",
+                    px: 1.4,
+                    py: 0.4,
                     borderRadius: 1.5,
-                    "&:hover": { color: "#D1A362", backgroundColor: "rgba(209, 163, 98, 0.08)" },
+                    "&:hover": {
+                      color: isStoreMode ? "#9C7238" : "#A07028",
+                      backgroundColor: "rgba(209, 163, 98, 0.08)",
+                    },
                   }}
                 >
-                  {page.name}
-                  {page.badge && (
+                  {cat.label}
+                  {cat.badge && (
                     <Chip
-                      label={page.badge}
+                      label={cat.badge}
                       size="small"
                       sx={{
                         height: 16,
@@ -341,468 +726,320 @@ function ResponsiveAppBar() {
                       }}
                     />
                   )}
-                  {page.isAi && (
-                    <AutoAwesomeIcon sx={{ fontSize: 13, color: "#D1A362", ml: 0.6 }} />
-                  )}
+                  {cat.isAi && <AutoAwesomeIcon sx={{ fontSize: 13, color: "#D1A362", ml: 0.6 }} />}
                 </Button>
               ))}
             </Box>
-
-            <Search sx={{ display: { xs: "none", md: "block" } }}>
-              <SearchIconWrapper>
-                <SearchIcon sx={{ color: '#9e9e9e', fontSize: '1.2rem' }} />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Ask AI or search bridal, 1-gram gold, tuxedos..."
-                inputProps={{ 'aria-label': 'search' }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearch}
-              />
-            </Search>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1.5, md: 2 }, ml: { xs: 0, md: 2 } }}>
-              {/* Mobile Search Toggle */}
-              <IconButton onClick={() => setMobileSearchOpen(!mobileSearchOpen)} sx={{ display: { xs: "inline-flex", md: "none" }, color: mobileSearchOpen ? "#D1A362" : "#1A1817", p: 1 }} aria-label="Toggle Search"><SearchIcon fontSize="small" /></IconButton>
-              <IconButton onClick={() => setWishlistOpen(true)} sx={{ color: '#1A1817', '&:hover': { color: '#D1A362' } }}>
-                <FavoriteBorderIcon />
-              </IconButton>
-              <IconButton onClick={() => setCartOpen(true)} sx={{ color: '#1A1817', '&:hover': { color: '#D1A362' } }}>
-                <Badge badgeContent={cartItems.length} sx={{ '& .MuiBadge-badge': { backgroundColor: '#1A1A1A', color: '#FFF' } }}>
-                  <LocalMallOutlinedIcon />
-                </Badge>
-              </IconButton>
-
-              {/* Desktop Recruiter Quick Tour Action */}
-              <Button
-                variant="contained"
-                size="small"
-                onClick={() => setRecruiterTourOpen(true)}
-                startIcon={<AutoAwesomeIcon sx={{ color: "#D1A362", fontSize: "1.05rem" }} />}
-                aria-label="Open Recruiter Quick Tour and System Specifications"
-                sx={{
-                  bgcolor: "#1A1817",
-                  color: "#FFFFFF",
-                  border: "1px solid #D1A362",
-                  fontWeight: 700,
-                  fontSize: "0.82rem",
-                  textTransform: "none",
-                  borderRadius: 1.8,
-                  px: 1.6,
-                  py: 0.6,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                  display: { xs: "none", lg: "inline-flex" },
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    bgcolor: "#2C2825",
-                    borderColor: "#E5C287",
-                    boxShadow: "0 4px 14px rgba(209, 163, 98, 0.3)",
-                    transform: "translateY(-1px)",
-                  },
-                  "&:focus-visible": {
-                    outline: "2px solid #D1A362",
-                    outlineOffset: "2px",
-                  },
-                }}
-              >
-                Recruiter Tour
-              </Button>
-
-              {/* Compact Recruiter Tour for Medium Viewports */}
-              <Tooltip title="Recruiter Quick Tour & Architecture Specs">
-                <IconButton
-                  onClick={() => setRecruiterTourOpen(true)}
-                  aria-label="Open Recruiter Quick Tour and System Specifications"
-                  sx={{
-                    display: { xs: "none", md: "inline-flex", lg: "none" },
-                    color: "#A07028",
-                    border: "1px solid #D1A362",
-                    borderRadius: 1.8,
-                    p: 0.8,
-                    bgcolor: "#FAF8F5",
-                    "&:hover": { bgcolor: "#F5EFE6" },
-                    "&:focus-visible": { outline: "2px solid #D1A362", outlineOffset: "2px" },
-                  }}
-                >
-                  <AutoAwesomeIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-
-              {/* Direct GitHub Source Link */}
-              <Tooltip title="View Verified Source Code on GitHub">
-                <IconButton
-                  component="a"
-                  href="https://github.com/athiya160/Wardrobe-Wonders-AI"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View verified source code on GitHub"
-                  sx={{
-                    color: "#4A4A4A",
-                    display: { xs: "none", xl: "inline-flex" },
-                    "&:hover": { color: "#1A1A1A" },
-                    "&:focus-visible": { outline: "2px solid #D1A362", outlineOffset: "2px" },
-                  }}
-                >
-                  <GitHubIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              
-              {token && currentUser ? (
-                <Box display="flex" alignItems="center" gap={1.5} sx={{ ml: 1 }}>
-                  {currentUser?.role === 'provider' ? (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => navigate("/provider-dashboard")}
-                      sx={{
-                        borderColor: "#D1A362",
-                        color: "#A07028",
-                        fontWeight: 700,
-                        fontSize: "0.8rem",
-                        textTransform: "none",
-                        borderRadius: 1.5,
-                        px: 1.5,
-                        py: 0.4,
-                        display: { xs: "none", sm: "inline-flex" },
-                        "&:hover": { backgroundColor: "rgba(209, 163, 98, 0.1)", borderColor: "#D1A362" }
-                      }}
-                    >
-                      Provider Studio
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => navigate("/my-rentals")}
-                      sx={{
-                        borderColor: "#1A1817",
-                        color: "#1A1817",
-                        fontWeight: 700,
-                        fontSize: "0.8rem",
-                        textTransform: "none",
-                        borderRadius: 1.5,
-                        px: 1.5,
-                        py: 0.4,
-                        display: { xs: "none", sm: "inline-flex" },
-                        "&:hover": { backgroundColor: "#F5F5F5", borderColor: "#1A1817" }
-                      }}
-                    >
-                      My Rentals
-                    </Button>
-                  )}
-
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={0.8}
-                    sx={{
-                      cursor: 'pointer',
-                      px: 1.5,
-                      py: 0.6,
-                      borderRadius: 2,
-                      backgroundColor: "#F9F8F6",
-                      border: "1px solid #E8E3D9",
-                      transition: "all 0.2s ease",
-                      '&:hover': {
-                        borderColor: '#D1A362',
-                        backgroundColor: '#F5EFE6',
-                      }
-                    }}
-                    onClick={(e) => setUserMenuAnchor(e.currentTarget)}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 26,
-                        height: 26,
-                        bgcolor: '#1A1817',
-                        color: '#D1A362',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {currentUser?.firstname ? currentUser.firstname[0].toUpperCase() : "U"}
-                    </Avatar>
-                    <Typography variant="body2" fontWeight={600} sx={{ color: '#1A1817', fontSize: '0.85rem' }}>
-                      {currentUser?.firstname || "Account"}
-                    </Typography>
-                    <KeyboardArrowDownIcon fontSize="small" sx={{ color: '#666' }} />
-                  </Box>
-
-                  {/* Luxury User Dropdown Menu */}
-                  <Menu
-                    anchorEl={userMenuAnchor}
-                    open={Boolean(userMenuAnchor)}
-                    onClose={() => setUserMenuAnchor(null)}
-                    PaperProps={{
-                      sx: {
-                        mt: 1.5,
-                        minWidth: 230,
-                        borderRadius: 2,
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
-                        border: "1px solid #E8E3D9",
-                        py: 1,
-                      }
-                    }}
-                  >
-                    <Box sx={{ px: 2, py: 1.5 }}>
-                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#1A1817' }}>
-                        {currentUser?.name || `${currentUser?.firstname || ''} ${currentUser?.lastname || ''}`.trim() || "User"}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#888', display: 'block', mb: 0.8 }}>
-                        {currentUser?.email}
-                      </Typography>
-                      <Chip
-                        size="small"
-                        label={currentUser?.role === 'admin' ? 'Platform Admin' : currentUser?.role === 'provider' ? 'Boutique Partner' : 'Customer Member'}
-                        sx={{
-                          fontSize: '0.7rem',
-                          height: 20,
-                          fontWeight: 700,
-                          bgcolor: currentUser?.role === 'admin' ? '#7A1C1C' : currentUser?.role === 'provider' ? '#A07028' : '#1A1817',
-                          color: '#FFF'
-                        }}
-                      />
-                    </Box>
-                    <Divider sx={{ my: 0.5 }} />
-                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/profile"); }}>
-                      <Typography variant="body2">My Profile</Typography>
-                    </MenuItem>
-                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/my-rentals"); }}>
-                      <Typography variant="body2">My Rentals & Bookings</Typography>
-                    </MenuItem>
-                    {(currentUser?.role === 'provider' || currentUser?.role === 'admin') && (
-                      <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/provider-dashboard"); }}>
-                        <Typography variant="body2" color="#A07028" fontWeight={600}>Provider Studio</Typography>
-                      </MenuItem>
-                    )}
-                    {currentUser?.role === 'admin' && (
-                      <MenuItem onClick={() => { setUserMenuAnchor(null); navigate("/admin"); }}>
-                        <Typography variant="body2" color="#7A1C1C" fontWeight={600}>Admin Console</Typography>
-                      </MenuItem>
-                    )}
-                    <Divider sx={{ my: 0.5 }} />
-                    <MenuItem onClick={handleLogout} sx={{ color: '#D32F2F' }}>
-                      <Typography variant="body2" fontWeight={600}>Sign Out</Typography>
-                    </MenuItem>
-                  </Menu>
-                </Box>
-              ) : (
-                <>
-                  <IconButton
-                    onClick={() => {
-                      setAuthModalTab("login");
-                      setAuthModalOpen(true);
-                    }}
-                    sx={{
-                      display: { xs: "inline-flex", md: "none" },
-                      color: "#1A1817",
-                      p: 1,
-                      "&:hover": { color: "#D1A362" },
-                    }}
-                    aria-label="Account Login"
-                  >
-                    <PersonOutlineOutlinedIcon fontSize="small" />
-                  </IconButton>
-                  <Box alignItems="center" gap={1.2} sx={{ ml: 1, display: { xs: "none", md: "flex" } }}>
-                    <Button
-                      onClick={() => {
-                        setAuthModalTab("login");
-                        setAuthModalOpen(true);
-                      }}
-                      startIcon={<PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} />}
-                      sx={{
-                        color: "#1A1817",
-                        textTransform: "none",
-                        fontWeight: 600,
-                        fontSize: "0.88rem",
-                        px: 1.5,
-                        py: 0.6,
-                        borderRadius: 1.5,
-                        "&:hover": {
-                          color: "#D1A362",
-                          backgroundColor: "rgba(209, 163, 98, 0.08)",
-                        },
-                      }}
-                    >
-                      Log In
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        setAuthModalTab("signup");
-                        setAuthModalOpen(true);
-                      }}
-                      sx={{
-                        bgcolor: "#1A1817",
-                        color: "#FFFFFF",
-                        border: "1px solid #D1A362",
-                        textTransform: "none",
-                        fontWeight: 700,
-                        fontSize: "0.85rem",
-                        px: 2,
-                        py: 0.6,
-                        borderRadius: 1.5,
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          bgcolor: "#2C2825",
-                          borderColor: "#E5C287",
-                          boxShadow: "0 4px 14px rgba(209, 163, 98, 0.25)",
-                        },
-                      }}
-                    >
-                      Sign Up
-                    </Button>
-                  </Box>
-                </>
-              )}
-            </Box>
-          </Toolbar>
-          <Collapse in={mobileSearchOpen}>
-            <Box sx={{ py: 1.5, px: 1, borderTop: "1px solid #ECE7DE", display: { xs: "block", md: "none" } }}>
-              <StyledInputBase autoFocus={mobileSearchOpen} fullWidth placeholder="Search bridal, 1-gram gold, sherwani..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && searchQuery.trim()) { setMobileSearchOpen(false); navigate(`/search?q=${encodeURIComponent(searchQuery)}`); } }} sx={{ backgroundColor: "#FAF9F7", borderRadius: 2, px: 2, py: 0.6, border: "1.5px solid #D1A362", width: "100%" }} />
-            </Box>
-          </Collapse>
-        </Container>
+          </Container>
+        </Box>
       </AppBar>
 
-      {/* Cart Drawer */}
-      <Drawer anchor="right" open={cartOpen} onClose={() => setCartOpen(false)}>
-        <Box sx={{ width: 350, p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Typography variant="h6" fontWeight="bold" mb={2}>Shopping Cart</Typography>
-          <Divider sx={{ mb: 2 }} />
-          
-          <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-            {cartItems.length === 0 ? (
-              <Typography color="text.secondary" textAlign="center" mt={4}>Your cart is empty.</Typography>
-            ) : (
-              <List>
-                {cartItems.map((item, index) => (
-                  <ListItem key={index} sx={{ px: 0, py: 2 }}>
-                    <Box 
-                      display="flex" 
-                      flexGrow={1} 
-                      alignItems="center" 
-                      onClick={() => {
-                        setCartOpen(false);
-                        navigate(`/product/${item._id}`);
-                      }}
-                      sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar src={item.image} variant="rounded" sx={{ width: 60, height: 80, mr: 2 }} />
-                      </ListItemAvatar>
-                      <ListItemText 
-                        primary={<Typography variant="subtitle2" fontWeight="bold">{item.name}</Typography>}
-                        secondary={
-                          <Box>
-                            <Typography variant="caption" display="block" color="text.secondary">₹{item.price} / day</Typography>
-                          </Box>
-                        }
-                      />
-                    </Box>
-                    <IconButton size="small" onClick={() => handleRemoveFromCart(index)} sx={{ color: 'error.main' }}>
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        anchor="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        PaperProps={{
+          sx: { width: "300px", p: 2.5, backgroundColor: "#FAF8F5", color: "#1A1817" },
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <WardrobeWondersLogo size="small" />
+          <IconButton size="small" onClick={() => setMobileMenuOpen(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Primary Sections Toggle on Mobile */}
+        <Stack spacing={1} mb={2.5}>
+          <Typography variant="caption" sx={{ color: "#9E978E", fontWeight: 800, letterSpacing: "0.08em" }}>
+            MARKETPLACE SECTIONS
+          </Typography>
+          <Button
+            fullWidth
+            variant={!isStoreMode ? "contained" : "outlined"}
+            startIcon={<CheckroomIcon />}
+            onClick={() => { setMobileMenuOpen(false); navigate("/"); }}
+            sx={{
+              justifyContent: "flex-start",
+              textTransform: "none",
+              fontWeight: 700,
+              bgcolor: !isStoreMode ? "#1A1817" : "transparent",
+              color: !isStoreMode ? "#FFF" : "#1A1817",
+              borderColor: "#1A1817",
+            }}
+          >
+            RENT COUTURE
+          </Button>
+          <Button
+            fullWidth
+            variant={isStoreMode ? "contained" : "outlined"}
+            startIcon={<StoreIcon />}
+            onClick={() => { setMobileMenuOpen(false); navigate("/store"); }}
+            sx={{
+              justifyContent: "flex-start",
+              textTransform: "none",
+              fontWeight: 700,
+              bgcolor: isStoreMode ? "#9C7238" : "transparent",
+              color: isStoreMode ? "#FFF" : "#9C7238",
+              borderColor: "#9C7238",
+            }}
+          >
+            BUY / STORE
+          </Button>
+        </Stack>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Categories List */}
+        <Typography variant="caption" sx={{ color: "#9E978E", fontWeight: 800, letterSpacing: "0.08em", mb: 1, display: "block" }}>
+          DEPARTMENTS & CATEGORIES
+        </Typography>
+        <List dense sx={{ p: 0 }}>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate(isStoreMode ? "/store?category=Women" : "/w-dress"); }}>
+            <ListItemText primary="Women's Couture" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }} />
+          </ListItem>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate(isStoreMode ? "/store?category=Men" : "/m-dress"); }}>
+            <ListItemText primary="Men's Tailoring & Sherwanis" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }} />
+          </ListItem>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate(isStoreMode ? "/store?category=Dresses" : "/w-dress?category=Dresses"); }}>
+            <ListItemText primary="Dresses & Evening Gowns" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }} />
+          </ListItem>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate(isStoreMode ? "/store?category=Jewellery" : "/jewellery"); }}>
+            <ListItemText primary="Bridal & 1-Gram Gold Jewellery" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem", color: "#9C7238" }} />
+          </ListItem>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate("/store?category=Accessories"); }}>
+            <ListItemText primary="Accessories" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }} />
+          </ListItem>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate("/store?category=Footwear"); }}>
+            <ListItemText primary="Footwear & Juttis" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }} />
+          </ListItem>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate("/store?condition=PRE_OWNED"); }}>
+            <ListItemText primary="Pre-loved / Vintage Collection" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }} />
+          </ListItem>
+          <ListItem button onClick={() => { setMobileMenuOpen(false); navigate("/stylist"); }}>
+            <ListItemText primary="✨ AI Fashion Stylist" primaryTypographyProps={{ fontWeight: 700, fontSize: "0.9rem", color: "#D1A362" }} />
+          </ListItem>
+        </List>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* User Account / Auth Actions */}
+        {token && currentUser ? (
+          <Stack spacing={1}>
+            <Typography variant="caption" sx={{ color: "#9E978E", fontWeight: 800 }}>
+              SIGNED IN AS {currentUser?.firstname?.toUpperCase() || "USER"}
+            </Typography>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              onClick={() => { setMobileMenuOpen(false); navigate("/profile"); }}
+              sx={{ textTransform: "none", color: "#1A1817", borderColor: "#DDD" }}
+            >
+              My Account Profile
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              onClick={() => { setMobileMenuOpen(false); navigate("/my-rentals"); }}
+              sx={{ textTransform: "none", color: "#9C7238", borderColor: "#D1A362" }}
+            >
+              My Rentals
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              onClick={() => { setMobileMenuOpen(false); navigate("/store/orders"); }}
+              sx={{ textTransform: "none", color: "#1A1817", borderColor: "#DDD" }}
+            >
+              My Store Purchases
+            </Button>
+            <Button
+              fullWidth
+              color="error"
+              size="small"
+              onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+              sx={{ textTransform: "none", fontWeight: 700 }}
+            >
+              Sign Out
+            </Button>
+          </Stack>
+        ) : (
+          <Stack spacing={1.5}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => { setMobileMenuOpen(false); navigate("/login"); }}
+              sx={{ bgcolor: "#1A1817", color: "#FFF", fontWeight: 700, textTransform: "none" }}
+            >
+              Log In
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => { setMobileMenuOpen(false); navigate("/signup"); }}
+              sx={{ borderColor: "#D1A362", color: "#9C7238", fontWeight: 700, textTransform: "none" }}
+            >
+              Join Wardrobe Wonders
+            </Button>
+          </Stack>
+        )}
+      </Drawer>
+
+      {/* Rental Cart Slide-out Drawer */}
+      <Drawer
+        anchor="right"
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        PaperProps={{
+          sx: { width: { xs: "100%", sm: "400px" }, p: 3, backgroundColor: "#FAF8F5" },
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <LocalMallOutlinedIcon sx={{ color: "#1A1817" }} />
+            <Typography variant="h6" fontWeight={700}>
+              Rental Bookings Bag ({cartItems.length})
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setCartOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Divider sx={{ mb: 2 }} />
+
+        {cartItems.length === 0 ? (
+          <Box textAlign="center" py={8}>
+            <LocalMallOutlinedIcon sx={{ fontSize: 60, color: "#DDD", mb: 2 }} />
+            <Typography variant="body1" color="text.secondary" gutterBottom>
+              Your rental cart is empty.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => { setCartOpen(false); navigate("/w-dress"); }}
+              sx={{ bgcolor: "#1A1817", color: "#D1A362", mt: 2, textTransform: "none" }}
+            >
+              Browse Rental Couture
+            </Button>
+          </Box>
+        ) : (
+          <Box display="flex" flexDirection="column" height="100%">
+            <List sx={{ flexGrow: 1, overflowY: "auto" }}>
+              {cartItems.map((item, index) => (
+                <ListItem
+                  key={index}
+                  secondaryAction={
+                    <IconButton edge="end" onClick={() => handleRemoveFromCart(index)} size="small">
                       <DeleteOutlineIcon />
                     </IconButton>
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Box>
-          
-          {cartItems.length > 0 && (
-            <Box mt={2} pt={2} sx={{ borderTop: '1px solid #eee' }}>
+                  }
+                  sx={{ borderBottom: "1px solid #ECE7DE", py: 1.5 }}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      variant="rounded"
+                      src={item.image || "/assets/Women/bridal_01.png"}
+                      sx={{ width: 50, height: 60, mr: 1 }}
+                    />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={item.name}
+                    secondary={`₹${Number(item.price || 0).toLocaleString("en-IN")} / rental`}
+                    primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+            <Box pt={2} borderTop="1px solid #ECE7DE">
               <Box display="flex" justifyContent="space-between" mb={2}>
-                <Typography fontWeight="bold">Subtotal:</Typography>
-                <Typography fontWeight="bold">₹{totalCartPrice}</Typography>
+                <Typography variant="subtitle1" fontWeight={700}>Subtotal</Typography>
+                <Typography variant="subtitle1" fontWeight={800} color="#1A1817">
+                  ₹{totalCartPrice.toLocaleString("en-IN")}
+                </Typography>
               </Box>
-              <Button 
-                fullWidth 
-                variant="contained" 
-                sx={{ bgcolor: '#111', py: 1.5, borderRadius: 2, '&:hover': { bgcolor: '#333' } }}
+              <Button
+                fullWidth
+                variant="contained"
                 onClick={() => {
                   setCartOpen(false);
-                  navigate(`/checkout/address/${cartItems[0]._id}`, { state: { product: cartItems[0], qty: 1 } });
+                  if (cartItems.length > 0 && cartItems[0]._id) {
+                    navigate(`/checkout/address/${cartItems[0]._id}`);
+                  }
                 }}
+                sx={{ bgcolor: "#1A1817", color: "#FFFFFF", py: 1.2, fontWeight: 700 }}
               >
-                Checkout Now
+                Proceed to Checkout
               </Button>
             </Box>
-          )}
-        </Box>
-      </Drawer>
-
-      {/* Wishlist Drawer */}
-      <Drawer anchor="right" open={wishlistOpen} onClose={() => setWishlistOpen(false)}>
-        <Box sx={{ width: 350, p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Typography variant="h6" fontWeight="bold" mb={2}>Your Wishlist</Typography>
-          <Divider sx={{ mb: 2 }} />
-          
-          <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-            {wishlistItems.length === 0 ? (
-              <Typography color="text.secondary" textAlign="center" mt={4}>Your wishlist is empty.</Typography>
-            ) : (
-              <List>
-                {wishlistItems.map((item, index) => (
-                  <ListItem key={index} sx={{ px: 0, py: 2 }}>
-                    <Box 
-                      display="flex" 
-                      flexGrow={1} 
-                      alignItems="center" 
-                      onClick={() => {
-                        setWishlistOpen(false);
-                        navigate(`/product/${item._id}`);
-                      }}
-                      sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar src={item.image} variant="rounded" sx={{ width: 60, height: 80, mr: 2 }} />
-                      </ListItemAvatar>
-                      <ListItemText 
-                        primary={<Typography variant="subtitle2" fontWeight="bold">{item.name}</Typography>}
-                        secondary={
-                          <Box>
-                            <Typography variant="caption" display="block" color="text.secondary">₹{item.price} / day</Typography>
-                          </Box>
-                        }
-                      />
-                    </Box>
-                    <Box display="flex" flexDirection="column" alignItems="center">
-                      <IconButton size="small" onClick={() => handleRemoveFromWishlist(item._id)} sx={{ color: 'error.main', mb: 1 }}>
-                        <DeleteOutlineIcon />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => {
-                        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                        cart.push(item);
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        window.dispatchEvent(new Event('cart_updated'));
-                        setWishlistOpen(false);
-                        setCartOpen(true);
-                      }} sx={{ color: '#D1A362' }}>
-                        <LocalMallOutlinedIcon />
-                      </IconButton>
-                    </Box>
-                  </ListItem>
-                ))}
-              </List>
-            )}
           </Box>
-        </Box>
+        )}
       </Drawer>
 
-      {/* Luxury Auth Modal for Storefront Sign In / Sign Up */}
-      <AuthModal
-        open={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        initialTab={authModalTab}
-      />
+      {/* Wishlist Slide-out Drawer */}
+      <Drawer
+        anchor="right"
+        open={wishlistOpen}
+        onClose={() => setWishlistOpen(false)}
+        PaperProps={{
+          sx: { width: { xs: "100%", sm: "400px" }, p: 3, backgroundColor: "#FAF8F5" },
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <FavoriteBorderIcon sx={{ color: "#E53935" }} />
+            <Typography variant="h6" fontWeight={700}>
+              Saved Wishlist ({wishlistItems.length})
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setWishlistOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Divider sx={{ mb: 2 }} />
 
-      {/* Recruiter Quick Tour & Architecture Specs Modal */}
-      <RecruiterTourModal
-        open={recruiterTourOpen}
-        onClose={() => setRecruiterTourOpen(false)}
-      />
+        {wishlistItems.length === 0 ? (
+          <Box textAlign="center" py={8}>
+            <FavoriteBorderIcon sx={{ fontSize: 60, color: "#DDD", mb: 2 }} />
+            <Typography variant="body1" color="text.secondary">
+              No saved items yet.
+            </Typography>
+          </Box>
+        ) : (
+          <List sx={{ overflowY: "auto" }}>
+            {wishlistItems.map((item, index) => (
+              <ListItem
+                key={item._id || index}
+                secondaryAction={
+                  <IconButton edge="end" onClick={() => handleRemoveFromWishlist(item._id || item)} size="small">
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                }
+                sx={{ borderBottom: "1px solid #ECE7DE", py: 1.5 }}
+              >
+                <ListItemAvatar>
+                  <Avatar
+                    variant="rounded"
+                    src={item.image || (item.images && item.images[0]) || "/assets/Women/bridal_01.png"}
+                    sx={{ width: 50, height: 60, mr: 1 }}
+                  />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={item.name || item.title}
+                  secondary={`₹${Number(item.price || 0).toLocaleString("en-IN")}`}
+                  primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Drawer>
     </>
   );
 }
+
 export default ResponsiveAppBar;

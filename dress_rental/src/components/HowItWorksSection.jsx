@@ -79,7 +79,7 @@ export const HowItWorksSection = () => {
               lineHeight: 1.6,
             }}
           >
-            Access million-rupee wardrobes for a fraction of retail. Premium designer fashion, insured escrow protection, and zero commitment.
+            Access million-rupee wardrobes for a fraction of retail. Premium designer fashion, refundable security deposit protocol, and zero commitment.
           </Typography>
         </Box>
 

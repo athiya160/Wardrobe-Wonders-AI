@@ -1,38 +1,61 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Login from "./pages/Login";
+import { lazy, Suspense, useState, useEffect } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { ThemeProvider, Box } from "@mui/material";
 import { theme } from "./theme";
-import ContactUs from "./pages/Contact";
-import AboutUs from "./pages/About";
-import AvailableDresses from "./pages/MDress";
-import SignUp from "./pages/SignUp";
-import Home from "./pages/Home";
-import Fdress from "./pages/Fdress";
-import Jewellery from "./pages/Jewellery";
-import Dashboard from "./pages/Admin";
-import VerifyPayment from "./pages/VerifyPayment";
 import ProtectedRoute from "./components/ProtectedRoute";
-import SearchResults from "./pages/SearchResults";
-import Stylist from "./pages/Stylist";
-import ProductDetail from "./pages/ProductDetail";
-import CheckoutAddress from "./pages/CheckoutAddress";
-import CheckoutPayment from "./pages/CheckoutPayment";
-import OrderSuccess from "./pages/OrderSuccess";
-import Profile from "./pages/Profile";
-import ProviderStudio from "./pages/ProviderStudio";
-import MyRentals from "./pages/MyRentals";
-import Legal from "./pages/Legal";
 import AIChatWidget from "./components/AIChatWidget";
 import BottomNavBar from "./components/BottomNavBar";
-import NotFound from "./pages/NotFound";
+import RouteLoadingFallback from "./components/RouteLoadingFallback";
+import DeepLinkHandler from "./components/DeepLinkHandler";
 
-function App() {
+// Eagerly loaded for instant initial render of landing page
+import Home from "./pages/Home";
+
+// Route-level code-split components for lean on-demand loading
+const Login = lazy(() => import("./pages/Login"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const AvailableDresses = lazy(() => import("./pages/MDress"));
+const Fdress = lazy(() => import("./pages/Fdress"));
+const Jewellery = lazy(() => import("./pages/Jewellery"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const Stylist = lazy(() => import("./pages/Stylist"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const CheckoutAddress = lazy(() => import("./pages/CheckoutAddress"));
+const CheckoutPayment = lazy(() => import("./pages/CheckoutPayment"));
+const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
+const Profile = lazy(() => import("./pages/Profile"));
+const MyRentals = lazy(() => import("./pages/MyRentals"));
+const VerifyPayment = lazy(() => import("./pages/VerifyPayment"));
+const ProviderStudio = lazy(() => import("./pages/ProviderStudio"));
+const Dashboard = lazy(() => import("./pages/Admin"));
+const AboutUs = lazy(() => import("./pages/About"));
+const ContactUs = lazy(() => import("./pages/Contact"));
+const Legal = lazy(() => import("./pages/Legal"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const StoreLanding = lazy(() => import("./pages/StoreLanding"));
+const BecomeSeller = lazy(() => import("./pages/BecomeSeller"));
+const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
+const StoreProductDetail = lazy(() => import("./pages/StoreProductDetail"));
+const Storefront = lazy(() => import("./pages/Storefront"));
+const StoreCart = lazy(() => import("./pages/StoreCart"));
+const StoreCheckout = lazy(() => import("./pages/StoreCheckout"));
+const StoreOrderSuccess = lazy(() => import("./pages/StoreOrderSuccess"));
+const StoreOrderDetail = lazy(() => import("./pages/StoreOrderDetail"));
+
+
+
+function AppContent() {
+  const location = useLocation();
+
+  const isAuthRoute = ["/login", "/signup", "/sign-up"].includes(location.pathname);
+
   return (
-    <ThemeProvider theme={theme}>
-      <BrowserRouter>
-        <Box sx={{ pb: { xs: "66px", md: 0 } }}>
+    <>
+      <DeepLinkHandler />
+      <Box sx={{ pb: isAuthRoute ? 0 : { xs: "66px", md: 0 } }}>
+        <Suspense fallback={<RouteLoadingFallback />}>
           <Routes>
-            {/* Public Discovery Routes */}
+            {/* Application Entry: Canonical Login for Unauthenticated Users, Marketplace for Authenticated Users */}
             <Route path="/" element={<Home />} />
             <Route path="/m-dress" element={<AvailableDresses />} />
             <Route path="/w-dress" element={<Fdress />} />
@@ -50,9 +73,15 @@ function App() {
             <Route path="/copyright" element={<Legal defaultTab="copyright" />} />
             <Route path="/report-listing" element={<Legal defaultTab="report-listing" />} />
             <Route path="/legal" element={<Legal defaultTab="terms" />} />
+            <Route path="/store" element={<StoreLanding />} />
+            <Route path="/store/product/:id" element={<StoreProductDetail />} />
+            <Route path="/store/storefront/:slug" element={<Storefront />} />
+            <Route path="/store/become-seller" element={<BecomeSeller />} />
+            <Route path="/store/cart" element={<StoreCart />} />
 
-            {/* Authentication Routes */}
+            {/* Authentication Routes: Full-Screen Dedicated Pages */}
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
             <Route path="/sign-up" element={<SignUp />} />
 
             {/* Customer Protected Routes (Requires Auth) */}
@@ -63,6 +92,12 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/my-rentals" element={<MyRentals />} />
               <Route path="/verify-payment" element={<VerifyPayment />} />
+              <Route path="/store/checkout" element={<StoreCheckout />} />
+              <Route path="/store/order-success/:orderId" element={<StoreOrderSuccess />} />
+              <Route path="/store/order-success" element={<StoreOrderSuccess />} />
+              <Route path="/store/orders" element={<StoreOrderDetail />} />
+              <Route path="/store/orders/:orderId" element={<StoreOrderDetail />} />
+              <Route path="/store/seller/dashboard" element={<SellerDashboard />} />
             </Route>
 
             {/* Provider Studio (Restricted to Providers and Admins) */}
@@ -78,9 +113,19 @@ function App() {
             {/* Fallback 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </Box>
-        <AIChatWidget />
-        <BottomNavBar />
+        </Suspense>
+      </Box>
+      {!isAuthRoute && <AIChatWidget />}
+      {!isAuthRoute && <BottomNavBar />}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <AppContent />
       </BrowserRouter>
     </ThemeProvider>
   );

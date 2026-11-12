@@ -89,24 +89,23 @@ const Legal = ({ defaultTab = "terms" }) => {
           </Typography>
         </Stack>
 
-        {/* Mandatory Legal Notice Alert */}
+        {/* Compliance Notice */}
         <Alert
           severity="info"
           sx={{
             mb: 4,
             borderRadius: 2,
-            border: "1px solid #cce5ff",
-            backgroundColor: "#F4F9FF",
-            color: "#1c3d5a",
-            "& .MuiAlert-icon": { color: "#2b6cb0" },
+            border: "1px solid rgba(209, 163, 98, 0.3)",
+            backgroundColor: "#FAF8F5",
+            color: "#1A1817",
+            "& .MuiAlert-icon": { color: "#A07028" },
           }}
         >
           <Typography variant="body2" fontWeight={600}>
-            Demonstration Marketplace Legal Notice:
+            Wardrobe Wonders Platform Policy & Governance
           </Typography>
           <Typography variant="caption" display="block">
-            This document is provided for operational and demonstration purposes for the Wardrobe Wonders
-            marketplace MVP. It does not constitute formal legal advice.
+            Our marketplace operates under transparent rental deposit terms, verified quality standards, and consumer protection protocols.
           </Typography>
         </Alert>
 

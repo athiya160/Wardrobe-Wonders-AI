@@ -143,7 +143,7 @@ export const HeroBanner = () => {
             textShadow: "0 1px 4px rgba(0,0,0,0.6)",
           }}
         >
-          Borrow authenticated bridal lehengas, bespoke tuxedos, and authentic 1-gram gold jewellery. Guaranteed doorstep delivery, verified escrow protection, and AI-powered fit consultation.
+          Borrow authenticated bridal lehengas, bespoke tuxedos, and authentic 1-gram gold jewellery. Express doorstep delivery, verified garment quality, and AI-powered fit consultation.
         </Typography>
 
         {/* Primary CTA Buttons */}
@@ -264,7 +264,7 @@ export const HeroBanner = () => {
           </TrustBadge>
           <TrustBadge>
             <SecurityOutlinedIcon sx={{ fontSize: 18, color: "#D1A362" }} />
-            Insured Security Deposit Escrow
+            Refundable Security Deposit Protocol
           </TrustBadge>
           <TrustBadge>
             <LocalLaundryServiceOutlinedIcon sx={{ fontSize: 18, color: "#D1A362" }} />

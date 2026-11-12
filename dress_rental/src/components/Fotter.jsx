@@ -1,11 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { Box, Container, Stack, Typography, Divider } from "@mui/material";
-import { RecruiterTourModal } from "./RecruiterTourModal";
 
 const Fotter = () => {
-  const [archOpen, setArchOpen] = useState(false);
-
   return (
     <Box
       component="footer"
@@ -32,7 +29,7 @@ const Fotter = () => {
               WARDROBE WONDERS
             </Typography>
             <Typography variant="caption" sx={{ color: "#888", display: "block", mt: 0.5, lineHeight: 1.5 }}>
-              India’s premier peer-to-peer luxury fashion and bridal jewellery rental marketplace. Authenticated designer bridalwear, couture sherwanis, and 1-gram gold jewellery sets delivered with door-to-door sanitization and insured deposit escrow.
+              India’s premier peer-to-peer luxury fashion and bridal jewellery rental marketplace. Authenticated designer bridalwear, couture sherwanis, and 1-gram gold jewellery sets delivered with door-to-door sanitization and refundable security deposit protocol.
             </Typography>
           </Box>
 
@@ -78,37 +75,12 @@ const Fotter = () => {
           </Typography>
 
           <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
-            <Typography
-              component="span"
-              onClick={() => setArchOpen(true)}
-              sx={{
-                color: "#888",
-                fontSize: "0.72rem",
-                cursor: "pointer",
-                transition: "color 0.2s",
-                "&:hover": { color: "#D1A362" },
-              }}
-            >
-              System Architecture & Specs
-            </Typography>
-            <Typography variant="caption" sx={{ color: "#444" }}>•</Typography>
-            <a
-              href="https://wardrobe-wonders-ai.onrender.com/health"
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: "#888", fontSize: "0.72rem", textDecoration: "none" }}
-            >
-              Live API Status
-            </a>
-            <Typography variant="caption" sx={{ color: "#444" }}>•</Typography>
             <Typography variant="caption" sx={{ color: "#888", fontSize: "0.72rem" }}>
-              Engineered by Athiya Tabassum
+              Verified Quality • Refundable Deposit Protocol • Doorstep Delivery
             </Typography>
           </Stack>
         </Stack>
       </Container>
-
-      <RecruiterTourModal open={archOpen} onClose={() => setArchOpen(false)} />
     </Box>
   );
 };

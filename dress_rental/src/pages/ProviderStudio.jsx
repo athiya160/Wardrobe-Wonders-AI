@@ -3,39 +3,32 @@ import {
   Box,
   Typography,
   Paper,
-  Grid,
   Stack,
   Button,
-  TextField,
   Chip,
   IconButton,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Divider,
   CircularProgress,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Switch,
-  Checkbox,
+  FormControl,
+  RadioGroup,
   FormControlLabel,
   Radio,
-  RadioGroup,
   FormLabel,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
+  TextField,
   Avatar,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
   Snackbar,
+  Alert,
+  Tabs,
+  Tab,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
   DashboardOutlined as OverviewIcon,
@@ -44,45 +37,39 @@ import {
   ReceiptLongOutlined as OrdersIcon,
   MonetizationOnOutlined as EarningsIcon,
   StorefrontOutlined as BoutiqueIcon,
-  DeleteOutline as DeleteIcon,
-  OpenInNew as ExternalIcon,
   Logout as LogoutIcon,
   ShoppingBagOutlined as ShopIcon,
-  TrendingUp as TrendingUpIcon,
-  CheckCircle as ActiveIcon,
-  PauseCircleOutline as InactiveIcon,
-  AutoAwesome as MagicIcon,
-  CloudUploadOutlined as UploadIcon,
-  Check as CheckIcon,
-  Close as CloseIcon,
   LockOutlined as LockIcon,
   HomeOutlined as HomeIcon,
 } from "@mui/icons-material";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import logo from "../assets/logo.png";
+import WardrobeWondersLogo from "../components/WardrobeWondersLogo";
+import Fotter from "../components/Fotter";
 
-// Sample preset luxury wardrobe assets for quick selection
-const SAMPLE_ASSETS = [
-  { label: "Bridal Lehenga", url: "/assets/Women/bridal_01.png", category: "Wedding", gender: "women" },
-  { label: "Festive Anarkali", url: "/assets/Women/festive_01.png", category: "Traditional", gender: "women" },
-  { label: "Cocktail Evening Gown", url: "/assets/Women/look_01.png", category: "Party", gender: "women" },
-  { label: "Chic Summer Outfit", url: "/assets/Women/outfit_01.png", category: "Casual", gender: "women" },
-  { label: "Classic Tuxedo", url: "/assets/Men/suit_01.png", category: "Formal", gender: "men" },
-  { label: "Royal Groom Sherwani", url: "/assets/Men/sherwani_01.png", category: "Wedding", gender: "men" },
-  { label: "1-Gram Gold Temple Set", url: "/assets/Jewellery/image_20261019_002031.jpg", category: "Jewellery", gender: "jewellery" },
-  { label: "Royal Kundan Bridal Set", url: "/assets/Jewellery/image_20261019_003318.jpg", category: "Jewellery", gender: "jewellery" },
-  { label: "American Diamond Choker", url: "/assets/Jewellery/image_20261019_002857.jpg", category: "Jewellery", gender: "jewellery" },
-  { label: "Festive Kurta Set", url: "/assets/Men/sherwani_05.png", category: "Traditional", gender: "men" },
-  { label: "Urban Minimalist Look", url: "/assets/Men/casual_01.png", category: "Casual", gender: "men" },
-];
+// Sub-components
+import ProviderOverview from "../components/provider/ProviderOverview";
+import ProviderListings from "../components/provider/ProviderListings";
+import ProviderAddDress from "../components/provider/ProviderAddDress";
+import ProviderRentalRequests from "../components/provider/ProviderRentalRequests";
+import ProviderEarnings from "../components/provider/ProviderEarnings";
 
 const ProviderStudio = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const isProvider = Boolean(user && (user.role === "provider" || user.role === "admin" || user.type === "provider" || user.type === "admin"));
+  const isProvider = Boolean(
+    user &&
+      (user.role === "provider" ||
+        user.role === "admin" ||
+        user.type === "provider" ||
+        user.type === "admin")
+  );
 
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
@@ -90,6 +77,8 @@ const ProviderStudio = () => {
     activeListings: 0,
     totalOrders: 0,
     totalEarnings: 0,
+    payableEarnings: 0,
+    pendingEarnings: 0,
   });
   const [listings, setListings] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -99,10 +88,8 @@ const ProviderStudio = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
 
-  // Delete Confirmation Dialog state
+  // Dialog States
   const [deleteDialog, setDeleteDialog] = useState({ open: false, listingId: null, title: "" });
-
-  // Step 10: Decision Modals & Order Filtering
   const [orderFilter, setOrderFilter] = useState("all");
   const [acceptModal, setAcceptModal] = useState({ open: false, order: null });
   const [declineModal, setDeclineModal] = useState({
@@ -112,7 +99,7 @@ const ProviderStudio = () => {
     customNote: "",
   });
 
-  // Add New Dress Form State
+  // Add Dress Form State
   const [formData, setFormData] = useState({
     title: "",
     category: "Traditional",
@@ -131,7 +118,7 @@ const ProviderStudio = () => {
     pattern: "",
     style: "",
     season: "",
-    location: "Mumbai, Bandra West",
+    location: "Mumbai, Bandra West Atelier",
     externalRefUrl: "",
     ownershipConfirmed: false,
   });
@@ -140,16 +127,21 @@ const ProviderStudio = () => {
     headers: { Authorization: `Bearer ${token}` },
   };
 
-  // Fetch Stats, Listings & Rental Orders
+  const showToast = (message, severity = "success") => {
+    setNotification({ open: true, message, severity });
+  };
+
+  // Fetch Stats, Listings & Orders
   const fetchData = async () => {
     if (!token || !isProvider) return;
     setLoading(true);
     try {
       const [statsRes, listingsRes, ordersRes] = await Promise.all([
-        axios.get(`${BASE_URL}/provider/stats`, authHeaders),
-        axios.get(`${BASE_URL}/provider/listings`, authHeaders),
+        axios.get(`${BASE_URL}/provider/stats`, authHeaders).catch(() => ({ data: { status: false } })),
+        axios.get(`${BASE_URL}/provider/listings`, authHeaders).catch(() => ({ data: { status: false, listings: [] } })),
         axios.get(`${BASE_URL}/provider/orders`, authHeaders).catch(() => ({ data: { orders: [] } })),
       ]);
+
       if (statsRes.data?.status) setStats(statsRes.data.stats);
       if (listingsRes.data?.status) setListings(listingsRes.data.listings);
       if (ordersRes.data?.orders) setOrders(ordersRes.data.orders);
@@ -165,17 +157,14 @@ const ProviderStudio = () => {
 
   useEffect(() => {
     fetchData();
+     
   }, []);
 
-  const showToast = (message, severity = "success") => {
-    setNotification({ open: true, message, severity });
-  };
-
-  // Step 6: Multi-Photo Cloud Image Upload
+  // Multi-Photo Cloud Image Upload
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
     const uploadData = new FormData();
-    const fileArray = Array.from(files).slice(0, 5); // up to 5 images
+    const fileArray = Array.from(files).slice(0, 5);
 
     fileArray.forEach((file) => {
       uploadData.append("images", file);
@@ -197,7 +186,7 @@ const ProviderStudio = () => {
           images: newUrls,
           image: newUrls[0],
         }));
-        showToast(`✨ ${newUrls.length} photo(s) uploaded successfully!`);
+        showToast(`✨ ${newUrls.length} boutique photo(s) uploaded successfully!`);
       } else {
         showToast(res.data?.message || "Failed to upload photos", "error");
       }
@@ -209,10 +198,10 @@ const ProviderStudio = () => {
     }
   };
 
-  // Step 7: Magic AI Fashion Assistant
+  // Magic AI Fashion Assistant
   const handleGenerateAi = async () => {
     if (!formData.title && !formData.category) {
-      showToast("Please enter at least a dress title or category first", "warning");
+      showToast("Please enter at least a garment title or category first", "warning");
       return;
     }
 
@@ -255,7 +244,7 @@ const ProviderStudio = () => {
         season: tagData.season || prev.season,
       }));
 
-      showToast("✨ AI Fashion copy & tags generated!");
+      showToast("✨ AI Fashion copy & styling tags generated!");
     } catch (err) {
       console.error("AI Generation error:", err);
       showToast("Failed to generate AI details", "error");
@@ -264,7 +253,7 @@ const ProviderStudio = () => {
     }
   };
 
-  // Step 9 & 10: Provider Update Rental Request Status (Accept / Decline)
+  // Update Rental Request Status (Accept / Active / Completed)
   const handleOrderStatusUpdate = async (orderId, newStatus) => {
     setActionLoading(true);
     try {
@@ -276,10 +265,13 @@ const ProviderStudio = () => {
       if (res.data?.status) {
         setOrders((prev) =>
           prev.map((ord) =>
-            ord._id === orderId ? { ...ord, requestStatus: newStatus, status: res.data.order.status } : ord
+            ord._id === orderId
+              ? { ...ord, requestStatus: newStatus, status: res.data.order?.status || newStatus }
+              : ord
           )
         );
         showToast(`Rental booking marked as ${newStatus}`);
+        fetchData(); // sync stats
       }
     } catch (err) {
       console.error("Order status update failed:", err);
@@ -289,14 +281,14 @@ const ProviderStudio = () => {
     }
   };
 
-  // Step 10: Confirm Accept from Modal
+  // Confirm Accept Modal
   const confirmAcceptOrder = async () => {
     if (!acceptModal.order) return;
     await handleOrderStatusUpdate(acceptModal.order._id, "Accepted");
     setAcceptModal({ open: false, order: null });
   };
 
-  // Step 10: Confirm Decline with Reason & Calendar Release from Modal
+  // Confirm Decline Modal
   const confirmDeclineOrder = async () => {
     if (!declineModal.order) return;
     const finalReason = declineModal.customNote
@@ -324,6 +316,7 @@ const ProviderStudio = () => {
           )
         );
         showToast("Rental request declined. Calendar dates have been released.");
+        fetchData();
       }
     } catch (err) {
       console.error("Decline order error:", err);
@@ -339,9 +332,9 @@ const ProviderStudio = () => {
     }
   };
 
-  // Toggle Listing Availability
+  // Toggle Availability
   const handleToggleAvailability = async (listing) => {
-    const newStatus = listing.availability ? false : true;
+    const newStatus = !listing.availability;
     try {
       await axios.put(
         `${BASE_URL}/provider/listings/${listing._id}`,
@@ -355,8 +348,8 @@ const ProviderStudio = () => {
             : item
         )
       );
-      showToast(newStatus ? "Listing activated for rentals" : "Listing paused from rentals");
-    } catch (err) {
+      showToast(newStatus ? "Garment activated for customer booking" : "Garment paused from storefront");
+    } catch {
       showToast("Failed to update availability", "error");
     }
   };
@@ -373,8 +366,8 @@ const ProviderStudio = () => {
         totalListings: Math.max(0, prev.totalListings - 1),
         activeListings: Math.max(0, prev.activeListings - 1),
       }));
-      showToast("Dress listing removed successfully");
-    } catch (err) {
+      showToast("Garment listing removed from wardrobe");
+    } catch {
       showToast("Failed to delete listing", "error");
     } finally {
       setActionLoading(false);
@@ -382,7 +375,7 @@ const ProviderStudio = () => {
     }
   };
 
-  // Submit Add Dress
+  // Create Listing
   const handleCreateListing = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.rentalPricePerDay || !formData.securityDeposit) {
@@ -390,13 +383,11 @@ const ProviderStudio = () => {
       return;
     }
 
-    // Step 14: Enforce ownership & truthful condition confirmation
     if (!formData.ownershipConfirmed) {
       showToast("Please confirm garment ownership / listing permissions before publishing.", "error");
       return;
     }
 
-    // Step 14: Validate external reference URL if provided
     if (formData.externalRefUrl && formData.externalRefUrl.trim()) {
       const url = formData.externalRefUrl.trim();
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -418,8 +409,7 @@ const ProviderStudio = () => {
 
       const res = await axios.post(`${BASE_URL}/provider/listings`, payload, authHeaders);
       if (res.data?.status) {
-        showToast("🎉 Dress listed successfully! It is now live in the marketplace.");
-        // Reset form
+        showToast("🎉 Garment published successfully! It is now live in the marketplace.");
         setFormData({
           title: "",
           category: "Traditional",
@@ -438,7 +428,7 @@ const ProviderStudio = () => {
           pattern: "",
           style: "",
           season: "",
-          location: "Mumbai, Bandra West",
+          location: "Mumbai, Bandra West Atelier",
           externalRefUrl: "",
           ownershipConfirmed: false,
         });
@@ -447,7 +437,7 @@ const ProviderStudio = () => {
       }
     } catch (err) {
       console.error("Listing creation failed:", err);
-      showToast(err.response?.data?.message || "Failed to create dress listing", "error");
+      showToast(err.response?.data?.message || "Failed to create garment listing", "error");
     } finally {
       setActionLoading(false);
     }
@@ -459,42 +449,50 @@ const ProviderStudio = () => {
     navigate("/login");
   };
 
+  // 403 Forbidden State
   if (!token || !isProvider) {
     return (
-      <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F5", display: "flex", alignItems: "center", justifyContent: "center", p: 3 }}>
-        <Paper elevation={0} sx={{ p: { xs: 4, sm: 6 }, maxWidth: 500, width: "100%", textAlign: "center", borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-          <LockIcon sx={{ fontSize: 64, color: "#D32F2F", mb: 2 }} />
-          <Typography variant="h4" fontWeight={800} color="#1A1817" mb={1}>
-            403 — Access Denied
+      <Box sx={{ minHeight: "100vh", bgcolor: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center", p: 3 }}>
+        <Paper elevation={0} sx={{ p: { xs: 4, sm: 6 }, maxWidth: 500, width: "100%", textAlign: "center", borderRadius: 3, border: "1px solid #ECE7DE", bgcolor: "#FFFFFF" }}>
+          <LockIcon sx={{ fontSize: 60, color: "#D32F2F", mb: 2 }} />
+          <Typography variant="h5" sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, mb: 1, color: "#1A1817" }}>
+            Provider Studio Restricted
           </Typography>
-          <Typography variant="body1" color="text.secondary" mb={3}>
-            You do not have provider clearance to access the Wardrobe Wonders Provider Studio. Only verified boutiques and providers may enter this section.
+          <Typography variant="body2" sx={{ color: "#666", mb: 3 }}>
+            You do not have boutique provider permissions to access the Atelier Studio. Please sign in with a registered provider account.
           </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center">
-            <Button
-              variant="contained"
-              startIcon={<HomeIcon />}
-              onClick={() => navigate("/")}
-              sx={{ bgcolor: "#1A1817", "&:hover": { bgcolor: "#333" } }}
-            >
-              Return to Marketplace
-            </Button>
-          </Stack>
+          <Button
+            variant="contained"
+            startIcon={<HomeIcon />}
+            onClick={() => navigate("/")}
+            sx={{ bgcolor: "#1A1817", color: "#D1A362", fontWeight: 700, "&:hover": { bgcolor: "#2E2A27" } }}
+          >
+            Return to Storefront
+          </Button>
         </Paper>
       </Box>
     );
   }
 
+  const menuItems = [
+    { id: "overview", label: "Studio Overview", icon: <OverviewIcon /> },
+    { id: "listings", label: "My Listings", icon: <DressesIcon />, badge: listings.length },
+    { id: "add-dress", label: "+ Add Garment", icon: <AddIcon /> },
+    { id: "requests", label: "Rental Bookings", icon: <OrdersIcon />, badge: stats.totalOrders },
+    { id: "earnings", label: "Earnings & Ledger", icon: <EarningsIcon /> },
+    { id: "profile", label: "Boutique Profile", icon: <BoutiqueIcon /> },
+  ];
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#F8F9FA" }}>
-      {/* STUDIO TOP NAVIGATION BAR */}
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "#FAFAFA" }}>
+      {/* STUDIO TOP HEADER */}
       <Paper
         elevation={0}
         sx={{
           py: 1.5,
           px: { xs: 2, md: 4 },
-          borderBottom: "1px solid #EBEBEB",
-          backgroundColor: "#FFFFFF",
+          borderBottom: "1px solid #ECE7DE",
+          bgcolor: "#FFFFFF",
           position: "sticky",
           top: 0,
           zIndex: 1100,
@@ -504,1318 +502,265 @@ const ProviderStudio = () => {
         }}
       >
         <Stack direction="row" alignItems="center" spacing={2}>
-          <Link to="/">
-            <img src={logo} alt="Wardrobe Wonders" style={{ height: 36, objectFit: "contain" }} />
-          </Link>
+          <RouterLink to="/" style={{ textDecoration: "none" }}>
+            <WardrobeWondersLogo size="small" />
+          </RouterLink>
           <Chip
-            label="Provider Studio"
+            label="Boutique Studio"
             size="small"
             sx={{
-              backgroundColor: "rgba(209, 163, 98, 0.15)",
-              color: "#A07028",
+              bgcolor: "#1A1817",
+              color: "#D1A362",
               fontWeight: 800,
-              fontSize: "0.75rem",
-              borderRadius: 1,
-              letterSpacing: "0.05em",
+              fontSize: "0.7rem",
+              letterSpacing: "0.06em",
               textTransform: "uppercase",
+              borderRadius: 1.5,
             }}
           />
         </Stack>
 
         <Stack direction="row" alignItems="center" spacing={2}>
           <Button
-            component={Link}
+            component={RouterLink}
             to="/"
             startIcon={<ShopIcon />}
             variant="outlined"
             size="small"
             sx={{
-              borderColor: "#E0E0E0",
-              color: "#1A1A1A",
+              borderColor: "#ECE7DE",
+              color: "#1A1817",
               textTransform: "none",
               fontWeight: 600,
               borderRadius: 2,
               display: { xs: "none", sm: "inline-flex" },
-              "&:hover": { borderColor: "#D1A362", backgroundColor: "transparent" },
+              "&:hover": { borderColor: "#D1A362", bgcolor: "#FAF8F5" },
             }}
           >
-            Customer Storefront
+            Client Storefront
           </Button>
 
-          <Stack direction="row" alignItems="center" spacing={1.5}>
-            <Avatar sx={{ bgcolor: "#1A1A1A", width: 34, height: 34, fontSize: "0.85rem", fontWeight: 700 }}>
-              {user.name ? user.name[0].toUpperCase() : "P"}
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Avatar sx={{ bgcolor: "#1A1817", color: "#D1A362", width: 34, height: 34, fontSize: "0.85rem", fontWeight: 700 }}>
+              {(user.name || user.firstname || "L")[0].toUpperCase()}
             </Avatar>
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
-              <Typography variant="body2" fontWeight={700} lineHeight={1.2}>
-                {user.name || user.firstname || "Lender"}
+              <Typography variant="body2" sx={{ fontWeight: 700, color: "#1A1817", lineHeight: 1.2 }}>
+                {user.name || user.firstname || "Boutique Owner"}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Verified Provider
+              <Typography variant="caption" sx={{ color: "#888" }}>
+                Verified Atelier Lender
               </Typography>
             </Box>
           </Stack>
 
-          <IconButton onClick={handleLogout} size="small" title="Sign Out" sx={{ color: "#888" }}>
+          <IconButton onClick={handleLogout} size="small" title="Sign Out" sx={{ color: "#888", "&:hover": { color: "#D32F2F" } }}>
             <LogoutIcon fontSize="small" />
           </IconButton>
         </Stack>
       </Paper>
 
+      {/* MOBILE TAB BAR */}
+      {isMobile && (
+        <Box sx={{ borderBottom: "1px solid #ECE7DE", bgcolor: "#FFFFFF", overflowX: "auto" }}>
+          <Tabs
+            value={activeTab}
+            onChange={(e, val) => setActiveTab(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+            aria-label="Provider Studio Navigation"
+            sx={{
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                color: "#666",
+                minHeight: 48,
+                "&.Mui-selected": { color: "#1A1817", fontWeight: 700 },
+              },
+              "& .MuiTabs-indicator": { bgcolor: "#D1A362", height: 3 },
+            }}
+          >
+            {menuItems.map((item) => (
+              <Tab key={item.id} value={item.id} label={item.label} icon={item.icon} iconPosition="start" />
+            ))}
+          </Tabs>
+        </Box>
+      )}
+
       {/* STUDIO MAIN WORKSPACE */}
       <Box sx={{ display: "flex", flexGrow: 1 }}>
-        {/* LEFT SIDEBAR NAVIGATION */}
-        <Box
-          sx={{
-            width: { xs: 70, md: 240 },
-            flexShrink: 0,
-            borderRight: "1px solid #EBEBEB",
-            backgroundColor: "#FFFFFF",
-            py: 3,
-          }}
-        >
-          <List component="nav" disablePadding>
-            {[
-              { id: "overview", label: "Overview", icon: <OverviewIcon /> },
-              { id: "listings", label: "My Listings", icon: <DressesIcon />, badge: listings.length },
-              { id: "add-dress", label: "+ Add Dress", icon: <AddIcon /> },
-              { id: "requests", label: "Rental Requests", icon: <OrdersIcon />, badge: stats.totalOrders },
-              { id: "earnings", label: "Earnings", icon: <EarningsIcon /> },
-              { id: "profile", label: "Boutique Profile", icon: <BoutiqueIcon /> },
-            ].map((item) => (
-              <ListItemButton
-                key={item.id}
-                selected={activeTab === item.id}
-                onClick={() => setActiveTab(item.id)}
-                sx={{
-                  py: 1.5,
-                  px: { xs: 2, md: 3 },
-                  my: 0.5,
-                  mx: { xs: 1, md: 1.5 },
-                  borderRadius: 2,
-                  "&.Mui-selected": {
-                    backgroundColor: "#1A1A1A",
-                    color: "#FFFFFF",
-                    "&:hover": { backgroundColor: "#333333" },
-                    "& .MuiListItemIcon-root": { color: "#D1A362" },
-                  },
-                }}
-              >
-                <ListItemIcon
+        {/* DESKTOP LEFT SIDEBAR */}
+        {!isMobile && (
+          <Box
+            sx={{
+              width: 250,
+              flexShrink: 0,
+              borderRight: "1px solid #ECE7DE",
+              bgcolor: "#FFFFFF",
+              py: 3,
+            }}
+          >
+            <List component="nav" disablePadding>
+              {menuItems.map((item) => (
+                <ListItemButton
+                  key={item.id}
+                  selected={activeTab === item.id}
+                  onClick={() => setActiveTab(item.id)}
                   sx={{
-                    minWidth: { xs: "auto", md: 36 },
-                    color: activeTab === item.id ? "#D1A362" : "#757575",
+                    py: 1.4,
+                    px: 3,
+                    my: 0.5,
+                    mx: 1.5,
+                    borderRadius: 2,
+                    "&.Mui-selected": {
+                      bgcolor: "#1A1817",
+                      color: "#FFFFFF",
+                      "&:hover": { bgcolor: "#2E2A27" },
+                      "& .MuiListItemIcon-root": { color: "#D1A362" },
+                    },
                   }}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    fontSize: "0.9rem",
-                    fontWeight: activeTab === item.id ? 700 : 500,
-                  }}
-                  sx={{ display: { xs: "none", md: "block" } }}
-                />
-                {item.badge != null && item.badge > 0 && (
-                  <Chip
-                    label={item.badge}
-                    size="small"
-                    sx={{
-                      display: { xs: "none", md: "inline-flex" },
-                      height: 20,
-                      fontSize: "0.7rem",
-                      fontWeight: 700,
-                      backgroundColor: activeTab === item.id ? "rgba(209, 163, 98, 0.3)" : "#F0F0F0",
-                      color: activeTab === item.id ? "#FFFFFF" : "#555555",
+                  <ListItemIcon sx={{ minWidth: 36, color: activeTab === item.id ? "#D1A362" : "#777" }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontSize: "0.88rem",
+                      fontWeight: activeTab === item.id ? 700 : 500,
                     }}
                   />
-                )}
-              </ListItemButton>
-            ))}
-          </List>
-        </Box>
+                  {item.badge != null && item.badge > 0 && (
+                    <Chip
+                      label={item.badge}
+                      size="small"
+                      sx={{
+                        height: 20,
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        bgcolor: activeTab === item.id ? "rgba(209, 163, 98, 0.25)" : "#F0ECE4",
+                        color: activeTab === item.id ? "#D1A362" : "#555",
+                      }}
+                    />
+                  )}
+                </ListItemButton>
+              ))}
+            </List>
+          </Box>
+        )}
 
-        {/* RIGHT CONTENT WORKSPACE */}
-        <Box sx={{ flexGrow: 1, p: { xs: 2.5, sm: 4, md: 5 }, maxWidth: "1400px", mx: "auto", width: "100%" }}>
+        {/* WORKSPACE CONTENT */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: { xs: 2.5, sm: 4, md: 5 },
+            pb: { xs: 12, md: 6 }, // clearance above mobile bottom nav
+            maxWidth: "1400px",
+            mx: "auto",
+            width: "100%",
+          }}
+        >
           {loading ? (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
-              <CircularProgress sx={{ color: "#D1A362" }} />
+              <Stack spacing={2} alignItems="center">
+                <CircularProgress sx={{ color: "#D1A362" }} size={44} />
+                <Typography variant="body2" sx={{ color: "#666" }}>
+                  Synchronizing Studio Inventory...
+                </Typography>
+              </Stack>
             </Box>
           ) : (
             <>
-              {/* TAB 1: OVERVIEW */}
               {activeTab === "overview" && (
-                <Box>
-                  {/* Greeting Banner */}
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: "-0.02em", mb: 0.5 }}>
-                      Good day, {user.name ? user.name.split(" ")[0] : "Lender"} 👋
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      Here is what is happening across your Wardrobe Wonders rental inventory today.
-                    </Typography>
-                  </Box>
-
-                  {/* KPI Stat Cards */}
-                  <Grid container spacing={3} sx={{ mb: 5 }}>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700} letterSpacing="0.05em">
-                          TOTAL EARNINGS
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="#1A1A1A" sx={{ my: 1 }}>
-                          ₹{stats.totalEarnings.toLocaleString()}
-                        </Typography>
-                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: "#2E7D32" }}>
-                          <TrendingUpIcon fontSize="small" />
-                          <Typography variant="caption" fontWeight={600}>
-                            Direct Payouts Ready
-                          </Typography>
-                        </Stack>
-                      </Paper>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700} letterSpacing="0.05em">
-                          TOTAL DRESSES
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="#1A1A1A" sx={{ my: 1 }}>
-                          {stats.totalListings}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          In your rental portfolio
-                        </Typography>
-                      </Paper>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700} letterSpacing="0.05em">
-                          ACTIVE FOR RENT
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="#D1A362" sx={{ my: 1 }}>
-                          {stats.activeListings}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Available on storefront
-                        </Typography>
-                      </Paper>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700} letterSpacing="0.05em">
-                          RENTAL ORDERS
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="#1A1A1A" sx={{ my: 1 }}>
-                          {stats.totalOrders}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Processed to date
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                  </Grid>
-
-                  {/* Quick Action & Inventory Teaser */}
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 4,
-                      borderRadius: 3,
-                      border: "1px solid #EBEBEB",
-                      bgcolor: "#FFFFFF",
-                      display: "flex",
-                      flexDirection: { xs: "column", sm: "row" },
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 3,
-                      mb: 4,
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="h6" fontWeight={700}>
-                        Expand your wardrobe earnings
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        List ethnic lehengas, bridal gowns, party dresses, and designer tuxedos to earn from every wear.
-                      </Typography>
-                    </Box>
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={() => setActiveTab("add-dress")}
-                      sx={{
-                        backgroundColor: "#1A1A1A",
-                        color: "#FFF",
-                        fontWeight: 700,
-                        px: 3,
-                        py: 1.2,
-                        borderRadius: 2,
-                        "&:hover": { backgroundColor: "#333333" },
-                      }}
-                    >
-                      + Add New Dress
-                    </Button>
-                  </Paper>
-
-                  {/* Recent Dresses */}
-                  <Box>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                      <Typography variant="h6" fontWeight={700}>
-                        Recent Listings
-                      </Typography>
-                      <Button
-                        size="small"
-                        onClick={() => setActiveTab("listings")}
-                        sx={{ color: "#D1A362", fontWeight: 700, textTransform: "none" }}
-                      >
-                        View All ({listings.length}) &rarr;
-                      </Button>
-                    </Stack>
-
-                    {listings.length === 0 ? (
-                      <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 3, border: "1px dashed #DDD" }}>
-                        <Typography variant="subtitle1" fontWeight={600} mb={1}>
-                          No dresses listed yet
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" mb={3}>
-                          Start listing pieces from your personal wardrobe today and watch your earnings grow.
-                        </Typography>
-                        <Button
-                          variant="contained"
-                          startIcon={<AddIcon />}
-                          onClick={() => setActiveTab("add-dress")}
-                          sx={{ backgroundColor: "#1A1A1A", color: "#FFF" }}
-                        >
-                          Add Your First Dress
-                        </Button>
-                      </Paper>
-                    ) : (
-                      <Grid container spacing={3}>
-                        {listings.slice(0, 4).map((listing) => (
-                          <Grid item xs={12} sm={6} md={3} key={listing._id}>
-                            <Card
-                              elevation={0}
-                              sx={{
-                                border: "1px solid #EBEBEB",
-                                borderRadius: 2.5,
-                                overflow: "hidden",
-                                height: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-                              <CardMedia
-                                component="img"
-                                height="220"
-                                image={listing.image || "/assets/Cocktail Gown.jpg"}
-                                alt={listing.title || listing.name}
-                                sx={{ objectFit: "cover" }}
-                              />
-                              <CardContent sx={{ p: 2, flexGrow: 1 }}>
-                                <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                                  {listing.category} &bull; Size {listing.size || "M"}
-                                </Typography>
-                                <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ mt: 0.5, mb: 1 }}>
-                                  {listing.title || listing.name}
-                                </Typography>
-                                <Typography variant="body2" fontWeight={800} color="#1A1A1A">
-                                  ₹{listing.rentalPricePerDay || listing.price}
-                                  <Typography component="span" variant="caption" color="text.secondary">
-                                    {" "}
-                                    / day
-                                  </Typography>
-                                </Typography>
-                              </CardContent>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
-                  </Box>
-                </Box>
+                <ProviderOverview
+                  stats={stats}
+                  listings={listings}
+                  user={user}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
+                />
               )}
 
-              {/* TAB 2: MY LISTINGS */}
               {activeTab === "listings" && (
-                <Box>
-                  <Stack
-                    direction={{ xs: "column", sm: "row" }}
-                    justifyContent="space-between"
-                    alignItems={{ xs: "flex-start", sm: "center" }}
-                    spacing={2}
-                    sx={{ mb: 4 }}
-                  >
-                    <Box>
-                      <Typography variant="h5" fontWeight={800}>
-                        My Wardrobe Listings ({listings.length})
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Manage rental availability, pricing, and visibility for your inventory.
-                      </Typography>
-                    </Box>
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={() => setActiveTab("add-dress")}
-                      sx={{
-                        backgroundColor: "#1A1A1A",
-                        color: "#FFF",
-                        fontWeight: 700,
-                        borderRadius: 2,
-                        "&:hover": { backgroundColor: "#333333" },
-                      }}
-                    >
-                      + Add New Dress
-                    </Button>
-                  </Stack>
-
-                  {listings.length === 0 ? (
-                    <Paper elevation={0} sx={{ p: 8, textAlign: "center", borderRadius: 3, border: "1px dashed #DDD" }}>
-                      <Typography variant="h6" fontWeight={700} mb={1}>
-                        Your wardrobe is empty
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={3}>
-                        Add your first designer piece to start earning rentals.
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => setActiveTab("add-dress")}
-                        sx={{ backgroundColor: "#1A1A1A", color: "#FFF" }}
-                      >
-                        List A Dress Now
-                      </Button>
-                    </Paper>
-                  ) : (
-                    <Grid container spacing={3}>
-                      {listings.map((item) => (
-                        <Grid item xs={12} sm={6} md={4} key={item._id}>
-                          <Card
-                            elevation={0}
-                            sx={{
-                              border: "1px solid #EBEBEB",
-                              borderRadius: 3,
-                              overflow: "hidden",
-                              height: "100%",
-                              display: "flex",
-                              flexDirection: "column",
-                              transition: "box-shadow 0.2s ease",
-                              "&:hover": { boxShadow: "0 8px 24px rgba(0,0,0,0.06)" },
-                            }}
-                          >
-                            <Box sx={{ position: "relative" }}>
-                              <CardMedia
-                                component="img"
-                                height="260"
-                                image={item.image || "/assets/Cocktail Gown.jpg"}
-                                alt={item.title || item.name}
-                                sx={{ objectFit: "cover" }}
-                              />
-                              <Chip
-                                icon={item.availability ? <ActiveIcon fontSize="small" /> : <InactiveIcon fontSize="small" />}
-                                label={item.availability ? "Active" : "Paused"}
-                                size="small"
-                                sx={{
-                                  position: "absolute",
-                                  top: 12,
-                                  left: 12,
-                                  backgroundColor: item.availability ? "#2E7D32" : "#757575",
-                                  color: "#FFFFFF",
-                                  fontWeight: 700,
-                                  fontSize: "0.75rem",
-                                }}
-                              />
-                            </Box>
-
-                            <CardContent sx={{ p: 2.5, flexGrow: 1 }}>
-                              <Typography variant="caption" color="text.secondary" fontWeight={700} textTransform="uppercase">
-                                {item.category} &bull; {item.brand || "Boutique"}
-                              </Typography>
-                              <Typography variant="h6" fontWeight={700} sx={{ mt: 0.5, mb: 1, fontSize: "1.05rem" }}>
-                                {item.title || item.name}
-                              </Typography>
-
-                              <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                                <Chip label={`Size: ${item.size || "M"}`} size="small" variant="outlined" />
-                                <Chip label={item.condition || "Like New"} size="small" variant="outlined" />
-                              </Stack>
-
-                              <Divider sx={{ my: 1.5 }} />
-
-                              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary" display="block">
-                                    RENTAL RATE
-                                  </Typography>
-                                  <Typography variant="subtitle1" fontWeight={800} color="#1A1A1A">
-                                    ₹{item.rentalPricePerDay || item.price} / day
-                                  </Typography>
-                                </Box>
-                                <Box textAlign="right">
-                                  <Typography variant="caption" color="text.secondary" display="block">
-                                    DEPOSIT
-                                  </Typography>
-                                  <Typography variant="subtitle2" fontWeight={700} color="#666">
-                                    ₹{item.securityDeposit || item.advance}
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            </CardContent>
-
-                            <CardActions
-                              sx={{
-                                px: 2.5,
-                                pb: 2,
-                                pt: 0,
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                              }}
-                            >
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    size="small"
-                                    checked={Boolean(item.availability)}
-                                    onChange={() => handleToggleAvailability(item)}
-                                    color="success"
-                                  />
-                                }
-                                label={
-                                  <Typography variant="caption" fontWeight={600}>
-                                    {item.availability ? "Available" : "Paused"}
-                                  </Typography>
-                                }
-                              />
-
-                              <Stack direction="row" spacing={1}>
-                                <IconButton
-                                  size="small"
-                                  component={Link}
-                                  to={`/product/${item._id}`}
-                                  target="_blank"
-                                  title="View on Storefront"
-                                  sx={{ color: "#777" }}
-                                >
-                                  <ExternalIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() =>
-                                    setDeleteDialog({ open: true, listingId: item._id, title: item.title || item.name })
-                                  }
-                                  title="Delete Listing"
-                                  sx={{ color: "#E53935" }}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Stack>
-                            </CardActions>
-                          </Card>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  )}
-                </Box>
+                <ProviderListings
+                  listings={listings}
+                  onAddClick={() => setActiveTab("add-dress")}
+                  onToggleAvailability={handleToggleAvailability}
+                  onOpenDelete={(item) =>
+                    setDeleteDialog({ open: true, listingId: item._id, title: item.title || item.name })
+                  }
+                />
               )}
 
-              {/* TAB 3: ADD NEW DRESS FORM */}
               {activeTab === "add-dress" && (
-                <Box maxWidth="880px" mx="auto">
-                  <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
-                    <Box>
-                      <Typography variant="h4" fontWeight={800} letterSpacing="-0.02em" mb={0.5}>
-                        List a New Dress
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary">
-                        Provide accurate details, sizes, and pricing to make your garment attractive to renters.
-                      </Typography>
-                    </Box>
-
-                    {/* Step 7: Magic AI Assistant Button */}
-                    <Button
-                      variant="contained"
-                      onClick={handleGenerateAi}
-                      disabled={aiLoading}
-                      startIcon={aiLoading ? <CircularProgress size={18} sx={{ color: "#D1A362" }} /> : <MagicIcon sx={{ color: "#D1A362" }} />}
-                      sx={{
-                        background: "linear-gradient(135deg, #1A1817 0%, #3D352E 100%)",
-                        color: "#FFFFFF",
-                        border: "1px solid #D1A362",
-                        px: 2.5,
-                        py: 1,
-                        borderRadius: 3,
-                        fontWeight: 700,
-                        textTransform: "none",
-                        boxShadow: "0 4px 14px rgba(209, 163, 98, 0.25)",
-                        "&:hover": { background: "#1A1817" },
-                      }}
-                    >
-                      {aiLoading ? "Consulting AI..." : "✨ Magic AI Assistant"}
-                    </Button>
-                  </Box>
-
-                  <Paper elevation={0} sx={{ p: { xs: 3, sm: 5 }, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                    <form onSubmit={handleCreateListing}>
-                      <Stack spacing={3.5}>
-                        {/* Section 1: Dress Title & Brand */}
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={700} color="#D1A362" textTransform="uppercase" mb={2}>
-                            1. Garment Information
-                          </Typography>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} sm={8}>
-                              <TextField
-                                fullWidth
-                                label="Dress Title"
-                                placeholder="e.g. Sabyasachi Royal Velvet Anarkali"
-                                required
-                                value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                              <TextField
-                                fullWidth
-                                label="Brand / Designer"
-                                placeholder="e.g. Sabyasachi / Boutique"
-                                value={formData.brand}
-                                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                              />
-                            </Grid>
-                          </Grid>
-                        </Box>
-
-                        {/* Section 2: Taxonomy & Specifications */}
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={700} color="#D1A362" textTransform="uppercase" mb={2}>
-                            2. Category & Specifications
-                          </Typography>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} sm={4}>
-                              <FormControl fullWidth>
-                                <InputLabel>Category</InputLabel>
-                                <Select
-                                  value={formData.category}
-                                  label="Category"
-                                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                >
-                                  <MenuItem value="Jewellery">Jewellery & Bridal Sets</MenuItem>
-                                  <MenuItem value="Traditional">Traditional</MenuItem>
-                                  <MenuItem value="Wedding">Wedding</MenuItem>
-                                  <MenuItem value="Party">Party</MenuItem>
-                                  <MenuItem value="Evening Wear">Evening Wear</MenuItem>
-                                  <MenuItem value="Formal">Formal</MenuItem>
-                                  <MenuItem value="Casual">Casual</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </Grid>
-
-                            <Grid item xs={12} sm={4}>
-                              <FormControl fullWidth>
-                                <InputLabel>Target Section</InputLabel>
-                                <Select
-                                  value={formData.gender}
-                                  label="Target Section"
-                                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                >
-                                  <MenuItem value="jewellery">Jewellery & Bridal Suites</MenuItem>
-                                  <MenuItem value="women">Women's Collection</MenuItem>
-                                  <MenuItem value="men">Men's Collection</MenuItem>
-                                  <MenuItem value="unisex">Unisex / Adaptive</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </Grid>
-
-                            <Grid item xs={12} sm={4}>
-                              <FormControl fullWidth>
-                                <InputLabel>Size</InputLabel>
-                                <Select
-                                  value={formData.size}
-                                  label="Size"
-                                  onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                                >
-                                  <MenuItem value="XS">XS (Extra Small)</MenuItem>
-                                  <MenuItem value="S">S (Small)</MenuItem>
-                                  <MenuItem value="M">M (Medium)</MenuItem>
-                                  <MenuItem value="L">L (Large)</MenuItem>
-                                  <MenuItem value="XL">XL (Extra Large)</MenuItem>
-                                  <MenuItem value="Free Size">Free Size / Tailorable</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </Grid>
-
-                            <Grid item xs={12} sm={6}>
-                              <FormControl fullWidth>
-                                <InputLabel>Garment Condition</InputLabel>
-                                <Select
-                                  value={formData.condition}
-                                  label="Garment Condition"
-                                  onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                                >
-                                  <MenuItem value="Brand New with Tags">Brand New with Tags</MenuItem>
-                                  <MenuItem value="Like New">Like New (Worn 1-2 times)</MenuItem>
-                                  <MenuItem value="Excellent">Excellent (No signs of wear)</MenuItem>
-                                  <MenuItem value="Gently Used">Gently Used</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </Grid>
-
-                            <Grid item xs={12} sm={6}>
-                              <TextField
-                                fullWidth
-                                label="Color"
-                                placeholder="e.g. Emerald Green, Royal Navy"
-                                value={formData.color}
-                                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                              />
-                            </Grid>
-                          </Grid>
-                        </Box>
-
-                        {/* Section 3: Pricing & Deposit */}
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={700} color="#D1A362" textTransform="uppercase" mb={2}>
-                            3. Rental Economics
-                          </Typography>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                              <TextField
-                                fullWidth
-                                type="number"
-                                label="Rental Price Per Day (₹)"
-                                placeholder="e.g. 2500"
-                                required
-                                value={formData.rentalPricePerDay}
-                                onChange={(e) => setFormData({ ...formData, rentalPricePerDay: e.target.value })}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <TextField
-                                fullWidth
-                                type="number"
-                                label="Refundable Security Deposit (₹)"
-                                placeholder="e.g. 1000"
-                                required
-                                value={formData.securityDeposit}
-                                onChange={(e) => setFormData({ ...formData, securityDeposit: e.target.value })}
-                              />
-                            </Grid>
-                            <Grid item xs={12}>
-                              <TextField
-                                fullWidth
-                                label="Location / Pickup Hub"
-                                placeholder="e.g. Bandra West, Mumbai"
-                                value={formData.location}
-                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                              />
-                            </Grid>
-                          </Grid>
-                        </Box>
-
-                        {/* Section 4: Step 6 Multi-Photo Cloud Dropzone & Gallery */}
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={700} color="#D1A362" textTransform="uppercase" mb={1}>
-                            4. Garment Photography (Cloud Upload)
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                            Upload high-resolution photography from your boutique (Front, Back, Details up to 5 images):
-                          </Typography>
-
-                          {/* Upload Dropzone */}
-                          <Box
-                            sx={{
-                              border: "2px dashed #D1A362",
-                              borderRadius: 3,
-                              p: 3,
-                              textAlign: "center",
-                              bgcolor: "#FAFAF8",
-                              cursor: "pointer",
-                              mb: 2.5,
-                              transition: "all 0.2s ease",
-                              "&:hover": { bgcolor: "#F5F2EC", borderColor: "#B58847" },
-                            }}
-                            onClick={() => document.getElementById("photo-upload-input")?.click()}
-                          >
-                            <input
-                              id="photo-upload-input"
-                              type="file"
-                              accept="image/jpeg,image/png,image/webp,image/jpg"
-                              multiple
-                              style={{ display: "none" }}
-                              onChange={(e) => handleFileUpload(e.target.files)}
-                            />
-                            {uploading ? (
-                              <Box sx={{ py: 2 }}>
-                                <CircularProgress size={36} sx={{ color: "#D1A362", mb: 1 }} />
-                                <Typography variant="subtitle2" fontWeight={600}>
-                                  Uploading and optimizing photography...
-                                </Typography>
-                              </Box>
-                            ) : (
-                              <Box>
-                                <UploadIcon sx={{ fontSize: 44, color: "#D1A362", mb: 1 }} />
-                                <Typography variant="subtitle1" fontWeight={700} color="#1A1817">
-                                  Click or Drag & Drop Dress Photos
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  Supports JPG, PNG, WEBP up to 10MB each (Cloud CDN hosted)
-                                </Typography>
-                              </Box>
-                            )}
-                          </Box>
-
-                          {/* Uploaded Photos Gallery Preview */}
-                          {formData.images?.length > 0 && (
-                            <Box sx={{ mb: 3 }}>
-                              <Typography variant="caption" fontWeight={700} color="text.secondary" display="block" mb={1}>
-                                UPLOADED PHOTOS ({formData.images.length}/5) &bull; First image is the catalog cover
-                              </Typography>
-                              <Grid container spacing={1.5}>
-                                {formData.images.map((imgUrl, idx) => (
-                                  <Grid item xs={6} sm={3} key={idx}>
-                                    <Box
-                                      sx={{
-                                        position: "relative",
-                                        borderRadius: 2,
-                                        overflow: "hidden",
-                                        border: formData.image === imgUrl ? "2px solid #D1A362" : "1px solid #EBEBEB",
-                                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                                        height: 120,
-                                      }}
-                                    >
-                                      <img
-                                        src={imgUrl}
-                                        alt={`Uploaded photo ${idx + 1}`}
-                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                      />
-                                      {idx === 0 && (
-                                        <Chip
-                                          label="Cover Photo"
-                                          size="small"
-                                          sx={{
-                                            position: "absolute",
-                                            top: 6,
-                                            left: 6,
-                                            bgcolor: "#D1A362",
-                                            color: "#FFF",
-                                            fontWeight: 700,
-                                            fontSize: "0.65rem",
-                                            height: 20,
-                                          }}
-                                        />
-                                      )}
-                                      <IconButton
-                                        size="small"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const filtered = formData.images.filter((_, i) => i !== idx);
-                                          setFormData({
-                                            ...formData,
-                                            images: filtered,
-                                            image: filtered[0] || "/assets/Cocktail Gown.jpg",
-                                          });
-                                        }}
-                                        sx={{
-                                          position: "absolute",
-                                          top: 6,
-                                          right: 6,
-                                          bgcolor: "rgba(0,0,0,0.6)",
-                                          color: "#FFF",
-                                          "&:hover": { bgcolor: "#E53935" },
-                                          width: 24,
-                                          height: 24,
-                                        }}
-                                      >
-                                        <CloseIcon sx={{ fontSize: 14 }} />
-                                      </IconButton>
-                                    </Box>
-                                  </Grid>
-                                ))}
-                              </Grid>
-                            </Box>
-                          )}
-
-                          {/* Quick Sample Presets Accordion */}
-                          <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                            Or select sample photography presets for quick testing:
-                          </Typography>
-                          <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                            {SAMPLE_ASSETS.map((sample, idx) => (
-                              <Grid item xs={6} sm={3} key={idx}>
-                                <Paper
-                                  elevation={0}
-                                  onClick={() =>
-                                    setFormData({
-                                      ...formData,
-                                      image: sample.url,
-                                      images: [sample.url],
-                                      category: sample.category,
-                                      gender: sample.gender,
-                                    })
-                                  }
-                                  sx={{
-                                    p: 1,
-                                    borderRadius: 2,
-                                    cursor: "pointer",
-                                    border:
-                                      formData.image === sample.url ? "2px solid #D1A362" : "1px solid #EBEBEB",
-                                    bgcolor: formData.image === sample.url ? "rgba(209, 163, 98, 0.08)" : "#FFF",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                  }}
-                                >
-                                  <Avatar src={sample.url} variant="rounded" sx={{ width: 36, height: 36 }} />
-                                  <Typography variant="caption" fontWeight={600} noWrap>
-                                    {sample.label}
-                                  </Typography>
-                                </Paper>
-                              </Grid>
-                            ))}
-                          </Grid>
-                        </Box>
-
-                        {/* Section 5: Step 7 AI Description & Generated Attributes */}
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={700} color="#D1A362" textTransform="uppercase" mb={2}>
-                            5. Editorial Description & Garment Styling
-                          </Typography>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={3}
-                            label="Description"
-                            placeholder="Describe the fabric, silhouette, embroidery details, and matching styling recommendations..."
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            sx={{ mb: 2 }}
-                          />
-
-                          {/* AI Generated Tags & Occasion Chips */}
-                          {formData.occasion && (
-                            <Box sx={{ mb: 1.5 }}>
-                              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.5}>
-                                RECOMMENDED OCCASION:
-                              </Typography>
-                              <Chip label={formData.occasion} size="small" sx={{ bgcolor: "#F5EFE6", color: "#8C6D3B", fontWeight: 600 }} />
-                            </Box>
-                          )}
-
-                          {formData.tags?.length > 0 && (
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.5}>
-                                AI SEARCH TAGS:
-                              </Typography>
-                              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                {formData.tags.map((tag, tIdx) => (
-                                  <Chip key={tIdx} label={`#${tag}`} size="small" variant="outlined" sx={{ borderColor: "#D1A362", color: "#6B5226" }} />
-                                ))}
-                              </Stack>
-                            </Box>
-                          )}
-                        </Box>
-                        {/* Section 6: Step 14 Trust, Provenance & Ownership Confirmation */}
-                        <Box sx={{ p: 2.5, bgcolor: "#FBF9F5", borderRadius: 2, border: "1px solid #F0E6D6" }}>
-                          <Typography variant="subtitle2" fontWeight={700} color="#8C6D3B" mb={1.5} textTransform="uppercase">
-                            6. Trust, Provenance & Legal Ownership
-                          </Typography>
-                          <TextField
-                            fullWidth
-                            size="small"
-                            label="External Designer / Collection Reference URL (Optional)"
-                            placeholder="https://designerbrand.com/collection/garment-link"
-                            value={formData.externalRefUrl}
-                            onChange={(e) => setFormData({ ...formData, externalRefUrl: e.target.value })}
-                            helperText="If this garment is from an authentic designer line, provide a reference link (must begin with http:// or https://)"
-                            sx={{ mb: 2, bgcolor: "#FFF" }}
-                          />
-
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={formData.ownershipConfirmed}
-                                onChange={(e) => setFormData({ ...formData, ownershipConfirmed: e.target.checked })}
-                                sx={{ color: "#D1A362", "&.Mui-checked": { color: "#D1A362" } }}
-                              />
-                            }
-                            label={
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: "#1A1817" }}>
-                                I confirm that I own or have permission to use the photos and information submitted for this listing, and that all garment condition details are truthful.
-                              </Typography>
-                            }
-                          />
-                        </Box>
-
-                        <Divider />
-
-                        {/* Submit Actions */}
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="flex-end">
-                          <Button
-                            variant="outlined"
-                            onClick={() => setActiveTab("listings")}
-                            sx={{ borderColor: "#DDD", color: "#666" }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            type="submit"
-                            variant="contained"
-                            disabled={actionLoading}
-                            sx={{
-                              backgroundColor: "#1A1A1A",
-                              color: "#FFF",
-                              fontWeight: 700,
-                              px: 4,
-                              py: 1.2,
-                              borderRadius: 2,
-                              "&:hover": { backgroundColor: "#333333" },
-                            }}
-                          >
-                            {actionLoading ? <CircularProgress size={24} sx={{ color: "#FFF" }} /> : "Publish Listing"}
-                          </Button>
-                        </Stack>
-                      </Stack>
-                    </form>
-                  </Paper>
-                </Box>
+                <ProviderAddDress
+                  formData={formData}
+                  setFormData={setFormData}
+                  onSubmit={handleCreateListing}
+                  onFileUpload={handleFileUpload}
+                  uploading={uploading}
+                  onGenerateAi={handleGenerateAi}
+                  aiLoading={aiLoading}
+                  actionLoading={actionLoading}
+                />
               )}
 
-              {/* TAB 4: STEP 8, 9 & 10 RENTAL REQUESTS & DECISION WORKFLOW */}
               {activeTab === "requests" && (
-                <Box>
-                  <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, flexDirection: { xs: "column", sm: "row" }, gap: 1.5 }}>
-                    <Box>
-                      <Typography variant="h5" fontWeight={800} mb={0.5}>
-                        Rental Requests & Active Bookings
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Review customer reservations, approve payouts, and manage rental lifecycle.
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {/* Step 10: Status Filter Chips Bar */}
-                  <Stack direction="row" spacing={1} sx={{ mb: 3, overflowX: "auto", pb: 1 }}>
-                    <Chip
-                      label={`All (${orders.length})`}
-                      onClick={() => setOrderFilter("all")}
-                      variant={orderFilter === "all" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600, bgcolor: orderFilter === "all" ? "#1A1817" : "transparent", color: orderFilter === "all" ? "#FFF" : "inherit" }}
-                    />
-                    <Chip
-                      label={`Pending Action (${orders.filter((o) => o.requestStatus === "Pending").length})`}
-                      onClick={() => setOrderFilter("Pending")}
-                      color="warning"
-                      variant={orderFilter === "Pending" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600 }}
-                    />
-                    <Chip
-                      label={`Confirmed (${orders.filter((o) => o.requestStatus === "Accepted" || o.status === "Confirmed").length})`}
-                      onClick={() => setOrderFilter("Accepted")}
-                      color="primary"
-                      variant={orderFilter === "Accepted" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600 }}
-                    />
-                    <Chip
-                      label={`Active on Rent (${orders.filter((o) => o.requestStatus === "Active" || o.status === "Delivered").length})`}
-                      onClick={() => setOrderFilter("Active")}
-                      color="info"
-                      variant={orderFilter === "Active" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600 }}
-                    />
-                    <Chip
-                      label={`Completed (${orders.filter((o) => o.requestStatus === "Completed").length})`}
-                      onClick={() => setOrderFilter("Completed")}
-                      color="success"
-                      variant={orderFilter === "Completed" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600 }}
-                    />
-                    <Chip
-                      label={`Declined (${orders.filter((o) => o.requestStatus === "Declined" || o.status === "Cancelled").length})`}
-                      onClick={() => setOrderFilter("Declined")}
-                      variant={orderFilter === "Declined" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600 }}
-                    />
-                  </Stack>
-
-                  {(() => {
-                    const filteredOrders = orders.filter((o) => {
-                      if (orderFilter === "all") return true;
-                      if (orderFilter === "Accepted") return o.requestStatus === "Accepted" || o.status === "Confirmed";
-                      if (orderFilter === "Active") return o.requestStatus === "Active" || o.status === "Delivered";
-                      if (orderFilter === "Declined") return o.requestStatus === "Declined" || o.status === "Cancelled";
-                      return o.requestStatus === orderFilter;
-                    });
-
-                    if (filteredOrders.length === 0) {
-                      return (
-                        <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 3, border: "1px dashed #DDD" }}>
-                          <OrdersIcon sx={{ fontSize: 56, color: "#D1A362", mb: 2 }} />
-                          <Typography variant="h6" fontWeight={700} mb={0.5}>
-                            {orderFilter === "all" ? "No rental requests yet" : `No orders matching filter: ${orderFilter}`}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" maxWidth={420} mx="auto">
-                            Customer bookings, rental windows, and decision controls will be organized here as orders arrive.
-                          </Typography>
-                        </Paper>
-                      );
-                    }
-
-                    return (
-                      <Grid container spacing={2.5}>
-                        {filteredOrders.map((order) => {
-                          const prod = order.product || {};
-                          const sDate = order.rentalStartDate ? new Date(order.rentalStartDate).toLocaleDateString() : "Flexible";
-                          const eDate = order.rentalEndDate ? new Date(order.rentalEndDate).toLocaleDateString() : "Flexible";
-                          const reqStatus = order.requestStatus || "Pending";
-
-                          const statusColors = {
-                            Pending: { bg: "#FFF4E5", text: "#B76E00" },
-                            Accepted: { bg: "#EDF7ED", text: "#1E4620" },
-                            Confirmed: { bg: "#EDF7ED", text: "#1E4620" },
-                            Declined: { bg: "#FDEDED", text: "#5F2120" },
-                            Cancelled: { bg: "#FDEDED", text: "#5F2120" },
-                            Active: { bg: "#E5F6FD", text: "#014361" },
-                            Completed: { bg: "#E8F5E9", text: "#2E7D32" },
-                          };
-                          const currentStatusColor = statusColors[reqStatus] || statusColors.Pending;
-                          const rentalFeeOnly = order.rentalFee || Math.max(0, (order.totalAmount || 0) - (order.securityDeposit || 0));
-                          const netEarningsEstimate = Math.round(rentalFeeOnly * 0.85);
-
-                          return (
-                            <Grid item xs={12} key={order._id}>
-                              <Paper
-                                elevation={0}
-                                sx={{
-                                  p: 3,
-                                  borderRadius: 3,
-                                  border: "1px solid #EBEBEB",
-                                  display: "flex",
-                                  flexDirection: { xs: "column", md: "row" },
-                                  justifyContent: "space-between",
-                                  alignItems: { xs: "flex-start", md: "center" },
-                                  gap: 2.5,
-                                }}
-                              >
-                                <Stack direction="row" spacing={2.5} alignItems="center">
-                                  <Avatar
-                                    src={prod.image || "/assets/Cocktail Gown.jpg"}
-                                    variant="rounded"
-                                    sx={{ width: 75, height: 95, borderRadius: 2 }}
-                                  />
-                                  <Box>
-                                    <Typography variant="subtitle1" fontWeight={700}>
-                                      {prod.title || prod.name || "Designer Dress"}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                      Customer: <strong>{order.userEmail}</strong> &bull; Placed: {new Date(order.orderDate).toLocaleDateString()}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 600, color: "#1A1817" }}>
-                                      Rental Window: {sDate} &rarr; {eDate} ({order.rentalDays || order.quantity} Days)
-                                    </Typography>
-
-                                    {/* Decline reason note */}
-                                    {order.declineReason && (
-                                      <Typography variant="caption" sx={{ color: "#D32F2F", bgcolor: "#FDEDED", px: 1, py: 0.3, borderRadius: 1, display: "inline-block", mt: 0.8, fontWeight: 600 }}>
-                                        Decline Reason: {order.declineReason}
-                                      </Typography>
-                                    )}
-
-                                    {/* Inspection completed note */}
-                                    {order.inspectionNotes && (
-                                      <Typography variant="caption" sx={{ color: "#2E7D32", bgcolor: "#E8F5E9", px: 1, py: 0.3, borderRadius: 1, display: "inline-block", mt: 0.8, fontWeight: 600 }}>
-                                        Inspection: {order.inspectionNotes}
-                                      </Typography>
-                                    )}
-                                  </Box>
-                                </Stack>
-
-                                <Stack
-                                  direction={{ xs: "column", sm: "row" }}
-                                  spacing={3}
-                                  alignItems={{ xs: "flex-start", sm: "center" }}
-                                >
-                                  <Box textAlign={{ xs: "left", sm: "right" }}>
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                      TOTAL PAID BY CUSTOMER
-                                    </Typography>
-                                    <Typography variant="subtitle1" fontWeight={800} color="#1A1817">
-                                      ₹{order.totalAmount?.toLocaleString()}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                      Est. Payout (85%): <strong>₹{netEarningsEstimate.toLocaleString()}</strong>
-                                    </Typography>
-                                    <Chip
-                                      label={reqStatus}
-                                      size="small"
-                                      sx={{
-                                        bgcolor: currentStatusColor.bg,
-                                        color: currentStatusColor.text,
-                                        fontWeight: 700,
-                                        fontSize: "0.75rem",
-                                        mt: 0.5,
-                                      }}
-                                    />
-                                  </Box>
-
-                                  {/* Step 10: Provider Decision & Lifecycle Action Buttons */}
-                                  {reqStatus === "Pending" && (
-                                    <Stack direction="row" spacing={1}>
-                                      <Button
-                                        size="small"
-                                        variant="contained"
-                                        startIcon={<CheckIcon />}
-                                        onClick={() => setAcceptModal({ open: true, order })}
-                                        sx={{ bgcolor: "#2E7D32", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" } }}
-                                      >
-                                        Review & Accept
-                                      </Button>
-                                      <Button
-                                        size="small"
-                                        variant="outlined"
-                                        startIcon={<CloseIcon />}
-                                        onClick={() =>
-                                          setDeclineModal({
-                                            open: true,
-                                            order,
-                                            reason: "Garment undergoing maintenance or dry cleaning",
-                                            customNote: "",
-                                          })
-                                        }
-                                        sx={{ borderColor: "#D32F2F", color: "#D32F2F", fontWeight: 700, "&:hover": { bgcolor: "#FFEBEE" } }}
-                                      >
-                                        Decline
-                                      </Button>
-                                    </Stack>
-                                  )}
-
-                                  {(reqStatus === "Accepted" || reqStatus === "Confirmed") && (
-                                    <Button
-                                      size="small"
-                                      variant="contained"
-                                      onClick={() => handleOrderStatusUpdate(order._id, "Active")}
-                                      sx={{ bgcolor: "#1976D2", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#115293" } }}
-                                    >
-                                      Mark as Dispatched
-                                    </Button>
-                                  )}
-
-                                  {reqStatus === "Active" && (
-                                    <Button
-                                      size="small"
-                                      variant="contained"
-                                      onClick={() => handleOrderStatusUpdate(order._id, "Completed")}
-                                      sx={{ bgcolor: "#2E7D32", color: "#FFF", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" } }}
-                                    >
-                                      Mark Returned & Inspected
-                                    </Button>
-                                  )}
-                                </Stack>
-                              </Paper>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    );
-                  })()}
-                </Box>
+                <ProviderRentalRequests
+                  orders={orders}
+                  orderFilter={orderFilter}
+                  setOrderFilter={setOrderFilter}
+                  onAcceptClick={(order) => setAcceptModal({ open: true, order })}
+                  onDeclineClick={(order) =>
+                    setDeclineModal({
+                      open: true,
+                      order,
+                      reason: "Garment undergoing maintenance or dry cleaning",
+                      customNote: "",
+                    })
+                  }
+                  onUpdateStatus={handleOrderStatusUpdate}
+                  actionLoading={actionLoading}
+                />
               )}
 
-              {/* TAB 5: EARNINGS & PAYOUTS */}
-              {activeTab === "earnings" && (
-                <Box>
-                  <Typography variant="h5" fontWeight={800} mb={1}>
-                    Earnings & Payouts
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={4}>
-                    Transparent financial reporting on rentals, damage deposits, and bank transfers.
-                  </Typography>
+              {activeTab === "earnings" && <ProviderEarnings stats={stats} orders={orders} />}
 
-                  <Grid container spacing={3} sx={{ mb: 4 }}>
-                    <Grid item xs={12} sm={4}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                          LIFETIME EARNINGS
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="#1A1A1A" my={1}>
-                          ₹{stats.totalEarnings.toLocaleString()}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Direct rental fee revenue
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                          ESCROW SECURITY DEPOSITS
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="#D1A362" my={1}>
-                          ₹0
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Protected under Wardrobe Guarantee
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                          NEXT PAYOUT SCHEDULE
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="#2E7D32" my={1}>
-                          Every Monday
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Direct Bank / UPI transfer
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-
-              {/* TAB 6: BOUTIQUE PROFILE */}
               {activeTab === "profile" && (
                 <Box maxWidth="700px">
-                  <Typography variant="h5" fontWeight={800} mb={1}>
-                    Boutique & Provider Profile
+                  <Typography variant="h5" sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, color: "#1A1817", mb: 0.5 }}>
+                    Boutique & Lender Profile
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={4}>
+                  <Typography variant="body2" sx={{ color: "#666", mb: 3 }}>
                     Your public lender information and payout preferences.
                   </Typography>
 
-                  <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: "1px solid #EBEBEB", bgcolor: "#FFF" }}>
+                  <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: "1px solid #ECE7DE", bgcolor: "#FFFFFF" }}>
                     <Stack spacing={3}>
                       <Box display="flex" alignItems="center" gap={2}>
-                        <Avatar sx={{ width: 64, height: 64, bgcolor: "#D1A362", fontSize: "1.5rem", fontWeight: 800 }}>
-                          {user.name ? user.name[0].toUpperCase() : "P"}
+                        <Avatar sx={{ width: 64, height: 64, bgcolor: "#1A1817", color: "#D1A362", fontSize: "1.5rem", fontWeight: 800 }}>
+                          {(user.name || "P")[0].toUpperCase()}
                         </Avatar>
                         <Box>
-                          <Typography variant="h6" fontWeight={700}>
-                            {user.name || "Provider"}
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: "#1A1817" }}>
+                            {user.name || user.firstname || "Boutique Owner"}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Role: {user.role || "provider"} &bull; Member since 2026
+                          <Typography variant="caption" sx={{ color: "#8C6D3B", fontWeight: 600 }}>
+                            Role: {user.role || "provider"} &bull; Verified Lender
                           </Typography>
                         </Box>
                       </Box>
 
-                      <Divider />
-
-                      <TextField fullWidth label="Full Name" defaultValue={user.name} disabled />
-                      <TextField fullWidth label="Registered Email" defaultValue={user.email} disabled />
-                      <TextField fullWidth label="Contact Phone" defaultValue={user.phone} disabled />
-                      <TextField fullWidth label="Default City / Hub" defaultValue="Mumbai, Maharashtra" />
+                      <TextField fullWidth size="small" label="Full Name" defaultValue={user.name} disabled />
+                      <TextField fullWidth size="small" label="Registered Email" defaultValue={user.email} disabled />
+                      <TextField fullWidth size="small" label="Contact Phone" defaultValue={user.phone} disabled />
+                      <TextField fullWidth size="small" label="Atelier Hub Location" defaultValue="Mumbai, Bandra West Atelier" />
 
                       <Button
                         variant="contained"
-                        sx={{ alignSelf: "flex-start", backgroundColor: "#1A1A1A", color: "#FFF", fontWeight: 700 }}
+                        sx={{ alignSelf: "flex-start", bgcolor: "#1A1817", color: "#D1A362", fontWeight: 700, "&:hover": { bgcolor: "#2E2A27" } }}
+                        onClick={() => showToast("Boutique settings updated.")}
                       >
                         Save Settings
                       </Button>
@@ -1830,10 +775,10 @@ const ProviderStudio = () => {
 
       {/* DELETE CONFIRMATION DIALOG */}
       <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, listingId: null, title: "" })}>
-        <DialogTitle sx={{ fontWeight: 700 }}>Remove Listing?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>Remove Garment Listing?</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary">
-            Are you sure you want to delete <strong>"{deleteDialog.title}"</strong>? It will no longer be available for customer rentals.
+          <Typography variant="body2" sx={{ color: "#666" }}>
+            Are you sure you want to remove <strong>&ldquo;{deleteDialog.title}&rdquo;</strong>? It will no longer be visible for customer bookings.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
@@ -1847,18 +792,13 @@ const ProviderStudio = () => {
             disabled={actionLoading}
             sx={{ fontWeight: 700 }}
           >
-            {actionLoading ? <CircularProgress size={20} sx={{ color: "#FFF" }} /> : "Delete"}
+            {actionLoading ? <CircularProgress size={20} sx={{ color: "#FFF" }} /> : "Confirm Delete"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* ACCEPT CONFIRMATION DIALOG */}
-      <Dialog
-        open={acceptModal.open}
-        onClose={() => setAcceptModal({ open: false, order: null })}
-        maxWidth="sm"
-        fullWidth
-      >
+      {/* ACCEPT MODAL */}
+      <Dialog open={acceptModal.open} onClose={() => setAcceptModal({ open: false, order: null })} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 800, color: "#1A1817" }}>
           Confirm Rental Acceptance
         </DialogTitle>
@@ -1879,16 +819,15 @@ const ProviderStudio = () => {
                     Renter: <strong>{acceptModal.order.userEmail}</strong>
                   </Typography>
                   <Typography variant="body2" color="#1A1817" sx={{ mt: 0.5 }}>
-                    Window: {new Date(acceptModal.order.startDate).toLocaleDateString()} &rarr;{" "}
-                    {new Date(acceptModal.order.endDate).toLocaleDateString()} (
-                    {acceptModal.order.rentalDays || acceptModal.order.quantity} days)
+                    Window: {new Date(acceptModal.order.rentalStartDate || acceptModal.order.startDate).toLocaleDateString()} &rarr;{" "}
+                    {new Date(acceptModal.order.rentalEndDate || acceptModal.order.endDate).toLocaleDateString()} ({acceptModal.order.rentalDays || acceptModal.order.quantity} days)
                   </Typography>
                 </Box>
               </Box>
 
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: "#FAFAFA" }}>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: "#FAF8F5", borderColor: "#ECE7DE" }}>
                 <Typography variant="subtitle2" fontWeight={700} mb={1}>
-                  Earnings & Deposit Summary
+                  Earnings Breakdown
                 </Typography>
                 <Box display="flex" justifyContent="space-between" mb={0.5}>
                   <Typography variant="body2" color="text.secondary">
@@ -1900,44 +839,26 @@ const ProviderStudio = () => {
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={0.5}>
                   <Typography variant="body2" color="text.secondary">
-                    Platform Fee (15%)
+                    Platform Commission (15%)
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     - ₹{Math.round((acceptModal.order.totalAmount || 0) * 0.15).toLocaleString()}
                   </Typography>
                 </Box>
-                <Divider sx={{ my: 1 }} />
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="subtitle2" fontWeight={800} color="#2E7D32">
-                    Estimated Net Payout (85%)
+                    Estimated Net Provider Payout (85%)
                   </Typography>
                   <Typography variant="subtitle2" fontWeight={800} color="#2E7D32">
                     ₹{Math.round((acceptModal.order.totalAmount || 0) * 0.85).toLocaleString()}
                   </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-                  Note: Payout becomes payable upon customer receiving the garment and completion of rental.
-                </Typography>
               </Paper>
-
-              <Box sx={{ bgcolor: "#E8F5E9", p: 2, borderRadius: 2 }}>
-                <Typography variant="subtitle2" fontWeight={700} color="#2E7D32" mb={0.5}>
-                  Handover Checklist
-                </Typography>
-                <Typography variant="caption" color="#1B5E20" component="div">
-                  &bull; Ensure the dress is dry-cleaned and neatly packaged.<br />
-                  &bull; Prepare any accessories (dupatta, belt, hanger, cover) included.<br />
-                  &bull; Handover to renter or courier on or before start date.
-                </Typography>
-              </Box>
             </Stack>
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setAcceptModal({ open: false, order: null })}
-            sx={{ color: "#777" }}
-          >
+          <Button onClick={() => setAcceptModal({ open: false, order: null })} sx={{ color: "#777" }}>
             Cancel
           </Button>
           <Button
@@ -1951,17 +872,10 @@ const ProviderStudio = () => {
         </DialogActions>
       </Dialog>
 
-      {/* DECLINE CONFIRMATION DIALOG */}
+      {/* DECLINE MODAL */}
       <Dialog
         open={declineModal.open}
-        onClose={() =>
-          setDeclineModal({
-            open: false,
-            order: null,
-            reason: "Garment undergoing maintenance or dry cleaning",
-            customNote: "",
-          })
-        }
+        onClose={() => setDeclineModal({ open: false, order: null, reason: "Garment undergoing maintenance or dry cleaning", customNote: "" })}
         maxWidth="sm"
         fullWidth
       >
@@ -1971,10 +885,8 @@ const ProviderStudio = () => {
         <DialogContent dividers>
           {declineModal.order && (
             <Stack spacing={2.5}>
-              <Typography variant="body2" color="text.secondary">
-                Are you sure you want to decline the rental request for{" "}
-                <strong>{declineModal.order.product?.name || "this garment"}</strong> from{" "}
-                <strong>{declineModal.order.userEmail}</strong>?
+              <Typography variant="body2" sx={{ color: "#666" }}>
+                Decline the reservation request for <strong>{declineModal.order.product?.name || "this garment"}</strong> from <strong>{declineModal.order.userEmail}</strong>?
               </Typography>
 
               <FormControl component="fieldset">
@@ -1985,31 +897,11 @@ const ProviderStudio = () => {
                   value={declineModal.reason}
                   onChange={(e) => setDeclineModal({ ...declineModal, reason: e.target.value })}
                 >
-                  <FormControlLabel
-                    value="Garment undergoing maintenance or dry cleaning"
-                    control={<Radio size="small" />}
-                    label={<Typography variant="body2">Garment undergoing maintenance or dry cleaning</Typography>}
-                  />
-                  <FormControlLabel
-                    value="Private event or unavailable for listed window"
-                    control={<Radio size="small" />}
-                    label={<Typography variant="body2">Private event or unavailable for listed window</Typography>}
-                  />
-                  <FormControlLabel
-                    value="Garment undergoing quality inspection or repair"
-                    control={<Radio size="small" />}
-                    label={<Typography variant="body2">Garment undergoing quality inspection or repair</Typography>}
-                  />
-                  <FormControlLabel
-                    value="Date conflict with another booking"
-                    control={<Radio size="small" />}
-                    label={<Typography variant="body2">Date conflict with another booking</Typography>}
-                  />
-                  <FormControlLabel
-                    value="Other"
-                    control={<Radio size="small" />}
-                    label={<Typography variant="body2">Other</Typography>}
-                  />
+                  <FormControlLabel value="Garment undergoing maintenance or dry cleaning" control={<Radio size="small" />} label={<Typography variant="body2">Garment undergoing maintenance or dry cleaning</Typography>} />
+                  <FormControlLabel value="Private event or unavailable for listed window" control={<Radio size="small" />} label={<Typography variant="body2">Private event or unavailable for listed window</Typography>} />
+                  <FormControlLabel value="Garment undergoing quality inspection or repair" control={<Radio size="small" />} label={<Typography variant="body2">Garment undergoing quality inspection or repair</Typography>} />
+                  <FormControlLabel value="Date conflict with another booking" control={<Radio size="small" />} label={<Typography variant="body2">Date conflict with another booking</Typography>} />
+                  <FormControlLabel value="Other" control={<Radio size="small" />} label={<Typography variant="body2">Other</Typography>} />
                 </RadioGroup>
               </FormControl>
 
@@ -2017,38 +909,21 @@ const ProviderStudio = () => {
                 fullWidth
                 size="small"
                 label="Optional Details / Custom Note for Customer"
-                placeholder="e.g. Garment sent for professional dry cleaning until Friday."
                 value={declineModal.customNote}
                 onChange={(e) => setDeclineModal({ ...declineModal, customNote: e.target.value })}
               />
 
               <Alert severity="info" sx={{ borderRadius: 2 }}>
-                <strong>Automatic Calendar Release:</strong> Declining this order will instantly release the reserved dates from your garment's calendar so other renters can book.
+                Declining this order will instantly release the reserved dates on your garment&apos;s calendar so other renters can book.
               </Alert>
             </Stack>
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() =>
-              setDeclineModal({
-                open: false,
-                order: null,
-                reason: "Garment undergoing maintenance or dry cleaning",
-                customNote: "",
-              })
-            }
-            sx={{ color: "#777" }}
-          >
+          <Button onClick={() => setDeclineModal({ open: false, order: null, reason: "Garment undergoing maintenance or dry cleaning", customNote: "" })} sx={{ color: "#777" }}>
             Keep Order
           </Button>
-          <Button
-            onClick={confirmDeclineOrder}
-            variant="contained"
-            color="error"
-            disabled={actionLoading}
-            sx={{ fontWeight: 700 }}
-          >
+          <Button onClick={confirmDeclineOrder} variant="contained" color="error" disabled={actionLoading} sx={{ fontWeight: 700 }}>
             {actionLoading ? <CircularProgress size={20} sx={{ color: "#FFF" }} /> : "Decline Request"}
           </Button>
         </DialogActions>
@@ -2065,6 +940,8 @@ const ProviderStudio = () => {
           {notification.message}
         </Alert>
       </Snackbar>
+
+      <Fotter />
     </Box>
   );
 };

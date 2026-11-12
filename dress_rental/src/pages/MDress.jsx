@@ -233,11 +233,29 @@ const AvailableDresses = () => {
   const filteredDresses = useMemo(() => {
     return dresses
       .filter((item) => {
-        // 1. Multi-category filter
+        // 1. Multi-category filter with intelligent fashion taxonomy
         if (selectedCategories.length > 0) {
-          const match = selectedCategories.some(
-            (c) => item.category && item.category.toLowerCase() === c.toLowerCase()
-          );
+          const match = selectedCategories.some((c) => {
+            const cat = (item.category || '').toLowerCase();
+            const name = (item.name || '').toLowerCase();
+            const target = c.toLowerCase();
+            if (target === 'formal' || target === 'suit' || target === 'suits' || target === 'tuxedo' || target === 'tuxedos') {
+              return cat.includes('formal') || name.includes('suit') || name.includes('tuxedo') || name.includes('bandhgala');
+            }
+            if (target === 'wedding' || target === 'sherwani' || target === 'groom') {
+              return cat.includes('wedding') || name.includes('sherwani') || name.includes('groom');
+            }
+            if (target === 'traditional' || target === 'festive' || target === 'kurta' || target === 'kurtas') {
+              return cat.includes('traditional') || name.includes('kurta') || name.includes('dhoti');
+            }
+            if (target === 'party' || target === 'blazer' || target === 'cocktail') {
+              return cat.includes('party') || name.includes('blazer') || name.includes('sequin');
+            }
+            if (target === 'casual') {
+              return cat.includes('casual') || name.includes('linen') || name.includes('polo') || name.includes('overshirt');
+            }
+            return cat === target || cat.includes(target) || name.includes(target);
+          });
           if (!match) return false;
         }
 

@@ -540,7 +540,7 @@ const Jewellery = () => {
 
       <Divider sx={{ mb: 2.5 }} />
 
-      {/* Trust & Escrow Guarantee Box */}
+      {/* Trust & Deposit Protection Box */}
       <Box sx={{ p: 2, backgroundColor: "#FAF7F2", borderRadius: 2, border: "1px solid #ECE4D8" }}>
         <Typography variant="caption" sx={{ fontWeight: 800, color: "#9A6F2D", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
           <VerifiedUserOutlinedIcon sx={{ fontSize: 16 }} />
@@ -553,7 +553,7 @@ const Jewellery = () => {
           • Ultrasonically sanitized and UV-cleaned prior to every booking dispatch.
         </Typography>
         <Typography variant="body2" sx={{ fontSize: "0.78rem", color: "#6C665D", lineHeight: 1.45 }}>
-          • 100% refundable security deposit held safely in escrow until return.
+          • 100% refundable security deposit safely refunded following return inspection.
         </Typography>
       </Box>
     </Box>

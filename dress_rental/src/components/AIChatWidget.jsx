@@ -19,29 +19,33 @@ import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import CheckroomIcon from "@mui/icons-material/Checkroom";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const quickPrompts = [
-  "✨ Wedding Sangeet Outfit",
-  "✨ Cocktail Party Gown",
-  "✨ Royal Groom Sherwani",
-  "✨ Designer Lehengas",
-  "✨ Budget Under ₹5000",
-  "✨ Summer Reception Look",
+  "✨ Wedding Lehengas (Rent)",
+  "✨ Designer Outfits (Buy)",
+  "✨ Pre-Owned Luxury Fashion",
+  "✨ Bridal Kundan Jewellery",
+  "✨ Cocktail Gown Under ₹4000",
+  "✨ Rent vs Buy Options",
 ];
 
 const initialWelcome = {
   sender: "ai",
-  text: "Welcome to Wardrobe Wonders Haute Couture. I am your personal AI Stylist powered by live catalog intelligence. Tell me your upcoming occasion, budget, or preferred aesthetic, and I will curate bespoke looks for you.",
+  text: "Welcome to Wardrobe Wonders. I am your personal AI Stylist powered by live catalog intelligence across our Haute Couture Rental collection and designer Store marketplace. Tell me your upcoming occasion, budget, or preferred aesthetic, and I will curate bespoke looks for you.",
+  rentalProducts: [],
+  storeProducts: [],
   products: [],
   time: "Just now",
 };
 
 const AIChatWidget = () => {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([initialWelcome]);
   const [input, setInput] = useState("");
@@ -90,6 +94,12 @@ const AIChatWidget = () => {
       const aiText =
         res.data?.text ||
         "I curated these exclusive pieces from our designer collection for your occasion.";
+      const aiRental = Array.isArray(res.data?.rentalProducts)
+        ? res.data.rentalProducts
+        : [];
+      const aiStore = Array.isArray(res.data?.storeProducts)
+        ? res.data.storeProducts
+        : [];
       const aiProducts = Array.isArray(res.data?.products)
         ? res.data.products
         : [];
@@ -99,6 +109,9 @@ const AIChatWidget = () => {
         {
           sender: "ai",
           text: aiText,
+          intent: res.data?.intent || "HYBRID",
+          rentalProducts: aiRental,
+          storeProducts: aiStore,
           products: aiProducts,
           source: res.data?.source,
           time: new Date().toLocaleTimeString([], {
@@ -114,6 +127,8 @@ const AIChatWidget = () => {
         {
           sender: "ai",
           text: "I am having a brief moment synchronizing with the couture catalog. Please try asking again or browse our curated collections above!",
+          rentalProducts: [],
+          storeProducts: [],
           products: [],
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
@@ -125,6 +140,11 @@ const AIChatWidget = () => {
       setLoading(false);
     }
   };
+
+  // Defensive isolation: Hide floating AI chat on dedicated auth pages
+  if (["/login", "/signup", "/sign-up"].includes(location.pathname)) {
+    return null;
+  }
 
   return (
     <>
@@ -422,25 +442,39 @@ const AIChatWidget = () => {
                     </Box>
                   </Box>
 
-                  {/* Matching Products Gallery */}
-                  {msg.products && msg.products.length > 0 && (
+                  {/* Curated Rental Recommendations */}
+                  {msg.rentalProducts && msg.rentalProducts.length > 0 && (
                     <Box sx={{ width: "100%", mt: 1.5, pl: 0.5 }}>
-                      <Typography
-                        variant="caption"
-                        fontWeight="700"
-                        sx={{
-                          color: "#9C7238",
-                          letterSpacing: "0.5px",
-                          textTransform: "uppercase",
-                          mb: 1,
-                          display: "block",
-                        }}
-                      >
-                        Curated Recommendations ({msg.products.length})
-                      </Typography>
+                      <Stack direction="row" spacing={0.8} alignItems="center" mb={1}>
+                        <CheckroomIcon sx={{ color: "#D1A362", fontSize: 16 }} />
+                        <Typography
+                          variant="caption"
+                          fontWeight="700"
+                          sx={{
+                            color: "#9C7238",
+                            letterSpacing: "0.5px",
+                            textTransform: "uppercase",
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          Recommended to Rent ({msg.rentalProducts.length})
+                        </Typography>
+                        <Chip
+                          label="Rental"
+                          size="small"
+                          sx={{
+                            height: 18,
+                            fontSize: "0.62rem",
+                            fontWeight: 700,
+                            bgcolor: "rgba(209, 163, 98, 0.15)",
+                            color: "#9C7238",
+                            border: "1px solid rgba(209, 163, 98, 0.3)",
+                          }}
+                        />
+                      </Stack>
 
                       <Stack spacing={1.2}>
-                        {msg.products.map((p) => (
+                        {msg.rentalProducts.map((p) => (
                           <Paper
                             key={p._id}
                             elevation={0}
@@ -462,10 +496,7 @@ const AIChatWidget = () => {
                           >
                             <Box
                               component="img"
-                              src={
-                                p.image ||
-                                "/assets/Women/bridal_01.png"
-                              }
+                              src={p.image || "/assets/Women/bridal_01.png"}
                               alt={p.name}
                               onError={(e) => {
                                 e.target.src = "/assets/Women/bridal_01.png";
@@ -519,7 +550,7 @@ const AIChatWidget = () => {
                               size="small"
                               variant="outlined"
                               onClick={() => {
-                                navigate(`/product/${p._id}`);
+                                navigate(p.url || `/product/${p._id}`);
                                 setOpen(false);
                               }}
                               sx={{
@@ -538,13 +569,287 @@ const AIChatWidget = () => {
                                 },
                               }}
                             >
-                              View
+                              Rent Now
                             </Button>
                           </Paper>
                         ))}
                       </Stack>
                     </Box>
                   )}
+
+                  {/* Curated Store (Buy) Recommendations */}
+                  {msg.storeProducts && msg.storeProducts.length > 0 && (
+                    <Box sx={{ width: "100%", mt: 1.5, pl: 0.5 }}>
+                      <Stack direction="row" spacing={0.8} alignItems="center" mb={1}>
+                        <StorefrontIcon sx={{ color: "#2E7D32", fontSize: 16 }} />
+                        <Typography
+                          variant="caption"
+                          fontWeight="700"
+                          sx={{
+                            color: "#2E7D32",
+                            letterSpacing: "0.5px",
+                            textTransform: "uppercase",
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          Recommended to Buy ({msg.storeProducts.length})
+                        </Typography>
+                        <Chip
+                          label="Store"
+                          size="small"
+                          sx={{
+                            height: 18,
+                            fontSize: "0.62rem",
+                            fontWeight: 700,
+                            bgcolor: "rgba(46, 125, 50, 0.12)",
+                            color: "#2E7D32",
+                            border: "1px solid rgba(46, 125, 50, 0.3)",
+                          }}
+                        />
+                      </Stack>
+
+                      <Stack spacing={1.2}>
+                        {msg.storeProducts.map((p) => (
+                          <Paper
+                            key={p._id}
+                            elevation={0}
+                            sx={{
+                              p: 1.5,
+                              borderRadius: "12px",
+                              bgcolor: "#FFFFFF",
+                              border: "1px solid #ECE7DE",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1.5,
+                              transition: "all 0.25s ease",
+                              "&:hover": {
+                                borderColor: "#2E7D32",
+                                transform: "translateX(3px)",
+                                boxShadow: "0 4px 14px rgba(46, 125, 50, 0.15)",
+                              },
+                            }}
+                          >
+                            <Box
+                              component="img"
+                              src={p.image || "/assets/Store/store_default.png"}
+                              alt={p.title}
+                              onError={(e) => {
+                                e.target.src = "/assets/Women/bridal_01.png";
+                              }}
+                              sx={{
+                                width: 56,
+                                height: 68,
+                                objectFit: "cover",
+                                borderRadius: "8px",
+                                bgcolor: "#F5F3EF",
+                                border: "1px solid #ECE7DE",
+                              }}
+                            />
+
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Stack direction="row" spacing={0.8} alignItems="center" mb={0.3}>
+                                <Typography
+                                  variant="body2"
+                                  fontWeight="700"
+                                  noWrap
+                                  sx={{ color: "#161514", fontSize: "0.86rem", flex: 1 }}
+                                >
+                                  {p.title}
+                                </Typography>
+                                <Chip
+                                  label={p.condition === "PRE_OWNED" ? "Pre-Owned" : "New"}
+                                  size="small"
+                                  sx={{
+                                    height: 16,
+                                    fontSize: "0.58rem",
+                                    fontWeight: 700,
+                                    bgcolor: p.condition === "PRE_OWNED" ? "#FFF8E1" : "#E8F5E9",
+                                    color: p.condition === "PRE_OWNED" ? "#F57F17" : "#2E7D32",
+                                    border: `1px solid ${p.condition === "PRE_OWNED" ? "#FFE082" : "#A5D6A7"}`,
+                                  }}
+                                />
+                              </Stack>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                noWrap
+                                sx={{ display: "block", mb: 0.5 }}
+                              >
+                                {p.category} • Sold by {p.storeName}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                fontWeight="800"
+                                sx={{ color: "#2E7D32" }}
+                              >
+                                ₹{p.price}{" "}
+                                <Typography
+                                  component="span"
+                                  variant="caption"
+                                  color="text.secondary"
+                                  fontWeight="normal"
+                                >
+                                  buy
+                                </Typography>
+                              </Typography>
+                            </Box>
+
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => {
+                                navigate(p.url || `/store/product/${p._id}`);
+                                setOpen(false);
+                              }}
+                              sx={{
+                                borderColor: "#2E7D32",
+                                color: "#2E7D32",
+                                borderRadius: "8px",
+                                textTransform: "none",
+                                fontWeight: "600",
+                                px: 1.5,
+                                fontSize: "0.75rem",
+                                minWidth: 64,
+                                "&:hover": {
+                                  bgcolor: "#161514",
+                                  color: "#81C784",
+                                  borderColor: "#161514",
+                                },
+                              }}
+                            >
+                              Buy Now
+                            </Button>
+                          </Paper>
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+
+                  {/* Fallback Legacy Products Gallery */}
+                  {(!msg.rentalProducts || msg.rentalProducts.length === 0) &&
+                    (!msg.storeProducts || msg.storeProducts.length === 0) &&
+                    msg.products &&
+                    msg.products.length > 0 && (
+                      <Box sx={{ width: "100%", mt: 1.5, pl: 0.5 }}>
+                        <Typography
+                          variant="caption"
+                          fontWeight="700"
+                          sx={{
+                            color: "#9C7238",
+                            letterSpacing: "0.5px",
+                            textTransform: "uppercase",
+                            mb: 1,
+                            display: "block",
+                          }}
+                        >
+                          Curated Recommendations ({msg.products.length})
+                        </Typography>
+
+                        <Stack spacing={1.2}>
+                          {msg.products.map((p) => {
+                            const isStore = p.type === "STORE" || !!p.storeName;
+                            return (
+                              <Paper
+                                key={p._id}
+                                elevation={0}
+                                sx={{
+                                  p: 1.5,
+                                  borderRadius: "12px",
+                                  bgcolor: "#FFFFFF",
+                                  border: "1px solid #ECE7DE",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1.5,
+                                  transition: "all 0.25s ease",
+                                  "&:hover": {
+                                    borderColor: isStore ? "#2E7D32" : "#D1A362",
+                                    transform: "translateX(3px)",
+                                    boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                                  },
+                                }}
+                              >
+                                <Box
+                                  component="img"
+                                  src={p.image || "/assets/Women/bridal_01.png"}
+                                  alt={p.name || p.title}
+                                  onError={(e) => {
+                                    e.target.src = "/assets/Women/bridal_01.png";
+                                  }}
+                                  sx={{
+                                    width: 56,
+                                    height: 68,
+                                    objectFit: "cover",
+                                    borderRadius: "8px",
+                                    bgcolor: "#F5F3EF",
+                                    border: "1px solid #ECE7DE",
+                                  }}
+                                />
+
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight="700"
+                                    noWrap
+                                    sx={{ color: "#161514", fontSize: "0.86rem" }}
+                                  >
+                                    {p.name || p.title}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    noWrap
+                                    sx={{ display: "block", mb: 0.5 }}
+                                  >
+                                    {p.category || "Designer Wear"}
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight="800"
+                                    sx={{ color: isStore ? "#2E7D32" : "#9C7238" }}
+                                  >
+                                    ₹{p.price}{" "}
+                                    <Typography
+                                      component="span"
+                                      variant="caption"
+                                      color="text.secondary"
+                                      fontWeight="normal"
+                                    >
+                                      {isStore ? "buy" : "/ 3 days"}
+                                    </Typography>
+                                  </Typography>
+                                </Box>
+
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => {
+                                    navigate(p.url || (isStore ? `/store/product/${p._id}` : `/product/${p._id}`));
+                                    setOpen(false);
+                                  }}
+                                  sx={{
+                                    borderColor: isStore ? "#2E7D32" : "#D1A362",
+                                    color: isStore ? "#2E7D32" : "#9C7238",
+                                    borderRadius: "8px",
+                                    textTransform: "none",
+                                    fontWeight: "600",
+                                    px: 1.5,
+                                    fontSize: "0.75rem",
+                                    minWidth: 64,
+                                    "&:hover": {
+                                      bgcolor: "#161514",
+                                      color: isStore ? "#81C784" : "#D1A362",
+                                      borderColor: "#161514",
+                                    },
+                                  }}
+                                >
+                                  {isStore ? "Buy Now" : "Rent Now"}
+                                </Button>
+                              </Paper>
+                            );
+                          })}
+                        </Stack>
+                      </Box>
+                    )}
                 </Box>
               ))}
 

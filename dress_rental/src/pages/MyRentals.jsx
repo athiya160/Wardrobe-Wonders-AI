@@ -90,6 +90,7 @@ const MyRentals = () => {
 
   useEffect(() => {
     fetchRentals();
+     
   }, []);
 
   const handleCancelOrder = async () => {
@@ -228,14 +229,14 @@ const MyRentals = () => {
     <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F5", color: "#1A1817", display: "flex", flexDirection: "column" }}>
       <ResponsiveAppBar />
 
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 }, flexGrow: 1 }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 3, md: 5 }, pb: { xs: 12, md: 6 }, flexGrow: 1 }}>
         {/* Header Title & Refresh */}
         <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={3}>
           <Box>
             <Typography variant="caption" sx={{ color: "#D1A362", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Customer Wardrobe
             </Typography>
-            <Typography variant="h3" fontWeight={800} letterSpacing="-0.02em" sx={{ mt: 0.5 }}>
+            <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, letterSpacing: "-0.01em", color: "#1A1817", mt: 0.5 }}>
               My Rental Dashboard
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -778,7 +779,7 @@ const MyRentals = () => {
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Upon return and standard condition inspection by the provider, your security deposit of{" "}
-                <strong>₹{instructionsModal.order?.securityDeposit?.toLocaleString()}</strong> will be automatically credited back to your original payment method within 24-48 hours.
+                <strong>₹{instructionsModal.order?.securityDeposit?.toLocaleString()}</strong> will be initiated for reimbursement to your payment source upon return check-in without damage.
               </Typography>
             </Box>
           </Stack>

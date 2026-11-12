@@ -31,6 +31,7 @@ import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import axios from "axios";
 import { BASE_URL } from "../config/axiosConfig";
 import logo from "../assets/logo.png";
+import WardrobeWondersLogo from "./WardrobeWondersLogo";
 import { useNavigate } from "react-router-dom";
 
 // Password strength calculation
@@ -91,22 +92,6 @@ export const AuthModal = ({ open, onClose, initialTab = "login" }) => {
     setLoginError("");
     setSignupError("");
     setSignupSuccess(false);
-  };
-
-  // Demo profile filler
-  const fillDemo = (role) => {
-    setTab(0);
-    setLoginError("");
-    if (role === "customer") {
-      setLoginEmail("customer@wardrobewonders.com");
-      setLoginPassword("Password123!");
-    } else if (role === "provider") {
-      setLoginEmail("provider@wardrobewonders.com");
-      setLoginPassword("Password123!");
-    } else if (role === "admin") {
-      setLoginEmail("admin@wardrobewonders.com");
-      setLoginPassword("Password123!");
-    }
   };
 
   // Handle Login Submit
@@ -183,7 +168,7 @@ export const AuthModal = ({ open, onClose, initialTab = "login" }) => {
     const nameParts = signupName.trim().split(" ");
     const firstname = nameParts[0] || "";
     const lastname = nameParts.slice(1).join(" ") || "";
-    const username = signupEmail.split("@")[0];
+    const username = signupEmail.split("@")[0] + "_" + Math.floor(100 + Math.random() * 900);
 
     const payload = {
       name: signupName.trim(),
@@ -274,11 +259,9 @@ export const AuthModal = ({ open, onClose, initialTab = "login" }) => {
       <DialogContent sx={{ px: { xs: 3, sm: 4 }, pt: 3.5, pb: 4 }}>
         {/* Brand Header */}
         <Box sx={{ textAlign: "center", mb: 2.5 }}>
-          <img
-            src={logo}
-            alt="Wardrobe Wonders"
-            style={{ height: 32, objectFit: "contain", marginBottom: 6 }}
-          />
+          <Box sx={{ display: "inline-flex", justifyContent: "center", mb: 1 }}>
+            <WardrobeWondersLogo size="small" variant="horizontal" />
+          </Box>
           <Typography
             variant="h6"
             sx={{
@@ -446,54 +429,6 @@ export const AuthModal = ({ open, onClose, initialTab = "login" }) => {
                   }}
                 >
                   Create one now
-                </Typography>
-              </Typography>
-            </Box>
-
-            {/* Discreet Platform Sandbox Credentials Helper */}
-            <Box sx={{ textAlign: "center", mt: 3, pt: 2, borderTop: "1px solid #EEEEEE" }}>
-              <Typography variant="caption" sx={{ color: "#9E9E9E", fontSize: "0.74rem" }}>
-                Platform Demo Profiles:{" "}
-                <Typography
-                  component="span"
-                  variant="caption"
-                  onClick={() => fillDemo("customer")}
-                  sx={{
-                    color: "#8A6D3B",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  Customer
-                </Typography>
-                {" • "}
-                <Typography
-                  component="span"
-                  variant="caption"
-                  onClick={() => fillDemo("provider")}
-                  sx={{
-                    color: "#8A6D3B",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  Boutique Partner
-                </Typography>
-                {" • "}
-                <Typography
-                  component="span"
-                  variant="caption"
-                  onClick={() => fillDemo("admin")}
-                  sx={{
-                    color: "#8A6D3B",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  Platform Admin
                 </Typography>
               </Typography>
             </Box>

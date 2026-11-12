@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -32,7 +32,7 @@ import LocalAtmIcon from "@mui/icons-material/LocalAtm";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import BoltIcon from "@mui/icons-material/Bolt";
+
 
 const CheckoutPayment = () => {
   const { id } = useParams();
@@ -97,6 +97,8 @@ const CheckoutPayment = () => {
           return;
         }
 
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const reqData = {
           dressId: product._id,
           quantity: qty,
@@ -107,9 +109,10 @@ const CheckoutPayment = () => {
           totalAmount: totalAmount,
           email: user.email,
           address: address,
+          addressId: address._id || location.state?.addressId,
         };
 
-        const res = await axios.post(`${BASE_URL}/payment/cod`, reqData);
+        const res = await axios.post(`${BASE_URL}/payment/cod`, reqData, { headers });
         if (res.data?.success) {
           navigate("/order-success", {
             state: {
@@ -226,7 +229,7 @@ const CheckoutPayment = () => {
                 boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
               }}
             >
-              {/* Simulated Escrow Disclosure */}
+              {/* Deposit Policy Disclosure */}
               <Alert
                 severity="info"
                 icon={<SecurityOutlinedIcon sx={{ color: "#A07028" }} />}
@@ -240,7 +243,7 @@ const CheckoutPayment = () => {
                   lineHeight: 1.5,
                 }}
               >
-                <strong>Simulated Escrow Sandbox:</strong> Transactions operate in a secure demonstration escrow environment. Security deposits are simulated and automatically released upon return verification.
+                <strong>Wardrobe Wonders Deposit Policy:</strong> Transactions operate in test/sandbox payment mode. Security deposits are managed under our platform protocol and refunded following garment return inspection.
               </Alert>
 
               {error && (
@@ -367,7 +370,6 @@ const CheckoutPayment = () => {
                           fullWidth
                           label="Virtual Payment Address (UPI ID)"
                           placeholder="username@okhdfcbank"
-                          defaultValue="athiya@okaxis"
                         />
                       </Box>
                     )}
@@ -537,10 +539,10 @@ const CheckoutPayment = () => {
                   Delivering to:
                 </Typography>
                 <Typography variant="body2" color="#1A1817" fontWeight={600} mt={0.3}>
-                  {address.houseNo}, {address.street}
+                  {address.name ? `${address.name} • ` : ""}{address.houseNo ? `${address.houseNo}, ` : ""}{address.street}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {address.city}, {address.state} - {address.zip}
+                  {address.city}, {address.state} - {address.zip || address.pincode}
                 </Typography>
               </Box>
 

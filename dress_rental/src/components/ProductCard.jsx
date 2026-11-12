@@ -1,5 +1,7 @@
-/* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
+ 
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { BASE_URL } from "../config/axiosConfig";
 import {
   Typography,
   Card,
@@ -13,8 +15,9 @@ import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
+import { resolveProductImage, getCategoryFallbackImage } from "../utils/imageOptimizer";
 
 const StyledCard = styled(Card)({
   minWidth: "270px",
@@ -84,32 +87,56 @@ const ProductCard = ({ dress, sx }) => {
     setIsLiked(wishlist.some((item) => item._id === dress._id));
   }, [dress?._id]);
 
-  const handleWishlist = (e) => {
+  const handleWishlist = async (e) => {
     e.stopPropagation();
     if (!dress?._id) return;
+    const token = localStorage.getItem("token");
     let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+
     if (isLiked) {
-      wishlist = wishlist.filter((item) => item._id !== dress._id);
+      if (token) {
+        try {
+          await axios.delete(`${BASE_URL}/user/wishlist/${dress._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (err) {
+          console.error("Failed to delete wishlist item on server:", err);
+        }
+      }
+      wishlist = wishlist.filter((item) => (item._id || item) !== dress._id);
+      setIsLiked(false);
     } else {
+      if (token) {
+        try {
+          await axios.post(`${BASE_URL}/user/wishlist/${dress._id}`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (err) {
+          console.error("Failed to add wishlist item on server:", err);
+        }
+      }
       wishlist.push(dress);
+      setIsLiked(true);
     }
     localStorage.setItem("wishlist", JSON.stringify(wishlist));
-    setIsLiked(!isLiked);
     window.dispatchEvent(new Event("wishlist_updated"));
   };
 
   if (!dress) return null;
 
+  const primaryImage = resolveProductImage(dress, 600);
+  const imageCount = Array.isArray(dress.images) ? dress.images.length : (dress.image ? 1 : 0);
+
   return (
     <StyledCard sx={sx} onClick={() => navigate(`/product/${dress._id}`)}>
       <ImageContainer>
         <StyledCardMedia
-          src={dress.image || "/assets/Cocktail Gown.jpg"}
-          alt={dress.name}
+          src={primaryImage}
+          alt={dress.name || "Designer Garment"}
           loading="lazy"
           onError={(e) => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = "/assets/Cocktail Gown.jpg";
+            e.currentTarget.src = getCategoryFallbackImage(dress.gender, dress.category);
           }}
         />
 
@@ -162,6 +189,28 @@ const ProductCard = ({ dress, sx }) => {
             />
           )}
         </Box>
+
+        {/* Multi-Photo Gallery Indicator */}
+        {imageCount > 1 && (
+          <Chip
+            size="small"
+            icon={<CollectionsOutlinedIcon sx={{ fontSize: "11px !important", color: "#FFFFFF !important" }} />}
+            label={`${imageCount} Photos`}
+            sx={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
+              zIndex: 3,
+              backgroundColor: "rgba(26, 24, 23, 0.75)",
+              color: "#FFFFFF",
+              fontWeight: 700,
+              fontSize: "0.62rem",
+              backdropFilter: "blur(4px)",
+              height: 20,
+              px: 0.2,
+            }}
+          />
+        )}
       </ImageContainer>
 
       <CardContent sx={{ p: 2, pb: "16px !important" }}>

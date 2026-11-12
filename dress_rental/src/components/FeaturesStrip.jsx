@@ -73,8 +73,8 @@ const FeaturesStrip = () => {
     },
     {
       icon: <SecurityOutlinedIcon />,
-      title: "Escrow Protection",
-      subtitle: "Safe payments & refund guarantee",
+      title: "Deposit Protection",
+      subtitle: "Safe payments & refundable deposit",
     },
     {
       icon: <EventAvailableOutlinedIcon />,

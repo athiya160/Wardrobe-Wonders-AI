@@ -24,7 +24,7 @@ const reviews = [
     name: "Rohan Malhotra",
     role: "Boutique Partner • Delhi NCR",
     occasion: "Designer Sherwani Owner",
-    text: "I had three bespoke wedding sherwanis sitting unworn in my closet. Through Wardrobe Wonders' Provider Studio, I've earned over ₹58,000 this season while knowing my garments are fully insured.",
+    text: "I had three bespoke wedding sherwanis sitting unworn in my closet. Through Wardrobe Wonders' Provider Studio, I've earned over ₹58,000 this season while knowing my garments are protected by verified deposit protocols.",
     rating: 5,
     avatar: "R",
   },
