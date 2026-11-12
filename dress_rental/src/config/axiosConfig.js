@@ -8,10 +8,6 @@ import axios from "axios";
  * - Android Capacitor: Uses VITE_API_URL if provided. In development mode on Capacitor, warns if localhost is used.
  */
 
-// Allow tunnels (like localtunnel / ngrok) to pass API calls directly without interstitial browser warnings
-axios.defaults.headers.common["bypass-tunnel-reminder"] = "true";
-axios.defaults.headers.common["ngrok-skip-browser-warning"] = "true";
-
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL.replace(/\/$/, "");
@@ -36,3 +32,10 @@ const getApiBaseUrl = () => {
 };
 
 export const BASE_URL = getApiBaseUrl();
+
+// Only attach tunnel-bypass headers when communicating with an actual ngrok or localtunnel URL
+// Attaching them globally to production backends (like Render) triggers CORS preflight rejections
+if (BASE_URL.includes("localtunnel.me") || BASE_URL.includes("ngrok")) {
+  axios.defaults.headers.common["bypass-tunnel-reminder"] = "true";
+  axios.defaults.headers.common["ngrok-skip-browser-warning"] = "true";
+}

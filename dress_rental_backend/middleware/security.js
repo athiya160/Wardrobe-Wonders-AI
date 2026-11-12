@@ -244,6 +244,8 @@ export const getCorsOptions = () => {
       "x-test-bypass-rate-limit",
       "X-VERIFY",
       "X-CALLBACK-URL",
+      "bypass-tunnel-reminder",
+      "ngrok-skip-browser-warning",
     ],
     credentials: true,
     optionsSuccessStatus: 200,
